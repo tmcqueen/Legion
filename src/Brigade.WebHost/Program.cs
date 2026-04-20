@@ -2,6 +2,7 @@ using Brigade.WebHost.Components;
 using Brigade.WebHost.Data;
 using Brigade.WebHost.Models;
 using Brigade.WebHost.Services;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -100,6 +101,19 @@ builder.Services.AddAuthentication(options =>
                 ServerCertificateCustomValidationCallback =
                     HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
             };
+        }
+    })
+    .AddJwtBearer("Bearer", options =>
+    {
+        options.Authority = authority;
+        options.TokenValidationParameters.ValidateAudience = false;
+        options.TokenValidationParameters.ValidateIssuer = true;
+        if (builder.Environment.IsDevelopment())
+        {
+            options.RequireHttpsMetadata = false;
+            options.TokenValidationParameters.ValidateIssuerSigningKey = false;
+            options.TokenValidationParameters.SignatureValidator = (token, parameters) =>
+                new Microsoft.IdentityModel.JsonWebTokens.JsonWebToken(token);
         }
     });
 
