@@ -1,0 +1,50 @@
+## .NET
+bin/
+obj/
+*.user
+*.suo
+.vs/
+.vscode/settings.json
+.vscode/launch.json
+
+## NuGet
+*.nupkg
+*.snupkg
+packages/
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+## ASP.NET Core / Blazor
+wwwroot/lib/
+
+## Entity Framework
+*.db
+*.db-shm
+*.db-wal
+
+## Aspire / Docker
+.aspire/
+docker-compose.override.yml
+
+## Secrets — never commit these
+**/secrets.json
+**/appsettings.Local.json
+**/*.pfx
+**/*.p12
+**/*.key
+**/*.pem
+
+## Rider / JetBrains
+.idea/
+
+## macOS
+.DS_Store
+
+## Windows
+Thumbs.db
+Desktop.ini
+
+## Logs
+*.log
+logs/
