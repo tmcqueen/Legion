@@ -1,7 +1,6 @@
 using System.Security.Claims;
 using Brigade.WebHost.Models;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using OpenIddict.Abstractions;
@@ -23,7 +22,7 @@ public class AuthorizationController(
         var request = HttpContext.Features.Get<IOpenIddictServerFeature>()?.Transaction.Request
             ?? throw new InvalidOperationException("OpenIddict server request unavailable.");
 
-        var cookieResult = await HttpContext.AuthenticateAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+        var cookieResult = await HttpContext.AuthenticateAsync(IdentityConstants.ApplicationScheme);
 
         if (!cookieResult.Succeeded)
         {
@@ -33,7 +32,7 @@ public class AuthorizationController(
                     : [.. Request.Query]);
 
             return Challenge(
-                authenticationSchemes: CookieAuthenticationDefaults.AuthenticationScheme,
+                authenticationSchemes: IdentityConstants.ApplicationScheme,
                 properties: new AuthenticationProperties { RedirectUri = returnUrl });
         }
 
@@ -133,7 +132,7 @@ public class AuthorizationController(
     [IgnoreAntiforgeryToken]
     public async Task<IActionResult> Logout()
     {
-        await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+        await HttpContext.SignOutAsync(IdentityConstants.ApplicationScheme);
         return SignOut(
             authenticationSchemes: OpenIddictServerAspNetCoreDefaults.AuthenticationScheme,
             properties: new AuthenticationProperties { RedirectUri = "/" });

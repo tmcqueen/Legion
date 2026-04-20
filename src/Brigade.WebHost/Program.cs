@@ -12,6 +12,12 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
 
+var authDbConnectionString = builder.Configuration.GetConnectionString("authDb");
+var brigadeDbConnectionString = builder.Configuration.GetConnectionString("brigadeDb");
+Console.WriteLine("\n\nConnection strings:");
+Console.WriteLine($"Auth DB Connection String: {authDbConnectionString}");
+Console.WriteLine($"Brigade DB Connection String: {brigadeDbConnectionString}");
+Console.WriteLine("\n\n");
 // AuthDbContext — UseOpenIddict() is in AuthDbContext.OnModelCreating
 builder.AddNpgsqlDbContext<AuthDbContext>("authDb");
 
@@ -66,8 +72,11 @@ builder.Services.AddOpenIddict()
 var authority = builder.Configuration["OpenIddict:Authority"]
     ?? throw new InvalidOperationException("OpenIddict:Authority is required.");
 
-builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-    .AddCookie(options =>
+builder.Services.AddAuthentication(options =>
+    {
+        options.DefaultScheme = IdentityConstants.ApplicationScheme;
+    })
+    .AddCookie(IdentityConstants.ApplicationScheme, options =>
     {
         options.LoginPath = "/account/login";
         options.LogoutPath = "/account/logout";
