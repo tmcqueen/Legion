@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using Brigade.WebHost.Models;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using OpenIddict.Abstractions;
@@ -9,7 +10,7 @@ using IOpenIddictServerFeature = OpenIddict.Server.AspNetCore.OpenIddictServerAs
 
 namespace Brigade.WebHost.Controllers;
 
-[ApiController]
+[ApiController, AllowAnonymous]
 public class AuthorizationController(
     UserManager<ApplicationUser> userManager,
     IOpenIddictScopeManager scopeManager) : Controller
@@ -19,7 +20,7 @@ public class AuthorizationController(
     [IgnoreAntiforgeryToken]
     public async Task<IActionResult> Authorize()
     {
-        var request = HttpContext.Features.Get<IOpenIddictServerFeature>()?.Transaction.Request
+        var request = HttpContext.Features.Get<IOpenIddictServerFeature>()?.Transaction?.Request
             ?? throw new InvalidOperationException("OpenIddict server request unavailable.");
 
         var cookieResult = await HttpContext.AuthenticateAsync(IdentityConstants.ApplicationScheme);
@@ -64,7 +65,7 @@ public class AuthorizationController(
     [IgnoreAntiforgeryToken]
     public async Task<IActionResult> Exchange()
     {
-        var request = HttpContext.Features.Get<IOpenIddictServerFeature>()?.Transaction.Request
+        var request = HttpContext.Features.Get<IOpenIddictServerFeature>()?.Transaction?.Request
             ?? throw new InvalidOperationException("OpenIddict server request unavailable.");
 
         if (request.IsAuthorizationCodeGrantType())
@@ -124,7 +125,15 @@ public class AuthorizationController(
                 OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
         }
 
-        throw new InvalidOperationException($"Unsupported grant type: {request.GrantType}");
+        return Forbid(
+            authenticationSchemes: OpenIddictServerAspNetCoreDefaults.AuthenticationScheme,
+            properties: new AuthenticationProperties(new Dictionary<string, string?>
+            {
+                [OpenIddictServerAspNetCoreConstants.Properties.Error] =
+                    OpenIddictConstants.Errors.UnsupportedGrantType,
+                [OpenIddictServerAspNetCoreConstants.Properties.ErrorDescription] =
+                    $"Unsupported grant type: {request.GrantType}"
+            }));
     }
 
     [HttpGet("~/connect/logout")]

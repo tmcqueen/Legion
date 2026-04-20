@@ -13,7 +13,7 @@ namespace Brigade.WebHost.Data.Migrations
 {
     [DbContext(typeof(AuthDbContext))]
     [Migration("20260420002113_initial-migration")]
-    partial class initialmigration
+    partial class Initialmigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

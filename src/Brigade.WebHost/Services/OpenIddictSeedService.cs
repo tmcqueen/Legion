@@ -27,13 +27,20 @@ public sealed class OpenIddictSeedService(
 
     private async Task SeedScopeAsync(IOpenIddictScopeManager scopeManager, CancellationToken ct)
     {
-        if (await scopeManager.FindByNameAsync("brigade-api", ct) is not null) return;
-
-        await scopeManager.CreateAsync(new OpenIddictScopeDescriptor
+        var descriptor = new OpenIddictScopeDescriptor
         {
             Name = "brigade-api",
             Resources = { "brigade-webhost" }
-        }, ct);
+        };
+
+        var existing = await scopeManager.FindByNameAsync("brigade-api", ct);
+        if (existing is null)
+            await scopeManager.CreateAsync(descriptor, ct);
+        else
+        {
+            await scopeManager.PopulateAsync(existing, descriptor, ct);
+            await scopeManager.UpdateAsync(existing, ct);
+        }
     }
 
     private async Task SeedBffApplicationAsync(
@@ -42,12 +49,11 @@ public sealed class OpenIddictSeedService(
         CancellationToken ct)
     {
         const string clientId = "brigade-bff";
-        if (await appManager.FindByClientIdAsync(clientId, ct) is not null) return;
 
         var secret = configuration["OpenIddict:BffClientSecret"]
             ?? throw new InvalidOperationException("OpenIddict:BffClientSecret is required.");
 
-        await appManager.CreateAsync(new OpenIddictApplicationDescriptor
+        var descriptor = new OpenIddictApplicationDescriptor
         {
             ClientId = clientId,
             ClientSecret = secret,
@@ -63,11 +69,23 @@ public sealed class OpenIddictSeedService(
                 OpenIddictConstants.Permissions.Endpoints.Token,
                 OpenIddictConstants.Permissions.GrantTypes.AuthorizationCode,
                 OpenIddictConstants.Permissions.ResponseTypes.Code,
-                "openid",
-                "profile",
+                "scp:openid",
+                OpenIddictConstants.Permissions.Scopes.Profile,
                 OpenIddictConstants.Permissions.Prefixes.Scope + "brigade-api",
             }
-        }, ct);
+        };
+
+        var existing = await appManager.FindByClientIdAsync(clientId, ct);
+        if (existing is null)
+            await appManager.CreateAsync(descriptor, ct);
+        else
+        {
+            var stored = new OpenIddictApplicationDescriptor();
+            await appManager.PopulateAsync(stored, existing, ct);
+            descriptor.ClientSecret = stored.ClientSecret;
+            await appManager.PopulateAsync(existing, descriptor, ct);
+            await appManager.UpdateAsync(existing, ct);
+        }
     }
 
     private async Task SeedApiTestApplicationAsync(
@@ -75,12 +93,11 @@ public sealed class OpenIddictSeedService(
         CancellationToken ct)
     {
         const string clientId = "brigade-api-test";
-        if (await appManager.FindByClientIdAsync(clientId, ct) is not null) return;
 
         var secret = configuration["OpenIddict:ApiTestClientSecret"]
             ?? throw new InvalidOperationException("OpenIddict:ApiTestClientSecret is required.");
 
-        await appManager.CreateAsync(new OpenIddictApplicationDescriptor
+        var descriptor = new OpenIddictApplicationDescriptor
         {
             ClientId = clientId,
             ClientSecret = secret,
@@ -92,6 +109,18 @@ public sealed class OpenIddictSeedService(
                 OpenIddictConstants.Permissions.GrantTypes.ClientCredentials,
                 OpenIddictConstants.Permissions.Prefixes.Scope + "brigade-api",
             }
-        }, ct);
+        };
+
+        var existing = await appManager.FindByClientIdAsync(clientId, ct);
+        if (existing is null)
+            await appManager.CreateAsync(descriptor, ct);
+        else
+        {
+            var stored = new OpenIddictApplicationDescriptor();
+            await appManager.PopulateAsync(stored, existing, ct);
+            descriptor.ClientSecret = stored.ClientSecret;
+            await appManager.PopulateAsync(existing, descriptor, ct);
+            await appManager.UpdateAsync(existing, ct);
+        }
     }
 }

@@ -29,14 +29,14 @@ public class HelloWorldControllerTests
     }
 
     [Fact]
-    public void Hello_WithUnauthenticatedUser_UserNameIsNull()
+    public void Hello_WithNoNameClaim_ReturnsGreetingWithEmptyName()
     {
         var controller = new HelloWorldController();
         controller.ControllerContext = new ControllerContext
         {
             HttpContext = new DefaultHttpContext
             {
-                User = new ClaimsPrincipal(new ClaimsIdentity()) // no auth type = unauthenticated
+                User = new ClaimsPrincipal(new ClaimsIdentity())
             }
         };
 
@@ -44,6 +44,6 @@ public class HelloWorldControllerTests
 
         Assert.NotNull(result);
         var json = System.Text.Json.JsonSerializer.Serialize(result.Value);
-        Assert.Contains("Hello, !", json); // Name is null — real auth is enforced by [Authorize]
+        Assert.Contains("Hello, !", json);
     }
 }

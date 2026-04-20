@@ -5,21 +5,19 @@ using Brigade.WebHost.Services;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using OpenIddict.Abstractions;
 using OpenIddict.Validation.AspNetCore;
+using Microsoft.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
 
-var authDbConnectionString = builder.Configuration.GetConnectionString("authDb");
-var brigadeDbConnectionString = builder.Configuration.GetConnectionString("brigadeDb");
-Console.WriteLine("\n\nConnection strings:");
-Console.WriteLine($"Auth DB Connection String: {authDbConnectionString}");
-Console.WriteLine($"Brigade DB Connection String: {brigadeDbConnectionString}");
-Console.WriteLine("\n\n");
+
 // AuthDbContext — UseOpenIddict() is in AuthDbContext.OnModelCreating
 builder.AddNpgsqlDbContext<AuthDbContext>("authDb");
 
@@ -37,10 +35,23 @@ builder.Services.Configure<IdentityOptions>(options =>
     options.ClaimsIdentity.UserNameClaimType = OpenIddictConstants.Claims.Name;
     options.ClaimsIdentity.UserIdClaimType = OpenIddictConstants.Claims.Subject;
     options.ClaimsIdentity.RoleClaimType = OpenIddictConstants.Claims.Role;
-    options.Password.RequireDigit = false;
-    options.Password.RequireLowercase = false;
-    options.Password.RequireNonAlphanumeric = false;
-    options.Password.RequireUppercase = false;
+
+    if (builder.Environment.IsDevelopment())
+    {
+        options.Password.RequiredLength = 4;
+        options.Password.RequireDigit = false;
+        options.Password.RequireLowercase = false;
+        options.Password.RequireNonAlphanumeric = false;
+        options.Password.RequireUppercase = false;
+    }
+    else
+    {
+        options.Password.RequiredLength = 8;
+        options.Password.RequireDigit = true;
+        options.Password.RequireLowercase = true;
+        options.Password.RequireNonAlphanumeric = true;
+        options.Password.RequireUppercase = true;
+    }
 });
 
 // OpenIddict — this host IS the authorization server
@@ -79,11 +90,13 @@ builder.Services.AddAuthentication(options =>
     {
         options.DefaultScheme = IdentityConstants.ApplicationScheme;
     })
+    
     .AddCookie(IdentityConstants.ApplicationScheme, options =>
     {
         options.LoginPath = "/account/login";
         options.LogoutPath = "/account/logout";
     })
+
     .AddOpenIdConnect(options =>
     {
         options.Authority = authority;
@@ -106,6 +119,21 @@ builder.Services.AddAuthentication(options =>
         }
     });
 
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("BFFPolicy", policy =>
+    {
+        policy.AddAuthenticationSchemes(
+            IdentityConstants.ApplicationScheme,
+            OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme)
+        .RequireAuthenticatedUser();
+    });
+
+    options.FallbackPolicy = new AuthorizationPolicyBuilder()
+        .RequireAuthenticatedUser()
+        .Build();
+});
+
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<AuthenticationStateProvider, CookieRevalidatingAuthenticationStateProvider>();
 
@@ -117,6 +145,23 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
+
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+    {
+        var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>();
+        if (allowedOrigins is null || allowedOrigins.Length == 0)
+        {
+            allowedOrigins = ["https://localhost:7000"];
+        }
+        policy.WithOrigins(allowedOrigins)
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
+    });
+});
+
 
 var app = builder.Build();
 
@@ -131,54 +176,56 @@ else
     app.UseHsts();
 }
 
-app.UseForwardedHeaders();
+app.UseForwardedHeaders(new ForwardedHeadersOptions
+{
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor   // If behind a reverse proxy, this will help 
+                     | ForwardedHeaders.XForwardedProto // with correct scheme and client IPs in logs, etc.
+});
+
+app.UseHttpsRedirection();
 app.UseRouting();
 app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
-app.UseHttpsRedirection();
 app.UseAntiforgery();
 
-app.MapStaticAssets();
+app.MapStaticAssets().AllowAnonymous();
 app.MapControllers();
 app.MapDefaultControllerRoute();
 app.MapRazorComponents<App>()
    .AddInteractiveServerRenderMode();
 
-app.Lifetime.ApplicationStarted.Register(() =>
-{
-    Task.Run(async () =>
-    {
-        var logger = app.Services.GetRequiredService<ILogger<Program>>();
-        using var scope = app.Services.CreateScope();
-        var db = scope.ServiceProvider.GetRequiredService<AuthDbContext>();
-        logger.LogInformation("Applying database migrations...");
-        db.Database.Migrate();
-        logger.LogInformation("Database migrations applied.");
 
-        if (app.Environment.IsDevelopment())
+await using (var scope = app.Services.CreateAsyncScope())
+{
+    var logger = app.Services.GetRequiredService<ILogger<Program>>();
+    var db = scope.ServiceProvider.GetRequiredService<AuthDbContext>();
+    logger.LogInformation("Applying database migrations...");
+    await db.Database.MigrateAsync();
+    logger.LogInformation("Database migrations applied.");
+
+    if (app.Environment.IsDevelopment())
+    {
+        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+        const string seedUser = "admin";
+        const string seedPass = "Admin1234!";
+        if (await userManager.FindByNameAsync(seedUser) is null)
         {
-            var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
-            const string seedUser = "admin";
-            const string seedPass = "Admin1234!";
-            if (await userManager.FindByNameAsync(seedUser) is null)
+            var user = new ApplicationUser
             {
-                var user = new ApplicationUser
-                {
-                    UserName = seedUser,
-                    Email = "admin@brigade.local",
-                    EmailConfirmed = true
-                };
-                var result = await userManager.CreateAsync(user, seedPass);
-                if (result.Succeeded)
-                    logger.LogInformation("Seed user '{User}' created.", seedUser);
-                else
-                    logger.LogWarning("Seed user failed: {Errors}",
-                        string.Join(", ", result.Errors.Select(e => e.Description)));
-            }
+                UserName = seedUser,
+                Email = "admin@brigade.local",
+                EmailConfirmed = true
+            };
+            var result = await userManager.CreateAsync(user, seedPass);
+            if (result.Succeeded)
+                logger.LogInformation("Seed user '{User}' created.", seedUser);
+            else
+                logger.LogWarning("Seed user failed: {Errors}",
+                    string.Join(", ", result.Errors.Select(e => e.Description)));
         }
-    }).GetAwaiter().GetResult();
-});
+    }
+}
 
 app.Run();

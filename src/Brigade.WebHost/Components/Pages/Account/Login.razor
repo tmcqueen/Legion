@@ -1,4 +1,5 @@
 @page "/account/login"
+@attribute [AllowAnonymous]
 @using System.ComponentModel.DataAnnotations
 @using Brigade.WebHost.Models
 @using Microsoft.AspNetCore.Identity
@@ -20,14 +21,13 @@
     <ValidationSummary />
     <div class="mb-3">
         <label for="username" class="form-label">Username</label>
-        <InputText @bind-Value="Model.Username" id="username" class="form-control"
-                   autocomplete="username" />
+        <InputText @bind-Value="Model.Username" id="username" class="form-control" autocomplete="username" />
         <ValidationMessage For="() => Model.Username" />
     </div>
     <div class="mb-3">
         <label for="password" class="form-label">Password</label>
-        <InputText @bind-Value="Model.Password" id="password" type="password"
-                   class="form-control" autocomplete="current-password" />
+        <InputText @bind-Value="Model.Password" id="password" type="password" class="form-control"
+                   autocomplete="current-password" />
         <ValidationMessage For="() => Model.Password" />
     </div>
     <button type="submit" class="btn btn-primary">Sign in</button>
@@ -37,15 +37,29 @@
     [SupplyParameterFromQuery]
     public string? ReturnUrl { get; set; }
 
+    private LoginModel _model = new();
+
     [SupplyParameterFromForm]
-    public LoginModel Model { get; set; } = new();
+    public LoginModel Model 
+    { 
+        get => _model; 
+        set => _model = value ?? new(); }
 
     private string? ErrorMessage { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Ensure the return URL is local to prevent open redirect vulnerabilities
+        if (!string.IsNullOrEmpty(ReturnUrl) && !Uri.IsWellFormedUriString(ReturnUrl, UriKind.Relative))
+        {
+            ReturnUrl = null;
+        }
+    }
 
     public async Task OnValidSubmitAsync()
     {
         var result = await SignInManager.PasswordSignInAsync(
-            Model.Username, Model.Password, isPersistent: false, lockoutOnFailure: false);
+            Model.Username, Model.Password, isPersistent: false, lockoutOnFailure: true);
 
         if (result.Succeeded)
         {

@@ -7,7 +7,7 @@ namespace Brigade.WebHost.Controllers;
 [ApiController, Route("api")]
 public class HelloWorldController : ControllerBase
 {
-    [HttpGet("hello"), Authorize(AuthenticationSchemes = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme)]
+    [HttpGet("hello"), Authorize(Policy = "BFFPolicy")]
     public IActionResult Hello() =>
         Ok(new { message = $"Hello, {User.Identity!.Name}!" });
 }
