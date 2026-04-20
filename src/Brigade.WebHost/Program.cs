@@ -44,6 +44,9 @@ builder.Services.Configure<IdentityOptions>(options =>
 });
 
 // OpenIddict — this host IS the authorization server
+var authority = builder.Configuration["OpenIddict:Authority"]
+    ?? throw new InvalidOperationException("OpenIddict:Authority is required.");
+
 builder.Services.AddOpenIddict()
     .AddCore(options =>
     {
@@ -71,8 +74,6 @@ builder.Services.AddOpenIddict()
     });
 
 // BFF — cookie session for Blazor + OIDC client pointing at this same host
-var authority = builder.Configuration["OpenIddict:Authority"]
-    ?? throw new InvalidOperationException("OpenIddict:Authority is required.");
 
 builder.Services.AddAuthentication(options =>
     {
@@ -103,17 +104,6 @@ builder.Services.AddAuthentication(options =>
                     HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
             };
         }
-    })
-    .AddJwtBearer("Bearer", options =>
-    {
-        options.Authority = authority;
-        options.RequireHttpsMetadata = false;
-        options.TokenValidationParameters.ValidateAudience = false;
-        options.TokenValidationParameters.ValidateIssuer = false;
-        options.TokenValidationParameters.ValidateLifetime = false;
-        options.TokenValidationParameters.ValidateIssuerSigningKey = false;
-        options.TokenValidationParameters.SignatureValidator = (token, parameters) =>
-            new Microsoft.IdentityModel.JsonWebTokens.JsonWebToken(token);
     });
 
 builder.Services.AddCascadingAuthenticationState();
