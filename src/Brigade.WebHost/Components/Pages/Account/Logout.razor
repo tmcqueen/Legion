@@ -1,0 +1,16 @@
+@page "/account/logout"
+@using Microsoft.AspNetCore.Authentication
+@using Microsoft.AspNetCore.Authentication.Cookies
+@inject IHttpContextAccessor HttpContextAccessor
+@inject NavigationManager NavigationManager
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        if (HttpContextAccessor.HttpContext is { } ctx)
+        {
+            await ctx.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+        }
+        NavigationManager.NavigateTo("/");
+    }
+}

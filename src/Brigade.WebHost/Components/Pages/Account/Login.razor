@@ -1,0 +1,70 @@
+@page "/account/login"
+@using System.ComponentModel.DataAnnotations
+@using Brigade.WebHost.Models
+@using Microsoft.AspNetCore.Identity
+@inject SignInManager<ApplicationUser> SignInManager
+@inject NavigationManager NavigationManager
+@inject ILogger<Login> Logger
+
+<PageTitle>Sign in — Brigade</PageTitle>
+
+<h1>Sign in</h1>
+
+@if (ErrorMessage is not null)
+{
+    <div class="alert alert-danger" role="alert">@ErrorMessage</div>
+}
+
+<EditForm Model="Model" method="post" OnValidSubmit="OnValidSubmitAsync" FormName="login">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    <div class="mb-3">
+        <label for="username" class="form-label">Username</label>
+        <InputText @bind-Value="Model.Username" id="username" class="form-control"
+                   autocomplete="username" />
+        <ValidationMessage For="() => Model.Username" />
+    </div>
+    <div class="mb-3">
+        <label for="password" class="form-label">Password</label>
+        <InputText @bind-Value="Model.Password" id="password" type="password"
+                   class="form-control" autocomplete="current-password" />
+        <ValidationMessage For="() => Model.Password" />
+    </div>
+    <button type="submit" class="btn btn-primary">Sign in</button>
+</EditForm>
+
+@code {
+    [SupplyParameterFromQuery]
+    public string? ReturnUrl { get; set; }
+
+    [SupplyParameterFromForm]
+    public LoginModel Model { get; set; } = new();
+
+    private string? ErrorMessage { get; set; }
+
+    public async Task OnValidSubmitAsync()
+    {
+        var result = await SignInManager.PasswordSignInAsync(
+            Model.Username, Model.Password, isPersistent: false, lockoutOnFailure: false);
+
+        if (result.Succeeded)
+        {
+            Logger.LogInformation("User {Username} signed in.", Model.Username);
+            NavigationManager.NavigateTo(ReturnUrl ?? "/");
+        }
+        else
+        {
+            ErrorMessage = "Invalid username or password.";
+        }
+    }
+
+    public sealed class LoginModel
+    {
+        [Required]
+        public string Username { get; set; } = "";
+
+        [Required]
+        [DataType(DataType.Password)]
+        public string Password { get; set; } = "";
+    }
+}
