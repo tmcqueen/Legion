@@ -15,19 +15,7 @@ primary
 lastDtbSucceeded
 
 [properties]
-AssemblyName=Brigade.Agents
 CommandLineArgsForDesignTimeEvaluation=-langversion:14.0 -define:TRACE
-CompilerGeneratedFilesOutputPath=
-MaxSupportedLangVersion=14.0
-ProjectAssetsFile=<PATH>obj/project.assets.json
-RootNamespace=Brigade.Agents
-RunAnalyzers=
-RunAnalyzersDuringLiveAnalysis=
-SolutionPath=<PATH>../../Brigade.slnx
-TargetFrameworkIdentifier=.NETCoreApp
-TargetPath=<PATH>bin/Debug/net10.0/Brigade.Agents.dll
-TargetRefPath=<PATH>obj/Debug/net10.0/ref/Brigade.Agents.dll
-TemporaryDependencyNodeTargetIdentifier=net10.0
 
 [commandLineArguments]
 /noconfig
@@ -293,8 +281,6 @@ Tools/
  system.clientmodel/1.10.0/analyzers/dotnet/cs/System.ClientModel.SourceGeneration.dll
 
 [analyzerConfigFiles]
-../../
- ../../.editorconfig
- .editorconfig
+../../.editorconfig
 <DOTNET>/sdk/10.0.106/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevel_10_default.globalconfig
 obj/Debug/net10.0/Brigade.Agents.GeneratedMSBuildEditorConfig.editorconfig

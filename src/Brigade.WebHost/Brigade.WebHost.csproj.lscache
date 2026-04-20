@@ -15,19 +15,7 @@ primary
 lastDtbSucceeded
 
 [properties]
-AssemblyName=Brigade.WebHost
 CommandLineArgsForDesignTimeEvaluation=-langversion:14.0 -define:TRACE
-CompilerGeneratedFilesOutputPath=
-MaxSupportedLangVersion=14.0
-ProjectAssetsFile=<PATH>obj/project.assets.json
-RootNamespace=Brigade.WebHost
-RunAnalyzers=
-RunAnalyzersDuringLiveAnalysis=
-SolutionPath=<PATH>../../Brigade.slnx
-TargetFrameworkIdentifier=.NETCoreApp
-TargetPath=<PATH>bin/Debug/net10.0/Brigade.WebHost.dll
-TargetRefPath=<PATH>obj/Debug/net10.0/ref/Brigade.WebHost.dll
-TemporaryDependencyNodeTargetIdentifier=net10.0
 
 [commandLineArguments]
 /noconfig
@@ -478,6 +466,7 @@ Services/
  polly.extensions/8.4.2/lib/net8.0/Polly.Extensions.dll
  polly.ratelimiting/8.4.2/lib/net8.0/Polly.RateLimiting.dll
  polly/7.2.4/lib/netstandard2.0/Polly.dll
+ radzen.blazor/10.3.0/lib/net10.0/Radzen.Blazor.dll
  spectre.console/0.53.0/lib/net9.0/Spectre.Console.dll
  system.composition.attributedmodel/9.0.0/lib/net9.0/System.Composition.AttributedModel.dll
  system.composition.convention/9.0.0/lib/net9.0/System.Composition.Convention.dll
@@ -523,9 +512,7 @@ Services/
   Microsoft.Gen.Metrics.dll
 
 [analyzerConfigFiles]
-../../
- ../../.editorconfig
- .editorconfig
+../../.editorconfig
 <DOTNET>/sdk/10.0.106/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevel_10_default.globalconfig
 obj/Debug/net10.0/Brigade.WebHost.GeneratedMSBuildEditorConfig.editorconfig
 
