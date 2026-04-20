@@ -245,6 +245,8 @@ Program.cs
  Microsoft.CodeAnalysis.NetAnalyzers.dll
 
 [analyzerConfigFiles]
-../../.editorconfig
+../../
+ ../../.editorconfig
+ .editorconfig
 <DOTNET>/sdk/10.0.106/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevel_10_default.globalconfig
 obj/Debug/net10.0/Brigade.SiloHost.Server.GeneratedMSBuildEditorConfig.editorconfig

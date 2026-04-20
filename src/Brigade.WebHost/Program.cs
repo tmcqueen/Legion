@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using OpenIddict.Abstractions;
+using OpenIddict.Validation.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -106,15 +107,13 @@ builder.Services.AddAuthentication(options =>
     .AddJwtBearer("Bearer", options =>
     {
         options.Authority = authority;
+        options.RequireHttpsMetadata = false;
         options.TokenValidationParameters.ValidateAudience = false;
-        options.TokenValidationParameters.ValidateIssuer = true;
-        if (builder.Environment.IsDevelopment())
-        {
-            options.RequireHttpsMetadata = false;
-            options.TokenValidationParameters.ValidateIssuerSigningKey = false;
-            options.TokenValidationParameters.SignatureValidator = (token, parameters) =>
-                new Microsoft.IdentityModel.JsonWebTokens.JsonWebToken(token);
-        }
+        options.TokenValidationParameters.ValidateIssuer = false;
+        options.TokenValidationParameters.ValidateLifetime = false;
+        options.TokenValidationParameters.ValidateIssuerSigningKey = false;
+        options.TokenValidationParameters.SignatureValidator = (token, parameters) =>
+            new Microsoft.IdentityModel.JsonWebTokens.JsonWebToken(token);
     });
 
 builder.Services.AddCascadingAuthenticationState();

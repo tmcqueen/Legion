@@ -57,6 +57,9 @@ TemporaryDependencyNodeTargetIdentifier=net10.0
 /warnaserror+:NU1605,SYSLIB0011
 
 [sourceFiles]
+Controllers/
+ AuthorizationController.cs
+ HelloWorldController.cs
 Data/
  AuthDbContext.cs
  IAgentStore.cs
@@ -72,6 +75,9 @@ obj/Debug/net10.0/
  EmbeddedAttribute.cs
  ValidatableTypeAttribute.cs
 Program.cs
+Services/
+ CookieRevalidatingAuthenticationStateProvider.cs
+ OpenIddictSeedService.cs
 
 [metadataReferences]
 ../Brigade.ServiceDefaults/obj/Debug/net10.0/ref/Brigade.ServiceDefaults.dll
@@ -385,6 +391,7 @@ Program.cs
  System.Xml.XPath.XDocument.dll
  WindowsBase.dll
 <NUGET>/
+ aspire.npgsql.entityframeworkcore.postgresql/13.2.2/lib/net10.0/Aspire.Npgsql.EntityFrameworkCore.PostgreSQL.dll
  aspire.npgsql/13.2.2/lib/net10.0/Aspire.Npgsql.dll
  aspnetcore.healthchecks.npgsql/9.0.0/lib/net8.0/HealthChecks.NpgSql.dll
  distributedlock.core/1.0.8/lib/net8.0/DistributedLock.Core.dll
@@ -394,6 +401,8 @@ Program.cs
  jasperfx.runtimecompiler/4.4.0/lib/net10.0/JasperFx.RuntimeCompiler.dll
  jasperfx/1.24.1/lib/net10.0/JasperFx.dll
  marten/8.31.0/lib/net10.0/Marten.dll
+ microsoft.aspnetcore.authentication.jwtbearer/10.0.6/lib/net10.0/Microsoft.AspNetCore.Authentication.JwtBearer.dll
+ microsoft.aspnetcore.authentication.openidconnect/10.0.6/lib/net10.0/Microsoft.AspNetCore.Authentication.OpenIdConnect.dll
  microsoft.aspnetcore.diagnostics.entityframeworkcore/10.0.6/lib/net10.0/Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.dll
  microsoft.aspnetcore.identity.entityframeworkcore/10.0.6/lib/net10.0/Microsoft.AspNetCore.Identity.EntityFrameworkCore.dll
  microsoft.bcl.asyncinterfaces/9.0.0/lib/netstandard2.1/Microsoft.Bcl.AsyncInterfaces.dll
@@ -413,6 +422,7 @@ Program.cs
  microsoft.extensions.compliance.abstractions/10.5.0/lib/net10.0/Microsoft.Extensions.Compliance.Abstractions.dll
  microsoft.extensions.dependencyinjection.autoactivation/10.5.0/lib/net10.0/Microsoft.Extensions.DependencyInjection.AutoActivation.dll
  microsoft.extensions.diagnostics.exceptionsummarization/10.5.0/lib/net10.0/Microsoft.Extensions.Diagnostics.ExceptionSummarization.dll
+ microsoft.extensions.diagnostics.healthchecks.entityframeworkcore/10.0.5/lib/net10.0/Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore.dll
  microsoft.extensions.http.diagnostics/10.5.0/lib/net10.0/Microsoft.Extensions.Http.Diagnostics.dll
  microsoft.extensions.http.polly/10.0.3/lib/netstandard2.0/Microsoft.Extensions.Http.Polly.dll
  microsoft.extensions.http.resilience/10.5.0/lib/net10.0/Microsoft.Extensions.Http.Resilience.dll
@@ -424,6 +434,7 @@ Program.cs
  microsoft.identitymodel.abstractions/8.16.0/lib/net10.0/Microsoft.IdentityModel.Abstractions.dll
  microsoft.identitymodel.jsonwebtokens/8.16.0/lib/net10.0/Microsoft.IdentityModel.JsonWebTokens.dll
  microsoft.identitymodel.logging/8.16.0/lib/net10.0/Microsoft.IdentityModel.Logging.dll
+ microsoft.identitymodel.protocols.openidconnect/8.0.1/lib/net9.0/Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
  microsoft.identitymodel.protocols/8.16.0/lib/net10.0/Microsoft.IdentityModel.Protocols.dll
  microsoft.identitymodel.tokens/8.16.0/lib/net10.0/Microsoft.IdentityModel.Tokens.dll
  microsoft.io.recyclablememorystream/3.0.1/lib/net6.0/Microsoft.IO.RecyclableMemoryStream.dll
@@ -473,6 +484,7 @@ Program.cs
  system.composition.hosting/9.0.0/lib/net9.0/System.Composition.Hosting.dll
  system.composition.runtime/9.0.0/lib/net9.0/System.Composition.Runtime.dll
  system.composition.typedparts/9.0.0/lib/net9.0/System.Composition.TypedParts.dll
+ system.identitymodel.tokens.jwt/8.0.1/lib/net9.0/System.IdentityModel.Tokens.Jwt.dll
  weasel.core/8.12.1/lib/net10.0/Weasel.Core.dll
  weasel.postgresql/8.12.1/lib/net10.0/Weasel.Postgresql.dll
 
@@ -511,7 +523,9 @@ Program.cs
   Microsoft.Gen.Metrics.dll
 
 [analyzerConfigFiles]
-../../.editorconfig
+../../
+ ../../.editorconfig
+ .editorconfig
 <DOTNET>/sdk/10.0.106/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevel_10_default.globalconfig
 obj/Debug/net10.0/Brigade.WebHost.GeneratedMSBuildEditorConfig.editorconfig
 
@@ -522,6 +536,9 @@ Components/
   MainLayout.razor
   NavMenu.razor
   ReconnectModal.razor
+ Pages/Account/
+  Login.razor
+  Logout.razor
  Pages/
   Counter.razor
   Error.razor
@@ -538,6 +555,9 @@ Components/
   MainLayout.razor
   NavMenu.razor
   ReconnectModal.razor
+ Pages/Account/
+  Login.razor
+  Logout.razor
  Pages/
   Counter.razor
   Error.razor
