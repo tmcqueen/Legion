@@ -1,0 +1,15 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Brigade.SiloHost.Abstractions/Brigade.SiloHost.Abstractions.csproj" />
+    <Project Path="src/Brigade.SiloHost.Common/Brigade.SiloHost.Common.csproj" />
+    <Project Path="src/Brigade.SiloHost.Grains/Brigade.SiloHost.Grains.csproj" />
+    <Project Path="src/Brigade.SiloHost.Server/Brigade.SiloHost.Server.csproj" />
+    <Project Path="src/Brigade.Agents/Brigade.Agents.csproj" />
+    <Project Path="src/Brigade.AppHost/Brigade.AppHost.csproj" />
+    <Project Path="src/Brigade.ServiceDefaults/Brigade.ServiceDefaults.csproj" />
+    <Project Path="src/Brigade.WebHost/Brigade.WebHost.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/test-agent/test-agent.csproj" />
+  </Folder>
+</Solution>

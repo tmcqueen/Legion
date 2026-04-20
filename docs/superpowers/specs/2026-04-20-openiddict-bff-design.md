@@ -53,10 +53,9 @@ Both token paths issue from:
        .AddDefaultTokenProviders();
    ```
 
-2. **Fix DbContext registration** — use `"authDb"` connection name (not `brigadeConnectionString`) and enable `UseOpenIddict()`:
+2. **Fix DbContext registration** — use `"authDb"` connection name (not `brigadeConnectionString`). `UseOpenIddict()` is a `ModelBuilder` extension called in `OnModelCreating`, not a `DbContextOptionsBuilder` extension — do not pass it here:
    ```csharp
-   builder.AddNpgsqlDbContext<AuthDbContext>("authDb",
-       configureDbContextOptions: opt => opt.UseOpenIddict());
+   builder.AddNpgsqlDbContext<AuthDbContext>("authDb");
    ```
 
 3. **Add cascading auth state:**
@@ -191,8 +190,16 @@ Extends `RevalidatingServerAuthenticationStateProvider`. For Interactive Server 
 ## Section 3: Database & Migrations
 
 - **`AuthDbContext.OnModelCreating`** calls `builder.UseOpenIddict()` — this is a model-builder hook, not a schema change, so the existing migration snapshot likely already matches
-- After fixing the DbContext registration, run `dotnet ef migrations add` (using `appsettings.Migrations.json` for the design-time connection string) and verify the resulting migration is a no-op; if it produces changes, include them as a named migration
-- `appsettings.Migrations.json` pattern stays unchanged
+- **Fix `appsettings.Migrations.json` connection string keys** — current keys are `"brigade"` and `"auth"`, but Aspire injects them as `"brigadeDb"` and `"authDb"`. The keys must match or `dotnet ef migrations add` will fail at design time. Update the file:
+  ```json
+  {
+    "ConnectionStrings": {
+      "brigadeDb": "Host=localhost:5432;Database=brigade;Username=postgres;Password=postgres",
+      "authDb": "Host=localhost:5432;Database=brigade_auth;Username=postgres;Password=postgres"
+    }
+  }
+  ```
+- After fixing the DbContext registration, run `dotnet ef migrations add` and verify the resulting migration is a no-op; if it produces changes, include them as a named migration
 
 ---
 
@@ -250,3 +257,4 @@ MapRazorComponents
 - Token refresh `DelegatingHandler` (add when a protected page is built that actually needs to call the API)
 - Production certificate management (dev certs used for now)
 - Multi-node / distributed session (single-node Aspire deployment assumed)
+- Cookie ticket store — `SaveTokens = true` with Identity profile claims can push the auth cookie past 4 KB; if this becomes an issue, implement `ITicketStore` to store the session server-side
