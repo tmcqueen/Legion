@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Aspire.AppHost.Sdk/13.2.2">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <UserSecretsId>b0260ea9-a154-402b-ae72-704b9d9909e6</UserSecretsId>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../Brigade.WebHost/Brigade.WebHost.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Aspire.Hosting" />
+    <PackageReference Include="Aspire.Hosting.Docker" />
+    <PackageReference Include="Aspire.Hosting.PostgreSQL" />
+    <PackageReference Include="Aspire.Npgsql" />
+    <PackageReference Include="AspNetCore.HealthChecks.Uris" />
+    <PackageReference Include="CommunityToolkit.Aspire.Hosting.DbGate" />
+  </ItemGroup>
+</Project>

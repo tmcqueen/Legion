@@ -1,0 +1,47 @@
+@page "/workflows/{Id:int}/delete"
+@layout MainLayout
+@rendermode InteractiveServer
+@attribute [Authorize]
+@inject WorkflowStore WorkflowStore
+@inject NavigationManager Nav
+
+<PageTitle>Delete Workflow</PageTitle>
+
+<RadzenText TextStyle="TextStyle.H4" TagName="TagName.H1" class="rz-mb-4">Delete Workflow</RadzenText>
+
+@if (workflow is not null)
+{
+    <RadzenCard Style="max-width: 500px">
+        <RadzenAlert AlertStyle="AlertStyle.Warning" ShowIcon="true" class="rz-mb-4">
+            Are you sure you want to delete this workflow? This action cannot be undone.
+        </RadzenAlert>
+
+        <RadzenStack Gap="4px" class="rz-mb-4">
+            <RadzenText><strong>Name:</strong> @workflow.Name</RadzenText>
+            <RadzenText><strong>Description:</strong> @workflow.Description</RadzenText>
+        </RadzenStack>
+
+        <RadzenStack Orientation="Orientation.Horizontal" Gap="8px">
+            <RadzenButton ButtonStyle="ButtonStyle.Danger" Text="Delete" Click="HandleDelete" />
+            <RadzenButton ButtonStyle="ButtonStyle.Light" Text="Cancel" Click="@(() => Nav.NavigateTo("/workflows"))" />
+        </RadzenStack>
+    </RadzenCard>
+}
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    private WorkflowOptions? workflow;
+
+    protected override async Task OnInitializedAsync()
+    {
+        workflow = await WorkflowStore.GetAsync(Id);
+        if (workflow is null) Nav.NavigateTo("/workflows");
+    }
+
+    private async Task HandleDelete()
+    {
+        await WorkflowStore.DeleteAsync(Id);
+        Nav.NavigateTo("/workflows");
+    }
+}

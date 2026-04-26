@@ -1,15 +1,30 @@
 <Solution>
-  <Folder Name="/src/">
-    <Project Path="src/Brigade.SiloHost.Abstractions/Brigade.SiloHost.Abstractions.csproj" />
-    <Project Path="src/Brigade.SiloHost.Common/Brigade.SiloHost.Common.csproj" />
-    <Project Path="src/Brigade.SiloHost.Grains/Brigade.SiloHost.Grains.csproj" />
-    <Project Path="src/Brigade.SiloHost.Server/Brigade.SiloHost.Server.csproj" />
     <Project Path="src/Brigade.Agents/Brigade.Agents.csproj" />
-    <Project Path="src/Brigade.AppHost/Brigade.AppHost.csproj" />
-    <Project Path="src/Brigade.ServiceDefaults/Brigade.ServiceDefaults.csproj" />
     <Project Path="src/Brigade.WebHost/Brigade.WebHost.csproj" />
+    <Project Path="src/WebDev/WebDev.csproj" />
+
+  <Folder Name="/Aspire/">
+    <Project Path="src/aspire/Brigade.AppHost/Brigade.AppHost.csproj" />
+    <Project Path="src/aspire/Brigade.ServiceDefaults/Brigade.ServiceDefaults.csproj" />
   </Folder>
-  <Folder Name="/tests/">
-    <Project Path="tests/test-agent/test-agent.csproj" />
+
+  <Folder Name="/Orleans/">
+    <Project Path="src/orleans/Brigade.SiloHost.Abstractions/Brigade.SiloHost.Abstractions.csproj" />
+    <Project Path="src/orleans/Brigade.SiloHost.Common/Brigade.SiloHost.Common.csproj" />
+    <Project Path="src/orleans/Brigade.SiloHost.Grains/Brigade.SiloHost.Grains.csproj" />
+    <Project Path="src/orleans/Brigade.SiloHost.Server/Brigade.SiloHost.Server.csproj" />
+  </Folder>
+
+  <Folder Name="/ClassLibraries/">
+    <Project Path="src/libs/Brigade.Admin.Auth/Brigade.Admin.Auth.csproj" />
+    <Project Path="src/libs/Brigade.Admin.UI/Brigade.Admin.UI.csproj" />
+    <Project Path="src/libs/Brigade.Admin.Data/Brigade.Admin.Data.csproj" />
+    <Project Path="src/libs/Brigade.Admin.Data.Models/Brigade.Admin.Data.Models.csproj" />
+    <Project Path="src/libs/Brigade.Admin.Data.PostgreSQL/Brigade.Admin.Data.PostgreSQL.csproj" />
+    <Project Path="src/libs/Brigade.Admin.Data.Sqlite/Brigade.Admin.Data.Sqlite.csproj" />
+  </Folder>
+
+  <Folder Name="/Tests/">
+    <!-- <Project Path="tests/test-agent/test-agent.csproj" /> -->
   </Folder>
 </Solution>

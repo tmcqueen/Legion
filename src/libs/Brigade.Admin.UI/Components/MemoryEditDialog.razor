@@ -1,0 +1,127 @@
+@inject DialogService DialogService
+@inject MemoryStore MemoryStore
+
+<RadzenStack Gap="1rem" style="min-width: 480px; padding: 1rem;">
+    <EditForm Model="@form" OnValidSubmit="Submit">
+        <DataAnnotationsValidator />
+        <RadzenStack Orientation="Orientation.Vertical" Gap="1rem">
+            <RadzenRow>
+                <RadzenColumn Size="4" class="rz-text-align-end">
+                    <RadzenLabel Text="Search Time" />
+                </RadzenColumn>
+                <RadzenColumn Size="8">
+                    <RadzenDropDown Name="SearchTime" @bind-Value="form.SearchTime"
+                                    Data="searchBehaviors" TextProperty="Key" ValueProperty="Value"
+                                    style="width: 100%;" />
+                </RadzenColumn>
+            </RadzenRow>
+            <RadzenRow>
+                <RadzenColumn Size="4" class="rz-text-align-end">
+                    <RadzenLabel Text="Max Results" />
+                </RadzenColumn>
+                <RadzenColumn Size="8">
+                    <RadzenNumeric Name="MaxResults" @bind-Value="form.MaxResults" style="width: 100%;" />
+                </RadzenColumn>
+            </RadzenRow>
+            <RadzenRow>
+                <RadzenColumn Size="4" class="rz-text-align-end">
+                    <RadzenLabel Text="Function Tool Name" />
+                </RadzenColumn>
+                <RadzenColumn Size="8">
+                    <RadzenTextBox Name="FunctionToolName" @bind-Value="form.FunctionToolName" style="width: 100%;" />
+                </RadzenColumn>
+            </RadzenRow>
+            <RadzenRow>
+                <RadzenColumn Size="4" class="rz-text-align-end">
+                    <RadzenLabel Text="Tool Description" />
+                </RadzenColumn>
+                <RadzenColumn Size="8">
+                    <RadzenTextArea Name="FunctionToolDescription" @bind-Value="form.FunctionToolDescription"
+                                    Rows="2" style="width: 100%;" />
+                </RadzenColumn>
+            </RadzenRow>
+            <RadzenRow>
+                <RadzenColumn Size="4" class="rz-text-align-end">
+                    <RadzenLabel Text="Context Prompt" />
+                </RadzenColumn>
+                <RadzenColumn Size="8">
+                    <RadzenTextArea Name="ContextPrompt" @bind-Value="form.ContextPrompt"
+                                    Rows="3" style="width: 100%;" />
+                </RadzenColumn>
+            </RadzenRow>
+            <RadzenRow>
+                <RadzenColumn Size="4" class="rz-text-align-end">
+                    <RadzenLabel Text="State Key" />
+                </RadzenColumn>
+                <RadzenColumn Size="8">
+                    <RadzenTextBox Name="StateKey" @bind-Value="form.StateKey" style="width: 100%;" />
+                </RadzenColumn>
+            </RadzenRow>
+            <RadzenRow JustifyContent="JustifyContent.End">
+                <RadzenStack Orientation="Orientation.Horizontal" Gap="8px">
+                    <RadzenButton ButtonType="ButtonType.Submit" Text="Save" IsBusy="@saving" />
+                    <RadzenButton ButtonStyle="ButtonStyle.Light" Text="Cancel" Click="Cancel" Disabled="@saving" />
+                </RadzenStack>
+            </RadzenRow>
+        </RadzenStack>
+    </EditForm>
+</RadzenStack>
+
+@code {
+    [Parameter] public int AgentId { get; set; }
+    [Parameter] public MemoryOptions? ExistingMemory { get; set; }
+
+    private readonly FormModel form = new();
+    private bool saving;
+
+    private readonly IEnumerable<KeyValuePair<string, SearchBehavior>> searchBehaviors =
+        Enum.GetValues<SearchBehavior>()
+            .Select(v => new KeyValuePair<string, SearchBehavior>(v.ToString(), v));
+
+    protected override void OnInitialized()
+    {
+        if (ExistingMemory is not null)
+        {
+            form.SearchTime = ExistingMemory.SearchTime;
+            form.MaxResults = ExistingMemory.MaxResults;
+            form.FunctionToolName = ExistingMemory.FunctionToolName;
+            form.FunctionToolDescription = ExistingMemory.FunctionToolDescription;
+            form.ContextPrompt = ExistingMemory.ContextPrompt;
+            form.StateKey = ExistingMemory.StateKey;
+        }
+    }
+
+    private async Task Submit()
+    {
+        saving = true;
+        var memory = new MemoryOptions
+        {
+            Id = ExistingMemory?.Id ?? 0,
+            AgentId = AgentId,
+            SearchTime = form.SearchTime,
+            MaxResults = form.MaxResults,
+            FunctionToolName = form.FunctionToolName,
+            FunctionToolDescription = form.FunctionToolDescription,
+            ContextPrompt = form.ContextPrompt,
+            StateKey = form.StateKey,
+        };
+        if (ExistingMemory is null)
+            await MemoryStore.AddAsync(memory);
+        else
+            await MemoryStore.UpdateAsync(memory);
+        saving = false;
+        DialogService.Close(true);
+    }
+
+    private void Cancel() => DialogService.Close(false);
+
+    private sealed class FormModel
+    {
+        public SearchBehavior SearchTime { get; set; } = SearchBehavior.BeforeAIInvoke;
+        public int? MaxResults { get; set; }
+        public string? FunctionToolName { get; set; }
+        public string? FunctionToolDescription { get; set; }
+        public string? ContextPrompt { get; set; }
+        public string? StateKey { get; set; }
+    }
+}

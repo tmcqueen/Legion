@@ -1,0 +1,116 @@
+@page "/middleware/{Id:int}/edit"
+@layout MainLayout
+@rendermode InteractiveServer
+@attribute [Authorize]
+@inject MiddlewareStore MiddlewareStore
+@inject NavigationManager Nav
+
+<PageTitle>Edit Middleware</PageTitle>
+
+<RadzenText TextStyle="TextStyle.H4" TagName="TagName.H1" class="rz-mb-4">Edit Middleware</RadzenText>
+
+<RadzenCard Style="max-width: 700px">
+    <EditForm Model="@form" OnValidSubmit="HandleSubmit">
+        <DataAnnotationsValidator />
+        <RadzenStack Orientation="Orientation.Vertical" Gap="1rem">
+            <RadzenRow>
+                <RadzenColumn Size="4" SizeMD="4" class="rz-text-align-start rz-text-align-md-end">
+                    <RadzenLabel Text="Name" />
+                </RadzenColumn>
+                <RadzenColumn Size="8" SizeMD="8" Style="display: block; width: 100%;">
+                    <RadzenTextBox Name="Name" @bind-Value="form.Name" style="width: 100%;" />
+                    <RadzenDataAnnotationValidator Component="Name" Style="position: absolute" />
+                </RadzenColumn>
+            </RadzenRow>
+            <RadzenRow>
+                <RadzenColumn Size="4" SizeMD="4" class="rz-text-align-start rz-text-align-md-end">
+                    <RadzenLabel Text="Description" />
+                </RadzenColumn>
+                <RadzenColumn Size="8" SizeMD="8" Style="display: block; width: 100%;">
+                    <RadzenTextArea Name="Description" @bind-Value="form.Description" Rows="3" style="width: 100%;" />
+                </RadzenColumn>
+            </RadzenRow>
+            <RadzenRow>
+                <RadzenColumn Size="4" SizeMD="4" class="rz-text-align-start rz-text-align-md-end">
+                    <RadzenLabel Text="Scope" />
+                </RadzenColumn>
+                <RadzenColumn Size="8" SizeMD="8" Style="display: block; width: 100%;">
+                    <RadzenDropDown Name="Scope" @bind-Value="form.Scope"
+                                    Data="scopeValues" TextProperty="Key" ValueProperty="Value"
+                                    style="width: 100%;" />
+                </RadzenColumn>
+            </RadzenRow>
+            <RadzenRow>
+                <RadzenColumn Size="4" SizeMD="4" class="rz-text-align-start rz-text-align-md-end">
+                    <RadzenLabel Text="Type" />
+                </RadzenColumn>
+                <RadzenColumn Size="8" SizeMD="8" Style="display: block; width: 100%;">
+                    <RadzenDropDown Name="Type" @bind-Value="form.Type"
+                                    Data="typeValues" TextProperty="Key" ValueProperty="Value"
+                                    style="width: 100%;" />
+                </RadzenColumn>
+            </RadzenRow>
+            <RadzenRow>
+                <RadzenColumn Size="4" SizeMD="4" class="rz-text-align-start rz-text-align-md-end">
+                    <RadzenLabel Text="Content" />
+                </RadzenColumn>
+                <RadzenColumn Size="8" SizeMD="8" Style="display: block; width: 100%;">
+                    <RadzenTextArea Name="Content" @bind-Value="form.Content" Rows="6" style="width: 100%;" />
+                </RadzenColumn>
+            </RadzenRow>
+            <RadzenRow JustifyContent="JustifyContent.End">
+                <RadzenStack Orientation="Orientation.Horizontal">
+                    <RadzenButton ButtonType="ButtonType.Submit" Text="Save" />
+                    <RadzenButton ButtonStyle="ButtonStyle.Light" Text="Cancel" Click="@(() => Nav.NavigateTo("/middleware"))" />
+                </RadzenStack>
+            </RadzenRow>
+        </RadzenStack>
+    </EditForm>
+</RadzenCard>
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    private readonly FormModel form = new();
+
+    private readonly IEnumerable<KeyValuePair<string, MiddlewareScope>> scopeValues =
+        Enum.GetValues<MiddlewareScope>().Select(v => new KeyValuePair<string, MiddlewareScope>(v.ToString(), v));
+
+    private readonly IEnumerable<KeyValuePair<string, MiddlewareType>> typeValues =
+        Enum.GetValues<MiddlewareType>().Select(v => new KeyValuePair<string, MiddlewareType>(v.ToString(), v));
+
+    protected override async Task OnInitializedAsync()
+    {
+        var mw = await MiddlewareStore.GetAsync(Id);
+        if (mw is null) { Nav.NavigateTo("/middleware"); return; }
+        form.Name = mw.Name;
+        form.Description = mw.Description;
+        form.Scope = mw.Scope;
+        form.Type = mw.Type;
+        form.Content = mw.Content;
+    }
+
+    private async Task HandleSubmit()
+    {
+        var middleware = new MiddlewareOptions
+        {
+            Id = Id,
+            Name = form.Name,
+            Description = form.Description,
+            Scope = form.Scope,
+            Type = form.Type,
+            Content = form.Content,
+        };
+        await MiddlewareStore.UpdateAsync(middleware);
+        Nav.NavigateTo("/middleware");
+    }
+
+    private sealed class FormModel
+    {
+        public string? Name { get; set; }
+        public string? Description { get; set; }
+        public MiddlewareScope Scope { get; set; }
+        public MiddlewareType Type { get; set; }
+        public string? Content { get; set; }
+    }
+}

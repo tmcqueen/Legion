@@ -1,0 +1,40 @@
+@page "/middleware"
+@layout MainLayout
+@rendermode InteractiveServer
+@attribute [Authorize]
+@inject MiddlewareStore MiddlewareStore
+@inject NavigationManager Nav
+
+<PageTitle>Middleware</PageTitle>
+
+<RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween" class="rz-mb-4">
+    <RadzenText TextStyle="TextStyle.H4" TagName="TagName.H1">Middleware</RadzenText>
+    <RadzenButton Text="New Middleware" Icon="add" Click="@(() => Nav.NavigateTo("/middleware/create"))" />
+</RadzenStack>
+
+<RadzenDataGrid Data="@middlewares" TItem="MiddlewareOptions" AllowSorting="true" AllowPaging="true" PageSize="20">
+    <Columns>
+        <RadzenDataGridColumn TItem="MiddlewareOptions" Property="Id" Title="ID" Width="60px" />
+        <RadzenDataGridColumn TItem="MiddlewareOptions" Property="Name" Title="Name" />
+        <RadzenDataGridColumn TItem="MiddlewareOptions" Property="Scope" Title="Scope" Width="90px" />
+        <RadzenDataGridColumn TItem="MiddlewareOptions" Property="Type" Title="Type" Width="160px" />
+        <RadzenDataGridColumn TItem="MiddlewareOptions" Property="Description" Title="Description" />
+        <RadzenDataGridColumn TItem="MiddlewareOptions" Title="" Width="140px" Sortable="false">
+            <Template Context="mw">
+                <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Size="ButtonSize.Small"
+                              Click="@(() => Nav.NavigateTo($"/middleware/{mw.Id}/edit"))" class="rz-mr-1" />
+                <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Size="ButtonSize.Small"
+                              Click="@(() => Nav.NavigateTo($"/middleware/{mw.Id}/delete"))" />
+            </Template>
+        </RadzenDataGridColumn>
+    </Columns>
+</RadzenDataGrid>
+
+@code {
+    private List<MiddlewareOptions> middlewares = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        middlewares = await MiddlewareStore.GetAllAsync();
+    }
+}

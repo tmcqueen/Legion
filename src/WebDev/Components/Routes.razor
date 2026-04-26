@@ -1,0 +1,18 @@
+﻿@inject NavigationManager Navigation
+
+
+<Router 
+    AppAssembly="typeof(Program).Assembly" 
+    AdditionalAssemblies="[
+        typeof(Brigade.Admin.UI.Pages.Login).Assembly
+    ]"
+    NotFoundPage="typeof(Brigade.Admin.UI.Pages.NotFound)">
+    <Found Context="routeData">
+        <AuthorizeRouteView RouteData="routeData" DefaultLayout="typeof(Brigade.Admin.UI.Layouts.MainLayout)">
+            <NotAuthorized>
+                @{ Navigation.NavigateTo("/account/login", forceLoad: true); }
+            </NotAuthorized>
+        </AuthorizeRouteView>
+        <FocusOnNavigate RouteData="routeData" Selector="h1" />
+    </Found>
+</Router>

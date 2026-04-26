@@ -1,0 +1,38 @@
+@page "/tools"
+@layout MainLayout
+@rendermode InteractiveServer
+@attribute [Authorize]
+@inject ToolStore ToolStore
+@inject NavigationManager Nav
+
+<PageTitle>Tools</PageTitle>
+
+<RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween" class="rz-mb-4">
+    <RadzenText TextStyle="TextStyle.H4" TagName="TagName.H1">Tools</RadzenText>
+    <RadzenButton Text="New Tool" Icon="add" Click="@(() => Nav.NavigateTo("/tools/create"))" />
+</RadzenStack>
+
+<RadzenDataGrid Data="@tools" TItem="ToolOptions" AllowSorting="true" AllowPaging="true" PageSize="20">
+    <Columns>
+        <RadzenDataGridColumn TItem="ToolOptions" Property="Id" Title="ID" Width="60px" />
+        <RadzenDataGridColumn TItem="ToolOptions" Property="Name" Title="Name" />
+        <RadzenDataGridColumn TItem="ToolOptions" Property="Description" Title="Description" />
+        <RadzenDataGridColumn TItem="ToolOptions" Title="" Width="140px" Sortable="false">
+            <Template Context="tool">
+                <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Size="ButtonSize.Small"
+                              Click="@(() => Nav.NavigateTo($"/tools/{tool.Id}/edit"))" class="rz-mr-1" />
+                <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Size="ButtonSize.Small"
+                              Click="@(() => Nav.NavigateTo($"/tools/{tool.Id}/delete"))" />
+            </Template>
+        </RadzenDataGridColumn>
+    </Columns>
+</RadzenDataGrid>
+
+@code {
+    private List<ToolOptions> tools = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        tools = await ToolStore.GetAllAsync();
+    }
+}

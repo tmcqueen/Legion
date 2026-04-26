@@ -1,0 +1,52 @@
+@page "/agents"
+@layout MainLayout
+@rendermode InteractiveServer
+@attribute [Authorize]
+@inject AgentStore AgentStore
+@inject NavigationManager Nav
+
+<PageTitle>Agents</PageTitle>
+
+<RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween" class="rz-mb-4">
+    <RadzenText TextStyle="TextStyle.H4" TagName="TagName.H1">Agents</RadzenText>
+    <RadzenButton Text="New Agent" Icon="add" Click="@(() => Nav.NavigateTo("/agents/create"))" />
+</RadzenStack>
+
+<RadzenDataGrid Data="@agents" TItem="AgentOptions" AllowSorting="true" AllowPaging="true" PageSize="20">
+    <Columns>
+        <RadzenDataGridColumn TItem="AgentOptions" Property="Id" Title="ID" Width="60px" />
+        <RadzenDataGridColumn TItem="AgentOptions" Property="Name" Title="Name" />
+        <RadzenDataGridColumn TItem="AgentOptions" Title="Provider">
+            <Template Context="agent">
+                @(agent.Provider?.Name ?? "—")
+            </Template>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="AgentOptions" Title="Tools" Width="80px">
+            <Template Context="agent">
+                @agent.Tools.Count
+            </Template>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="AgentOptions" Title="MCPs" Width="70px">
+            <Template Context="agent">
+                @agent.McpServers.Count
+            </Template>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="AgentOptions" Title="" Width="140px" Sortable="false">
+            <Template Context="agent">
+                <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Size="ButtonSize.Small"
+                              Click="@(() => Nav.NavigateTo($"/agents/{agent.Id}/edit"))" class="rz-mr-1" />
+                <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Size="ButtonSize.Small"
+                              Click="@(() => Nav.NavigateTo($"/agents/{agent.Id}/delete"))" />
+            </Template>
+        </RadzenDataGridColumn>
+    </Columns>
+</RadzenDataGrid>
+
+@code {
+    private List<AgentOptions> agents = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        agents = await AgentStore.GetAllAsync();
+    }
+}

@@ -1,0 +1,14 @@
+@page "/memory/create"
+@layout MainLayout
+@rendermode InteractiveServer
+@attribute [Authorize]
+@inject NavigationManager Nav
+
+<PageTitle>Memory Configuration</PageTitle>
+
+@code {
+    protected override void OnInitialized()
+    {
+        Nav.NavigateTo("/agents");
+    }
+}

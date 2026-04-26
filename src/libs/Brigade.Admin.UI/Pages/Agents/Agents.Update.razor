@@ -1,0 +1,239 @@
+@page "/agents/{Id:int}/edit"
+@layout MainLayout
+@rendermode InteractiveServer
+@attribute [Authorize]
+@inject AgentStore AgentStore
+@inject ProviderStore ProviderStore
+@inject ToolStore ToolStore
+@inject SkillStore SkillStore
+@inject McpStore McpStore
+@inject MiddlewareStore MiddlewareStore
+@inject DialogService DialogService
+@inject NavigationManager Nav
+
+<PageTitle>Edit Agent</PageTitle>
+
+<RadzenText TextStyle="TextStyle.H4" TagName="TagName.H1" class="rz-mb-4">Edit Agent</RadzenText>
+
+<RadzenCard Style="max-width: 700px">
+    <EditForm Model="@form" OnValidSubmit="HandleSubmit">
+        <DataAnnotationsValidator />
+        <RadzenStack Orientation="Orientation.Vertical" Gap="1rem">
+            <RadzenRow>
+                <RadzenColumn Size="4" SizeMD="4" class="rz-text-align-start rz-text-align-md-end">
+                    <RadzenLabel Text="Name" />
+                </RadzenColumn>
+                <RadzenColumn Size="8" SizeMD="8" Style="display: block; width: 100%;">
+                    <RadzenTextBox Name="Name" @bind-Value="form.Name" style="width: 100%;" />
+                    <RadzenDataAnnotationValidator Component="Name" Style="position: absolute" />
+                </RadzenColumn>
+            </RadzenRow>
+            <RadzenRow>
+                <RadzenColumn Size="4" SizeMD="4" class="rz-text-align-start rz-text-align-md-end">
+                    <RadzenLabel Text="Provider" />
+                </RadzenColumn>
+                <RadzenColumn Size="8" SizeMD="8" Style="display: block; width: 100%;">
+                    <RadzenDropDown Name="Provider" @bind-Value="form.ProviderId"
+                                    Data="allProviders" TextProperty="Name" ValueProperty="Id"
+                                    Placeholder="Select provider…" style="width: 100%;"
+                                    Change="OnProviderChanged" />
+                </RadzenColumn>
+            </RadzenRow>
+            <RadzenRow>
+                <RadzenColumn Size="4" SizeMD="4" class="rz-text-align-start rz-text-align-md-end">
+                    <RadzenLabel Text="Max Tokens" />
+                </RadzenColumn>
+                <RadzenColumn Size="8" SizeMD="8" Style="display: block; width: 100%;">
+                    <RadzenNumeric Name="MaxTokens" @bind-Value="form.MaxTokens" style="width: 100%;" />
+                    <RadzenDataAnnotationValidator Component="MaxTokens" Style="position: absolute" />
+                </RadzenColumn>
+            </RadzenRow>
+            <RadzenRow>
+                <RadzenColumn Size="4" SizeMD="4" class="rz-text-align-start rz-text-align-md-end">
+                    <RadzenLabel Text="Description" />
+                </RadzenColumn>
+                <RadzenColumn Size="8" SizeMD="8" Style="display: block; width: 100%;">
+                    <RadzenTextArea Name="Description" @bind-Value="form.Description" Rows="3" style="width: 100%;" />
+                    <RadzenDataAnnotationValidator Component="Description" Style="position: absolute" />
+                </RadzenColumn>
+            </RadzenRow>
+            <RadzenRow>
+                <RadzenColumn Size="4" SizeMD="4" class="rz-text-align-start rz-text-align-md-end">
+                    <RadzenLabel Text="Instructions" />
+                </RadzenColumn>
+                <RadzenColumn Size="8" SizeMD="8" Style="display: block; width: 100%;">
+                    <RadzenTextArea Name="Instructions" @bind-Value="form.Instructions" Rows="5" style="width: 100%;" />
+                    <RadzenDataAnnotationValidator Component="Instructions" Style="position: absolute" />
+                </RadzenColumn>
+            </RadzenRow>
+            <RadzenRow>
+                <RadzenColumn Size="4" SizeMD="4" class="rz-text-align-start rz-text-align-md-end">
+                    <RadzenLabel Text="Models" />
+                </RadzenColumn>
+                <RadzenColumn Size="8" SizeMD="8" Style="display: block; width: 100%;">
+                    <RadzenDropDown Name="Models" @bind-Value="selectedModelIds" Multiple="true"
+                                    Data="providerModels" TextProperty="DisplayName" ValueProperty="Id"
+                                    Placeholder="Select models…" style="width: 100%;"
+                                    Disabled="@(form.ProviderId is null)" />
+                </RadzenColumn>
+            </RadzenRow>
+            <RadzenRow>
+                <RadzenColumn Size="4" SizeMD="4" class="rz-text-align-start rz-text-align-md-end">
+                    <RadzenLabel Text="Tools" />
+                </RadzenColumn>
+                <RadzenColumn Size="8" SizeMD="8" Style="display: block; width: 100%;">
+                    <RadzenDropDown Name="Tools" @bind-Value="selectedToolIds" Multiple="true"
+                                    Data="allTools" TextProperty="Name" ValueProperty="Id"
+                                    Placeholder="Select tools…" style="width: 100%;" />
+                </RadzenColumn>
+            </RadzenRow>
+            <RadzenRow>
+                <RadzenColumn Size="4" SizeMD="4" class="rz-text-align-start rz-text-align-md-end">
+                    <RadzenLabel Text="Skills" />
+                </RadzenColumn>
+                <RadzenColumn Size="8" SizeMD="8" Style="display: block; width: 100%;">
+                    <RadzenDropDown Name="Skills" @bind-Value="selectedSkillIds" Multiple="true"
+                                    Data="allSkills" TextProperty="Name" ValueProperty="Id"
+                                    Placeholder="Select skills…" style="width: 100%;" />
+                </RadzenColumn>
+            </RadzenRow>
+            <RadzenRow>
+                <RadzenColumn Size="4" SizeMD="4" class="rz-text-align-start rz-text-align-md-end">
+                    <RadzenLabel Text="MCP Servers" />
+                </RadzenColumn>
+                <RadzenColumn Size="8" SizeMD="8" Style="display: block; width: 100%;">
+                    <RadzenDropDown Name="McpServers" @bind-Value="selectedMcpIds" Multiple="true"
+                                    Data="allMcps" TextProperty="Name" ValueProperty="Id"
+                                    Placeholder="Select MCP servers…" style="width: 100%;" />
+                </RadzenColumn>
+            </RadzenRow>
+            <RadzenRow>
+                <RadzenColumn Size="4" SizeMD="4" class="rz-text-align-start rz-text-align-md-end">
+                    <RadzenLabel Text="Middleware" />
+                </RadzenColumn>
+                <RadzenColumn Size="8" SizeMD="8" Style="display: block; width: 100%;">
+                    <RadzenDropDown Name="Middleware" @bind-Value="selectedMiddlewareIds" Multiple="true"
+                                    Data="allMiddleware" TextProperty="Name" ValueProperty="Id"
+                                    Placeholder="Select middleware…" style="width: 100%;" />
+                </RadzenColumn>
+            </RadzenRow>
+            <RadzenRow>
+                <RadzenColumn Size="4" SizeMD="4" class="rz-text-align-start rz-text-align-md-end">
+                    <RadzenLabel Text="Memory" />
+                </RadzenColumn>
+                <RadzenColumn Size="8" SizeMD="8">
+                    @if (agentMemory is not null)
+                    {
+                        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="8px">
+                            <RadzenText>@agentMemory.SearchTime — max @(agentMemory.MaxResults ?? 0) results</RadzenText>
+                            <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Size="ButtonSize.Small"
+                                          Click="OpenMemoryDialog" />
+                        </RadzenStack>
+                    }
+                    else
+                    {
+                        <RadzenButton Icon="add" ButtonStyle="ButtonStyle.Light" Text="Configure Memory"
+                                      Click="OpenMemoryDialog" />
+                    }
+                </RadzenColumn>
+            </RadzenRow>
+            <RadzenRow JustifyContent="JustifyContent.End">
+                <RadzenStack Orientation="Orientation.Horizontal">
+                    <RadzenButton ButtonType="ButtonType.Submit" Text="Save" />
+                    <RadzenButton ButtonStyle="ButtonStyle.Light" Text="Cancel" Click="@(() => Nav.NavigateTo("/agents"))" />
+                </RadzenStack>
+            </RadzenRow>
+        </RadzenStack>
+    </EditForm>
+</RadzenCard>
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    private readonly FormModel form = new();
+    private List<ProviderOptions> allProviders = [];
+    private List<ToolOptions> allTools = [];
+    private List<SkillOptions> allSkills = [];
+    private List<McpServerOptions> allMcps = [];
+    private List<MiddlewareOptions> allMiddleware = [];
+    private IEnumerable<int> selectedToolIds = [];
+    private IEnumerable<int> selectedSkillIds = [];
+    private IEnumerable<int> selectedModelIds = [];
+    private IEnumerable<int> selectedMcpIds = [];
+    private IEnumerable<int> selectedMiddlewareIds = [];
+    private MemoryOptions? agentMemory;
+
+    private IEnumerable<ModelOptions> providerModels =>
+        allProviders.FirstOrDefault(p => p.Id == form.ProviderId)?.Models ?? [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        var agent = await AgentStore.GetAsync(Id);
+        if (agent is null) { Nav.NavigateTo("/agents"); return; }
+
+        form.Name = agent.Name;
+        form.ProviderId = agent.ProviderId == 0 ? null : agent.ProviderId;
+        form.MaxTokens = agent.MaxTokens;
+        form.Description = agent.Description;
+        form.Instructions = agent.Instructions;
+
+        agentMemory = agent.Memory;
+        selectedToolIds = agent.Tools.Select(t => t.Id).ToList();
+        selectedSkillIds = agent.Skills.Select(s => s.Id).ToList();
+        selectedModelIds = agent.Models.Select(m => m.Id).ToList();
+        selectedMcpIds = agent.McpServers.Select(m => m.Id).ToList();
+        selectedMiddlewareIds = agent.Middleware.Select(m => m.Id).ToList();
+
+        allProviders = await ProviderStore.GetAllAsync();
+        allTools = await ToolStore.GetAllAsync();
+        allSkills = await SkillStore.GetAllAsync();
+        allMcps = await McpStore.GetAllAsync();
+        allMiddleware = await MiddlewareStore.GetAllAsync();
+    }
+
+    private void OnProviderChanged(object value)
+    {
+        selectedModelIds = [];
+    }
+
+    private async Task OpenMemoryDialog()
+    {
+        await DialogService.OpenAsync<MemoryEditDialog>("Memory Configuration",
+            new Dictionary<string, object?>
+            {
+                ["AgentId"] = Id,
+                ["ExistingMemory"] = agentMemory,
+            });
+        var refreshed = await AgentStore.GetAsync(Id);
+        agentMemory = refreshed?.Memory;
+    }
+
+    private async Task HandleSubmit()
+    {
+        var agent = new AgentOptions
+        {
+            Id = Id,
+            Name = form.Name,
+            MaxTokens = form.MaxTokens,
+            Description = form.Description,
+            Instructions = form.Instructions,
+            ProviderId = form.ProviderId ?? 0,
+        };
+        await AgentStore.UpdateAsync(agent);
+        await AgentStore.AssignToolsAsync(Id, selectedToolIds);
+        await AgentStore.AssignSkillsAsync(Id, selectedSkillIds);
+        await AgentStore.AssignModelsAsync(Id, selectedModelIds);
+        await AgentStore.AssignMcpServersAsync(Id, selectedMcpIds);
+        await AgentStore.AssignMiddlewareAsync(Id, selectedMiddlewareIds);
+        Nav.NavigateTo("/agents");
+    }
+
+    private sealed class FormModel
+    {
+        public string? Name { get; set; }
+        public int? ProviderId { get; set; }
+        public int? MaxTokens { get; set; }
+        public string? Description { get; set; }
+        public string? Instructions { get; set; }
+    }
+}

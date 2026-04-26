@@ -6,7 +6,7 @@ obj/
 .vs/
 .vscode/settings.json
 .vscode/launch.json
-
+.external/
 ## NuGet
 *.nupkg
 *.snupkg

@@ -1,0 +1,46 @@
+@using Radzen.Blazor.Rendering
+
+<style type="text/css">
+    .my-popup {
+        display: none;
+        position: absolute;
+        overflow: hidden;
+        height: 360px;
+        width: 600px;
+        border: var(--rz-panel-border);
+        background-color: red;
+        box-shadow: var(--rz-panel-shadow);
+        border-radius: var(--rz-border-radius)
+    }
+ </style>
+
+< RadzenPanelMenu Style="margin-top: auto;">
+    < RadzenPanelMenuItem @ref="settingsMenuItem" Text="Profile" Icon="account_circle"
+      Click="@(() => settingsPopup.ToggleAsync(settingsMenuItem.Element))" />
+    < Popup @ref="settingsPopup" Lazy=true class="my-popup">
+        @* < RadzenPanel AllowCollapse="false" class="my-popup-panel"> *@
+            @* < HeaderTemplate>
+                Profile Settings
+            </ HeaderTemplate> *@
+            @* < ChildContent> *@
+                @* < RadzenStack Orientation="Orientation.Vertical" Gap="1rem" class="rz-h-100 rz-p-4">
+                    < RadzenButton Text="Settings" Icon="settings" Style="width: 100%;"
+                      Click="@(() => { /* Navigate to settings */ })" />
+                    < RadzenButton Text="Profile" Icon="person" Style="width: 100%;"
+                      Click="@(() => { /* Navigate to profile */ })" />
+                    < RadzenButton Text="Logout" Icon="logout" Style="width: 100%;"
+                      Click="@(() => { /* Handle logout */ })" />
+                </ RadzenStack> *@
+            @* </ ChildContent> *@
+        @* </ RadzenPanel> *@
+    </ Popup>
+</ RadzenPanelMenu>
+
+
+@code {
+
+
+    public required RadzenPanelMenuItem settingsMenuItem;
+    public required Popup settingsPopup;
+
+}

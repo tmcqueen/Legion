@@ -1,0 +1,38 @@
+@page "/workflows"
+@layout MainLayout
+@rendermode InteractiveServer
+@attribute [Authorize]
+@inject WorkflowStore WorkflowStore
+@inject NavigationManager Nav
+
+<PageTitle>Workflows</PageTitle>
+
+<RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween" class="rz-mb-4">
+    <RadzenText TextStyle="TextStyle.H4" TagName="TagName.H1">Workflows</RadzenText>
+    <RadzenButton Text="New Workflow" Icon="add" Click="@(() => Nav.NavigateTo("/workflows/create"))" />
+</RadzenStack>
+
+<RadzenDataGrid Data="@workflows" TItem="WorkflowOptions" AllowSorting="true" AllowPaging="true" PageSize="20">
+    <Columns>
+        <RadzenDataGridColumn TItem="WorkflowOptions" Property="Id" Title="ID" Width="60px" />
+        <RadzenDataGridColumn TItem="WorkflowOptions" Property="Name" Title="Name" />
+        <RadzenDataGridColumn TItem="WorkflowOptions" Property="Description" Title="Description" />
+        <RadzenDataGridColumn TItem="WorkflowOptions" Title="" Width="140px" Sortable="false">
+            <Template Context="workflow">
+                <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Size="ButtonSize.Small"
+                              Click="@(() => Nav.NavigateTo($"/workflows/{workflow.Id}/edit"))" class="rz-mr-1" />
+                <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Size="ButtonSize.Small"
+                              Click="@(() => Nav.NavigateTo($"/workflows/{workflow.Id}/delete"))" />
+            </Template>
+        </RadzenDataGridColumn>
+    </Columns>
+</RadzenDataGrid>
+
+@code {
+    private List<WorkflowOptions> workflows = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        workflows = await WorkflowStore.GetAllAsync();
+    }
+}

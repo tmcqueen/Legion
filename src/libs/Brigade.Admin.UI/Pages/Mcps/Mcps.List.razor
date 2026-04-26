@@ -1,0 +1,45 @@
+@page "/mcps"
+@layout MainLayout
+@rendermode InteractiveServer
+@attribute [Authorize]
+@inject McpStore McpStore
+@inject NavigationManager Nav
+
+<PageTitle>MCP Servers</PageTitle>
+
+<RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween" class="rz-mb-4">
+    <RadzenText TextStyle="TextStyle.H4" TagName="TagName.H1">MCP Servers</RadzenText>
+    <RadzenButton Text="New MCP Server" Icon="add" Click="@(() => Nav.NavigateTo("/mcps/create"))" />
+</RadzenStack>
+
+<RadzenDataGrid Data="@mcps" TItem="McpServerOptions" AllowSorting="true" AllowPaging="true" PageSize="20">
+    <Columns>
+        <RadzenDataGridColumn TItem="McpServerOptions" Property="Id" Title="ID" Width="60px" />
+        <RadzenDataGridColumn TItem="McpServerOptions" Property="Name" Title="Name" />
+        <RadzenDataGridColumn TItem="McpServerOptions" Property="ServerLabel" Title="Label" />
+        <RadzenDataGridColumn TItem="McpServerOptions" Property="ServerUrl" Title="URL" />
+        <RadzenDataGridColumn TItem="McpServerOptions" Property="Transport" Title="Transport" Width="100px" />
+        <RadzenDataGridColumn TItem="McpServerOptions" Property="RequireApproval" Title="Approval" Width="90px">
+            <Template Context="mcp">
+                @(mcp.RequireApproval ? "Yes" : "No")
+            </Template>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="McpServerOptions" Title="" Width="140px" Sortable="false">
+            <Template Context="mcp">
+                <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Size="ButtonSize.Small"
+                              Click="@(() => Nav.NavigateTo($"/mcps/{mcp.Id}/edit"))" class="rz-mr-1" />
+                <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Size="ButtonSize.Small"
+                              Click="@(() => Nav.NavigateTo($"/mcps/{mcp.Id}/delete"))" />
+            </Template>
+        </RadzenDataGridColumn>
+    </Columns>
+</RadzenDataGrid>
+
+@code {
+    private List<McpServerOptions> mcps = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        mcps = await McpStore.GetAllAsync();
+    }
+}

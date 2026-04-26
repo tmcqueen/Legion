@@ -1,0 +1,86 @@
+@page "/tools/{Id:int}/edit"
+@layout MainLayout
+@rendermode InteractiveServer
+@attribute [Authorize]
+@inject ToolStore ToolStore
+@inject NavigationManager Nav
+
+<PageTitle>Edit Tool</PageTitle>
+
+<RadzenText TextStyle="TextStyle.H4" TagName="TagName.H1" class="rz-mb-4">Edit Tool</RadzenText>
+
+<RadzenCard Style="max-width: 700px">
+    <EditForm Model="@form" OnValidSubmit="HandleSubmit">
+        <DataAnnotationsValidator />
+        <RadzenStack Orientation="Orientation.Vertical" Gap="1rem">
+            <RadzenRow>
+                <RadzenColumn Size="4" SizeMD="4" class="rz-text-align-start rz-text-align-md-end">
+                    <RadzenLabel Text="Name" />
+                </RadzenColumn>
+                <RadzenColumn Size="8" SizeMD="8" Style="display: block; width: 100%;">
+                    <RadzenTextBox Name="Name" @bind-Value="form.Name" style="width: 100%;" />
+                    <RadzenDataAnnotationValidator Component="Name" Style="position: absolute" />
+                </RadzenColumn>
+            </RadzenRow>
+            <RadzenRow>
+                <RadzenColumn Size="4" SizeMD="4" class="rz-text-align-start rz-text-align-md-end">
+                    <RadzenLabel Text="Description" />
+                </RadzenColumn>
+                <RadzenColumn Size="8" SizeMD="8" Style="display: block; width: 100%;">
+                    <RadzenTextArea Name="Description" @bind-Value="form.Description" Rows="3" style="width: 100%;" />
+                    <RadzenDataAnnotationValidator Component="Description" Style="position: absolute" />
+                </RadzenColumn>
+            </RadzenRow>
+            <RadzenRow>
+                <RadzenColumn Size="4" SizeMD="4" class="rz-text-align-start rz-text-align-md-end">
+                    <RadzenLabel Text="Parameters Schema (JSON)" />
+                </RadzenColumn>
+                <RadzenColumn Size="8" SizeMD="8" Style="display: block; width: 100%;">
+                    <RadzenTextArea Name="ParametersSchema" @bind-Value="form.ParametersSchema" Rows="6" style="width: 100%;" />
+                    <RadzenDataAnnotationValidator Component="ParametersSchema" Style="position: absolute" />
+                </RadzenColumn>
+            </RadzenRow>
+            <RadzenRow JustifyContent="JustifyContent.End">
+                <RadzenStack Orientation="Orientation.Horizontal">
+                    <RadzenButton ButtonType="ButtonType.Submit" Text="Save" />
+                    <RadzenButton ButtonStyle="ButtonStyle.Light" Text="Cancel" Click="@(() => Nav.NavigateTo("/tools"))" />
+                </RadzenStack>
+            </RadzenRow>
+        </RadzenStack>
+    </EditForm>
+</RadzenCard>
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    private readonly FormModel form = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var tool = await ToolStore.GetAsync(Id);
+        if (tool is null) { Nav.NavigateTo("/tools"); return; }
+        form.Name = tool.Name;
+        form.Description = tool.Description;
+        form.ParametersSchema = tool.ParametersSchema;
+    }
+
+    private async Task HandleSubmit()
+    {
+        var tool = new ToolOptions
+        {
+            Id = Id,
+            Name = form.Name,
+            Description = form.Description,
+            ParametersSchema = form.ParametersSchema,
+        };
+        await ToolStore.UpdateAsync(tool);
+        Nav.NavigateTo("/tools");
+    }
+
+    private sealed class FormModel
+    {
+        public string? Name { get; set; }
+        public string? Description { get; set; }
+        public string? ParametersSchema { get; set; }
+    }
+}
