@@ -1,0 +1,177 @@
+@page "/mcps/create"
+@layout MainLayout
+@rendermode InteractiveServer
+@attribute [Authorize]
+@inject McpStore McpStore
+@inject DialogService DialogService
+@inject NavigationManager Nav
+
+<PageTitle>Create MCP Server</PageTitle>
+
+<RadzenText TextStyle="TextStyle.H4" TagName="TagName.H1" class="rz-mb-4">Create MCP Server</RadzenText>
+
+<RadzenCard Style="max-width: 700px">
+    <EditForm Model="@form" OnValidSubmit="HandleSubmit">
+        <DataAnnotationsValidator />
+        <RadzenStack Orientation="Orientation.Vertical" Gap="1rem">
+            <RadzenRow>
+                <RadzenColumn Size="4" SizeMD="4" class="rz-text-align-start rz-text-align-md-end">
+                    <RadzenLabel Text="Name" />
+                </RadzenColumn>
+                <RadzenColumn Size="8" SizeMD="8" Style="display: block; width: 100%;">
+                    <RadzenTextBox Name="Name" @bind-Value="form.Name" style="width: 100%;" />
+                    <RadzenDataAnnotationValidator Component="Name" Style="position: absolute" />
+                </RadzenColumn>
+            </RadzenRow>
+            <RadzenRow>
+                <RadzenColumn Size="4" SizeMD="4" class="rz-text-align-start rz-text-align-md-end">
+                    <RadzenLabel Text="Description" />
+                </RadzenColumn>
+                <RadzenColumn Size="8" SizeMD="8" Style="display: block; width: 100%;">
+                    <RadzenTextArea Name="Description" @bind-Value="form.Description" Rows="2" style="width: 100%;" />
+                </RadzenColumn>
+            </RadzenRow>
+            <RadzenRow>
+                <RadzenColumn Size="4" SizeMD="4" class="rz-text-align-start rz-text-align-md-end">
+                    <RadzenLabel Text="Server Label" />
+                </RadzenColumn>
+                <RadzenColumn Size="8" SizeMD="8" Style="display: block; width: 100%;">
+                    <RadzenTextBox Name="ServerLabel" @bind-Value="form.ServerLabel" style="width: 100%;" />
+                    <RadzenDataAnnotationValidator Component="ServerLabel" Style="position: absolute" />
+                </RadzenColumn>
+            </RadzenRow>
+            <RadzenRow>
+                <RadzenColumn Size="4" SizeMD="4" class="rz-text-align-start rz-text-align-md-end">
+                    <RadzenLabel Text="Server URL" />
+                </RadzenColumn>
+                <RadzenColumn Size="8" SizeMD="8" Style="display: block; width: 100%;">
+                    <RadzenTextBox Name="ServerUrl" @bind-Value="form.ServerUrl" style="width: 100%;" />
+                    <RadzenDataAnnotationValidator Component="ServerUrl" Style="position: absolute" />
+                </RadzenColumn>
+            </RadzenRow>
+            <RadzenRow>
+                <RadzenColumn Size="4" SizeMD="4" class="rz-text-align-start rz-text-align-md-end">
+                    <RadzenLabel Text="Command Line" />
+                </RadzenColumn>
+                <RadzenColumn Size="8" SizeMD="8" Style="display: block; width: 100%;">
+                    <RadzenTextBox Name="CommandLine" @bind-Value="form.CommandLine" style="width: 100%;" />
+                </RadzenColumn>
+            </RadzenRow>
+            <RadzenRow>
+                <RadzenColumn Size="4" SizeMD="4" class="rz-text-align-start rz-text-align-md-end">
+                    <RadzenLabel Text="Transport" />
+                </RadzenColumn>
+                <RadzenColumn Size="8" SizeMD="8" Style="display: block; width: 100%;">
+                    <RadzenDropDown Name="Transport" @bind-Value="form.Transport"
+                                    Data="transportTypes" TextProperty="Key" ValueProperty="Value"
+                                    style="width: 100%;" />
+                </RadzenColumn>
+            </RadzenRow>
+            <RadzenRow>
+                <RadzenColumn Size="4" SizeMD="4" class="rz-text-align-start rz-text-align-md-end">
+                    <RadzenLabel Text="Require Approval" />
+                </RadzenColumn>
+                <RadzenColumn Size="8" SizeMD="8" Style="display: block; width: 100%;">
+                    <RadzenCheckBox Name="RequireApproval" @bind-Value="form.RequireApproval" />
+                </RadzenColumn>
+            </RadzenRow>
+
+            <RadzenRow>
+                <RadzenColumn Size="12">
+                    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center"
+                                 JustifyContent="JustifyContent.SpaceBetween" class="rz-mb-2">
+                        <RadzenLabel Text="HTTP Headers" Style="font-weight: 500;" />
+                        <RadzenButton Icon="add" Text="Add Header" ButtonStyle="ButtonStyle.Light"
+                                      Size="ButtonSize.Small" Click="AddHeader" />
+                    </RadzenStack>
+                    <RadzenDataGrid Data="@headers" TItem="HeaderForm" AllowSorting="false"
+                                    Style="width: 100%;" EmptyText="No headers">
+                        <Columns>
+                            <RadzenDataGridColumn TItem="HeaderForm" Property="Key" Title="Key" />
+                            <RadzenDataGridColumn TItem="HeaderForm" Property="Value" Title="Value" />
+                            <RadzenDataGridColumn TItem="HeaderForm" Title="" Width="90px">
+                                <Template Context="h">
+                                    <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light"
+                                                  Size="ButtonSize.Small" class="rz-mr-1"
+                                                  Click="@(() => EditHeader(h))" />
+                                    <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger"
+                                                  Size="ButtonSize.Small"
+                                                  Click="@(() => headers.Remove(h))" />
+                                </Template>
+                            </RadzenDataGridColumn>
+                        </Columns>
+                    </RadzenDataGrid>
+                </RadzenColumn>
+            </RadzenRow>
+
+            <RadzenRow JustifyContent="JustifyContent.End">
+                <RadzenStack Orientation="Orientation.Horizontal">
+                    <RadzenButton ButtonType="ButtonType.Submit" Text="Create" />
+                    <RadzenButton ButtonStyle="ButtonStyle.Light" Text="Cancel" Click="@(() => Nav.NavigateTo("/mcps"))" />
+                </RadzenStack>
+            </RadzenRow>
+        </RadzenStack>
+    </EditForm>
+</RadzenCard>
+
+@code {
+    private readonly FormModel form = new();
+    private readonly List<HeaderForm> headers = [];
+
+    private readonly IEnumerable<KeyValuePair<string, TransportType>> transportTypes =
+        Enum.GetValues<TransportType>()
+            .Select(v => new KeyValuePair<string, TransportType>(v.ToString(), v));
+
+    private async Task AddHeader()
+    {
+        var result = await DialogService.OpenAsync<HeaderEditDialog>("Add Header",
+            new Dictionary<string, object?> { ["InitialKey"] = null, ["InitialValue"] = null });
+        if (result is HeaderEditDialog.FormModel h && h.Key is not null)
+            headers.Add(new HeaderForm { Key = h.Key, Value = h.Value });
+    }
+
+    private async Task EditHeader(HeaderForm header)
+    {
+        var result = await DialogService.OpenAsync<HeaderEditDialog>("Edit Header",
+            new Dictionary<string, object?> { ["InitialKey"] = header.Key, ["InitialValue"] = header.Value });
+        if (result is HeaderEditDialog.FormModel h && h.Key is not null)
+        {
+            header.Key = h.Key;
+            header.Value = h.Value;
+        }
+    }
+
+    private async Task HandleSubmit()
+    {
+        var mcp = new McpServerOptions
+        {
+            Name = form.Name,
+            Description = form.Description,
+            ServerLabel = form.ServerLabel,
+            ServerUrl = form.ServerUrl,
+            CommandLine = form.CommandLine,
+            Transport = form.Transport,
+            RequireApproval = form.RequireApproval,
+            Headers = headers.Select(h => new McpServerHeaders { Key = h.Key, Value = h.Value }).ToList(),
+        };
+        await McpStore.AddAsync(mcp);
+        Nav.NavigateTo("/mcps");
+    }
+
+    private sealed class FormModel
+    {
+        public string? Name { get; set; }
+        public string? Description { get; set; }
+        public string? ServerLabel { get; set; }
+        public string? ServerUrl { get; set; }
+        public string? CommandLine { get; set; }
+        public TransportType Transport { get; set; }
+        public bool RequireApproval { get; set; }
+    }
+
+    private sealed class HeaderForm
+    {
+        public string? Key { get; set; }
+        public string? Value { get; set; }
+    }
+}

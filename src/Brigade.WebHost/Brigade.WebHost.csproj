@@ -8,7 +8,8 @@
     <UserSecretsId>brigade-webhost</UserSecretsId>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Brigade.ServiceDefaults\Brigade.ServiceDefaults.csproj" />
+    <ProjectReference Include="..\aspire\Brigade.ServiceDefaults\Brigade.ServiceDefaults.csproj" />
+    <ProjectReference Include="..\libs\Brigade.Admin.UI\Brigade.Admin.UI.csproj" />
     <!-- <ProjectReference Include="..\Brigade.Agents\Brigade.Agents.csproj" /> -->
   </ItemGroup>
   <ItemGroup>

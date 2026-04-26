@@ -4,7 +4,8 @@ namespace Brigade.Agents.Providers;
 
 public sealed class AgentFactory
 {
-    public AIAgent CreateAgent(AgentOptions options) => options.Provider switch
+    public AIAgent CreateAgent(AgentOptions options) 
+        => Enum.Parse<ProvidersEnum>(options.Provider ?? "UNSUPPORTED")  switch
     {
         ProvidersEnum.MiniMax   => new MiniMaxProvider().CreateAgent(options),
         ProvidersEnum.Anthropic => new AnthropicProvider().CreateAgent(options),

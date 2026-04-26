@@ -1,0 +1,46 @@
+@page "/memory/{Id:int}/delete"
+@layout MainLayout
+@rendermode InteractiveServer
+@attribute [Authorize]
+@inject MemoryStore MemoryStore
+@inject NavigationManager Nav
+
+<PageTitle>Delete Memory</PageTitle>
+
+@if (memory is not null)
+{
+    <RadzenCard Style="max-width: 500px">
+        <RadzenAlert AlertStyle="AlertStyle.Warning" ShowIcon="true" class="rz-mb-4">
+            Are you sure you want to delete the memory configuration for this agent?
+        </RadzenAlert>
+
+        <RadzenStack Gap="4px" class="rz-mb-4">
+            <RadzenText><strong>Agent ID:</strong> @memory.AgentId</RadzenText>
+            <RadzenText><strong>Search Time:</strong> @memory.SearchTime</RadzenText>
+            <RadzenText><strong>Function Tool:</strong> @memory.FunctionToolName</RadzenText>
+        </RadzenStack>
+
+        <RadzenStack Orientation="Orientation.Horizontal" Gap="8px">
+            <RadzenButton ButtonStyle="ButtonStyle.Danger" Text="Delete" Click="HandleDelete" />
+            <RadzenButton ButtonStyle="ButtonStyle.Light" Text="Cancel" Click="@(() => Nav.NavigateTo("/memory"))" />
+        </RadzenStack>
+    </RadzenCard>
+}
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    private MemoryOptions? memory;
+
+    protected override async Task OnInitializedAsync()
+    {
+        memory = await MemoryStore.GetAsync(Id);
+        if (memory is null) Nav.NavigateTo("/memory");
+    }
+
+    private async Task HandleDelete()
+    {
+        await MemoryStore.DeleteAsync(Id);
+        Nav.NavigateTo("/memory");
+    }
+}

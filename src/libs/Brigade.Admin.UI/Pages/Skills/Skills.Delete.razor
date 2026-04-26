@@ -1,0 +1,48 @@
+@page "/skills/{Id:int}/delete"
+@layout MainLayout
+@rendermode InteractiveServer
+@attribute [Authorize]
+@inject SkillStore SkillStore
+@inject NavigationManager Nav
+
+<PageTitle>Delete Skill</PageTitle>
+
+<RadzenText TextStyle="TextStyle.H4" TagName="TagName.H1" class="rz-mb-4">Delete Skill</RadzenText>
+
+@if (skill is not null)
+{
+    <RadzenCard Style="max-width: 500px">
+        <RadzenAlert AlertStyle="AlertStyle.Warning" ShowIcon="true" class="rz-mb-4">
+            Are you sure you want to delete this skill? This action cannot be undone.
+        </RadzenAlert>
+
+        <RadzenStack Gap="4px" class="rz-mb-4">
+            <RadzenText><strong>Name:</strong> @skill.Name</RadzenText>
+            <RadzenText><strong>Description:</strong> @skill.Description</RadzenText>
+            <RadzenText><strong>License:</strong> @skill.License</RadzenText>
+        </RadzenStack>
+
+        <RadzenStack Orientation="Orientation.Horizontal" Gap="8px">
+            <RadzenButton ButtonStyle="ButtonStyle.Danger" Text="Delete" Click="HandleDelete" />
+            <RadzenButton ButtonStyle="ButtonStyle.Light" Text="Cancel" Click="@(() => Nav.NavigateTo("/skills"))" />
+        </RadzenStack>
+    </RadzenCard>
+}
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    private SkillOptions? skill;
+
+    protected override async Task OnInitializedAsync()
+    {
+        skill = await SkillStore.GetAsync(Id);
+        if (skill is null) Nav.NavigateTo("/skills");
+    }
+
+    private async Task HandleDelete()
+    {
+        await SkillStore.DeleteAsync(Id);
+        Nav.NavigateTo("/skills");
+    }
+}

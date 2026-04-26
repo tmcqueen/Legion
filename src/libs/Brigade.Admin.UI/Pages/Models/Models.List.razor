@@ -1,0 +1,46 @@
+@page "/models"
+@layout MainLayout
+@rendermode InteractiveServer
+@attribute [Authorize]
+@inject ModelStore ModelStore
+@inject NavigationManager Nav
+
+<PageTitle>Models</PageTitle>
+
+<RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween" class="rz-mb-4">
+    <RadzenText TextStyle="TextStyle.H4" TagName="TagName.H1">Models</RadzenText>
+    <RadzenButton Text="New Model" Icon="add" Click="@(() => Nav.NavigateTo("/models/create"))" />
+</RadzenStack>
+
+<RadzenDataGrid Data="@models" TItem="ModelOptions" AllowSorting="true" AllowPaging="true" PageSize="20">
+    <Columns>
+        <RadzenDataGridColumn TItem="ModelOptions" Property="Id" Title="ID" Width="60px" />
+        <RadzenDataGridColumn TItem="ModelOptions" Property="Name" Title="Name" />
+        <RadzenDataGridColumn TItem="ModelOptions" Property="DisplayName" Title="Display Name" />
+        <RadzenDataGridColumn TItem="ModelOptions" Property="MaxOutputTokens" Title="Max Output Tokens" FormatString="{0:n0}" />
+        <RadzenDataGridColumn TItem="ModelOptions" Property="ContextWindowSize" Title="Context Window Size" FormatString="{0:n0}" />
+        <RadzenDataGridColumn TItem="ModelOptions" Property="KnowledgeCutoff" Title="Knowledge Cutoff" FormatString="{0:MMMM dd, yyyy}" />
+
+        <CurrencyDataGridColumn TItem="ModelOptions" Property="InputTokenCost" Title="Input Token Cost" />
+        <CurrencyDataGridColumn TItem="ModelOptions" Property="CachedTokenCost" Title="Cached Token Cost" />
+        <CurrencyDataGridColumn TItem="ModelOptions" Property="OutputTokenCost" Title="Output Token Cost" />
+        
+        <RadzenDataGridColumn TItem="ModelOptions" Title="" Width="140px" Sortable="false">
+            <Template Context="model">
+                <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Size="ButtonSize.Small"
+                              Click="@(() => Nav.NavigateTo($"/models/{model.Id}/edit"))" class="rz-mr-1" />
+                <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Size="ButtonSize.Small"
+                              Click="@(() => Nav.NavigateTo($"/models/{model.Id}/delete"))" />
+            </Template>
+        </RadzenDataGridColumn>
+    </Columns>
+</RadzenDataGrid>
+
+@code {
+    private List<ModelOptions> models = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        models = await ModelStore.GetAllAsync();
+    }
+}

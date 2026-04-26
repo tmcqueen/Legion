@@ -1,0 +1,39 @@
+@page "/skills"
+@layout MainLayout
+@rendermode InteractiveServer
+@attribute [Authorize]
+@inject SkillStore SkillStore
+@inject NavigationManager Nav
+
+<PageTitle>Skills</PageTitle>
+
+<RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween" class="rz-mb-4">
+    <RadzenText TextStyle="TextStyle.H4" TagName="TagName.H1">Skills</RadzenText>
+    <RadzenButton Text="New Skill" Icon="add" Click="@(() => Nav.NavigateTo("/skills/create"))" />
+</RadzenStack>
+
+<RadzenDataGrid Data="@skills" TItem="SkillOptions" AllowSorting="true" AllowPaging="true" PageSize="20">
+    <Columns>
+        <RadzenDataGridColumn TItem="SkillOptions" Property="Id" Title="ID" Width="60px" />
+        <RadzenDataGridColumn TItem="SkillOptions" Property="Name" Title="Name" />
+        <RadzenDataGridColumn TItem="SkillOptions" Property="Description" Title="Description" />
+        <RadzenDataGridColumn TItem="SkillOptions" Property="License" Title="License" />
+        <RadzenDataGridColumn TItem="SkillOptions" Title="" Width="140px" Sortable="false">
+            <Template Context="skill">
+                <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Size="ButtonSize.Small"
+                              Click="@(() => Nav.NavigateTo($"/skills/{skill.Id}/edit"))" class="rz-mr-1" />
+                <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Size="ButtonSize.Small"
+                              Click="@(() => Nav.NavigateTo($"/skills/{skill.Id}/delete"))" />
+            </Template>
+        </RadzenDataGridColumn>
+    </Columns>
+</RadzenDataGrid>
+
+@code {
+    private List<SkillOptions> skills = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        skills = await SkillStore.GetAllAsync();
+    }
+}

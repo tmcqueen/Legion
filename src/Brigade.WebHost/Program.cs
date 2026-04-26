@@ -1,4 +1,5 @@
 using Brigade.WebHost.Components;
+using Brigade.Admin.Data;
 using Brigade.WebHost.Data;
 using Brigade.WebHost.Models;
 using Brigade.WebHost.Services;
@@ -12,6 +13,7 @@ using Microsoft.EntityFrameworkCore;
 using OpenIddict.Abstractions;
 using OpenIddict.Validation.AspNetCore;
 using Microsoft.AspNetCore;
+using Radzen;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -155,6 +157,7 @@ builder.Services.AddCors(options =>
         {
             allowedOrigins = ["https://localhost:7000"];
         }
+        Console.WriteLine("Allowed CORS origins: {0}", string.Join(", ", allowedOrigins));
         policy.WithOrigins(allowedOrigins)
               .AllowAnyHeader()
               .AllowAnyMethod()
@@ -162,6 +165,10 @@ builder.Services.AddCors(options =>
     });
 });
 
+builder.Services.AddRadzenComponents();
+
+builder.Services.AddInMemoryAgentDbContext();
+builder.Services.AddAgentStores();
 
 var app = builder.Build();
 

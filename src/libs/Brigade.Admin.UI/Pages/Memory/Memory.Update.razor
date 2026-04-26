@@ -1,0 +1,21 @@
+@page "/memory/{Id:int}/edit"
+@layout MainLayout
+@rendermode InteractiveServer
+@attribute [Authorize]
+@inject MemoryStore MemoryStore
+@inject NavigationManager Nav
+
+<PageTitle>Edit Memory</PageTitle>
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var memory = await MemoryStore.GetAsync(Id);
+        if (memory is not null)
+            Nav.NavigateTo($"/agents/{memory.AgentId}/edit");
+        else
+            Nav.NavigateTo("/agents");
+    }
+}

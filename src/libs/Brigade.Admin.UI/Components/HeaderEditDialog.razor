@@ -1,0 +1,55 @@
+@inject DialogService DialogService
+
+<RadzenStack Gap="1rem" style="min-width: 320px; padding: 1rem;">
+    <EditForm Model="@form" OnValidSubmit="Submit">
+        <DataAnnotationsValidator />
+        <RadzenStack Gap="0.5rem">
+            <RadzenRow>
+                <RadzenColumn Size="4" class="rz-text-align-end">
+                    <RadzenLabel Text="Key" />
+                </RadzenColumn>
+                <RadzenColumn Size="8">
+                    <RadzenTextBox Name="Key" @bind-Value="form.Key" style="width: 100%;" />
+                    <RadzenDataAnnotationValidator Component="Key" Style="position: absolute" />
+                </RadzenColumn>
+            </RadzenRow>
+            <RadzenRow>
+                <RadzenColumn Size="4" class="rz-text-align-end">
+                    <RadzenLabel Text="Value" />
+                </RadzenColumn>
+                <RadzenColumn Size="8">
+                    <RadzenTextBox Name="Value" @bind-Value="form.Value" style="width: 100%;" />
+                    <RadzenDataAnnotationValidator Component="Value" Style="position: absolute" />
+                </RadzenColumn>
+            </RadzenRow>
+            <RadzenRow JustifyContent="JustifyContent.End">
+                <RadzenStack Orientation="Orientation.Horizontal" Gap="8px">
+                    <RadzenButton ButtonType="ButtonType.Submit" Text="Save" />
+                    <RadzenButton ButtonStyle="ButtonStyle.Light" Text="Cancel" Click="Cancel" />
+                </RadzenStack>
+            </RadzenRow>
+        </RadzenStack>
+    </EditForm>
+</RadzenStack>
+
+@code {
+    [Parameter] public string? InitialKey { get; set; }
+    [Parameter] public string? InitialValue { get; set; }
+
+    private readonly FormModel form = new();
+
+    protected override void OnInitialized()
+    {
+        form.Key = InitialKey;
+        form.Value = InitialValue;
+    }
+
+    private void Submit() => DialogService.Close(form);
+    private void Cancel() => DialogService.Close(null);
+
+    public sealed class FormModel
+    {
+        public string? Key { get; set; }
+        public string? Value { get; set; }
+    }
+}

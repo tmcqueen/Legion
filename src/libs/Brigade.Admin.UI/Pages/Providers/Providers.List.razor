@@ -1,0 +1,43 @@
+@page "/providers"
+@layout MainLayout
+@rendermode InteractiveServer
+@attribute [Authorize]
+@inject ProviderStore ProviderStore
+@inject NavigationManager Nav
+
+<PageTitle>Providers</PageTitle>
+
+<RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween" class="rz-mb-4">
+    <RadzenText TextStyle="TextStyle.H4" TagName="TagName.H1">Providers</RadzenText>
+    <RadzenButton Text="New Provider" Icon="add" Click="@(() => Nav.NavigateTo("/providers/create"))" />
+</RadzenStack>
+
+<RadzenDataGrid Data="@providers" TItem="ProviderOptions" AllowSorting="true" AllowPaging="true" PageSize="20">
+    <Columns>
+        <RadzenDataGridColumn TItem="ProviderOptions" Property="Id" Title="ID" Width="60px" />
+        <RadzenDataGridColumn TItem="ProviderOptions" Property="Name" Title="Name" />
+        <RadzenDataGridColumn TItem="ProviderOptions" Property="ApiUrl" Title="API URL" />
+        <RadzenDataGridColumn TItem="ProviderOptions" Title="Models" Width="80px">
+            <Template Context="provider">
+                @provider.Models.Count
+            </Template>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="ProviderOptions" Title="" Width="140px" Sortable="false">
+            <Template Context="provider">
+                <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Size="ButtonSize.Small"
+                              Click="@(() => Nav.NavigateTo($"/providers/{provider.Id}/edit"))" class="rz-mr-1" />
+                <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Size="ButtonSize.Small"
+                              Click="@(() => Nav.NavigateTo($"/providers/{provider.Id}/delete"))" />
+            </Template>
+        </RadzenDataGridColumn>
+    </Columns>
+</RadzenDataGrid>
+
+@code {
+    private List<ProviderOptions> providers = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        providers = await ProviderStore.GetAllAsync();
+    }
+}

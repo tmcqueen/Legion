@@ -4,7 +4,7 @@ namespace Brigade.Agents.Providers;
 
 public record AgentOptions
 {
-    public ProvidersEnum Provider { get; init; }
+    public string? Provider { get; init; }
     public string? ApiKey { get; init; }
     public string? Name { get; init; }
     public string? Description { get; init; }

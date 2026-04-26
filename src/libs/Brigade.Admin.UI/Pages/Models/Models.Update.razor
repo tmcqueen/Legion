@@ -1,0 +1,270 @@
+@page "/models/{Id:int}/edit"
+@layout MainLayout
+@rendermode InteractiveServer
+@attribute [Authorize]
+@inject ModelStore ModelStore
+@inject NavigationManager Nav
+
+<PageTitle>Edit Model</PageTitle>
+
+<RadzenText TextStyle="TextStyle.H4" TagName="TagName.H1" class="rz-mb-4">Edit Model</RadzenText>
+
+<RadzenCard Style="max-width: 800px">
+    <EditForm Model="@form" OnValidSubmit="HandleSubmit">
+        <DataAnnotationsValidator />
+        <RadzenStack Orientation="Orientation.Vertical" Gap="1.5rem">
+
+            @* Identity *@
+            <RadzenRow>
+                <RadzenColumn Size="4" class="rz-text-align-start rz-text-align-md-end">
+                    <RadzenLabel Text="Model Name" />
+                </RadzenColumn>
+                <RadzenColumn Size="8" Style="display: block; width: 100%;">
+                    <RadzenTextBox Name="Name" @bind-Value="form.Name" style="width: 100%;" />
+                    <RadzenDataAnnotationValidator Component="Name" Style="position: absolute" />
+                </RadzenColumn>
+            </RadzenRow>
+            <RadzenRow>
+                <RadzenColumn Size="4" class="rz-text-align-start rz-text-align-md-end">
+                    <RadzenLabel Text="Display Name" />
+                </RadzenColumn>
+                <RadzenColumn Size="8" Style="display: block; width: 100%;">
+                    <RadzenTextBox Name="DisplayName" @bind-Value="form.DisplayName" style="width: 100%;" />
+                </RadzenColumn>
+            </RadzenRow>
+
+            @* General Info *@
+            <RadzenFieldset Text="General Info">
+                <RadzenStack Orientation="Orientation.Vertical" Gap="0.75rem">
+                    <RadzenRow AlignItems="AlignItems.Center">
+                        <RadzenColumn Size="5" class="rz-text-align-end">
+                            <RadzenLabel Text="Context Window Size" />
+                        </RadzenColumn>
+                        <RadzenColumn Size="7">
+                            <RadzenNumeric @bind-Value="form.ContextWindowSize" style="width: 100%;" />
+                        </RadzenColumn>
+                    </RadzenRow>
+                    <RadzenRow AlignItems="AlignItems.Center">
+                        <RadzenColumn Size="5" class="rz-text-align-end">
+                            <RadzenLabel Text="Max Output Tokens" />
+                        </RadzenColumn>
+                        <RadzenColumn Size="7">
+                            <RadzenNumeric @bind-Value="form.MaxOutputTokens" style="width: 100%;" />
+                        </RadzenColumn>
+                    </RadzenRow>
+                    <RadzenRow AlignItems="AlignItems.Center">
+                        <RadzenColumn Size="5" class="rz-text-align-end">
+                            <RadzenLabel Text="Knowledge Cutoff" />
+                        </RadzenColumn>
+                        <RadzenColumn Size="7">
+                            <RadzenDatePicker @bind-Value="form.KnowledgeCutoff" DateFormat="yyyy-MM-dd" ShowTime="false" style="width: 100%;" />
+                        </RadzenColumn>
+                    </RadzenRow>
+                </RadzenStack>
+            </RadzenFieldset>
+
+            @* Modalities *@
+            <RadzenFieldset Text="Modalities">
+                <RadzenStack Orientation="Orientation.Horizontal" Wrap="FlexWrap.Wrap" Gap="1rem">
+                    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem">
+                        <RadzenCheckBox @bind-Value="form.SupportsText" /><RadzenLabel Text="Text" />
+                    </RadzenStack>
+                    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem">
+                        <RadzenCheckBox @bind-Value="form.SupportsImage" /><RadzenLabel Text="Image" />
+                    </RadzenStack>
+                    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem">
+                        <RadzenCheckBox @bind-Value="form.SupportsAudio" /><RadzenLabel Text="Audio" />
+                    </RadzenStack>
+                    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem">
+                        <RadzenCheckBox @bind-Value="form.SupportsVideo" /><RadzenLabel Text="Video" />
+                    </RadzenStack>
+                </RadzenStack>
+            </RadzenFieldset>
+
+            @* Features *@
+            <RadzenFieldset Text="Features">
+                <RadzenStack Orientation="Orientation.Horizontal" Wrap="FlexWrap.Wrap" Gap="1rem">
+                    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem">
+                        <RadzenCheckBox @bind-Value="form.SupportsStreaming" /><RadzenLabel Text="Streaming" />
+                    </RadzenStack>
+                    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem">
+                        <RadzenCheckBox @bind-Value="form.SupportsFunctionCalling" /><RadzenLabel Text="Function Calling" />
+                    </RadzenStack>
+                    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem">
+                        <RadzenCheckBox @bind-Value="form.SupportsStructuredOutput" /><RadzenLabel Text="Structured Output" />
+                    </RadzenStack>
+                    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem">
+                        <RadzenCheckBox @bind-Value="form.SupportsFineTuning" /><RadzenLabel Text="Fine Tuning" />
+                    </RadzenStack>
+                    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem">
+                        <RadzenCheckBox @bind-Value="form.SupportsDistillation" /><RadzenLabel Text="Distillation" />
+                    </RadzenStack>
+                </RadzenStack>
+            </RadzenFieldset>
+
+            @* Tools *@
+            <RadzenFieldset Text="Tools">
+                <RadzenStack Orientation="Orientation.Horizontal" Wrap="FlexWrap.Wrap" Gap="1rem">
+                    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem">
+                        <RadzenCheckBox @bind-Value="form.SupportsToolUse" /><RadzenLabel Text="Tool Use" />
+                    </RadzenStack>
+                    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem">
+                        <RadzenCheckBox @bind-Value="form.SupportsWebSearch" /><RadzenLabel Text="Web Search" />
+                    </RadzenStack>
+                    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem">
+                        <RadzenCheckBox @bind-Value="form.SupportsFileSearch" /><RadzenLabel Text="File Search" />
+                    </RadzenStack>
+                    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem">
+                        <RadzenCheckBox @bind-Value="form.SupportsCodeExecution" /><RadzenLabel Text="Code Execution" />
+                    </RadzenStack>
+                    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem">
+                        <RadzenCheckBox @bind-Value="form.SupportsMCP" /><RadzenLabel Text="MCP" />
+                    </RadzenStack>
+                </RadzenStack>
+            </RadzenFieldset>
+
+            @* Pricing *@
+            <RadzenFieldset Text="Pricing">
+                <RadzenStack Orientation="Orientation.Vertical" Gap="0.75rem">
+                    <RadzenRow AlignItems="AlignItems.Center">
+                        <RadzenColumn Size="5" class="rz-text-align-end">
+                            <RadzenLabel Text="Input Token Cost" />
+                        </RadzenColumn>
+                        <RadzenColumn Size="7">
+                            <RadzenNumeric @bind-Value="form.InputTokenCost"
+                                           Placeholder="0.00"
+                                           Step="0.05"
+                                           Format="$ #.##" 
+                                           style="width: 100%;" />
+                        </RadzenColumn>
+                    </RadzenRow>
+                    <RadzenRow AlignItems="AlignItems.Center">
+                        <RadzenColumn Size="5" class="rz-text-align-end">
+                            <RadzenLabel Text="Cached Token Cost" />
+                        </RadzenColumn>
+                        <RadzenColumn Size="7">
+                            <RadzenNumeric @bind-Value="form.CachedTokenCost"
+                                           Placeholder="0.00"
+                                           Step="0.05"
+                                           Format="$ #.##" 
+                                           style="width: 100%;" />
+                        </RadzenColumn>
+                    </RadzenRow>
+                    <RadzenRow AlignItems="AlignItems.Center">
+                        <RadzenColumn Size="5" class="rz-text-align-end">
+                            <RadzenLabel Text="Output Token Cost" />
+                        </RadzenColumn>
+                        <RadzenColumn Size="7">
+                            <RadzenNumeric @bind-Value="form.OutputTokenCost"
+                                           Placeholder="0.00"
+                                           Step="0.05"
+                                           Format="$ #.##" 
+                                           style="width: 100%;" />
+                        </RadzenColumn>
+                    </RadzenRow>
+                </RadzenStack>
+            </RadzenFieldset>
+
+            <RadzenRow JustifyContent="JustifyContent.End">
+                <RadzenStack Orientation="Orientation.Horizontal">
+                    <RadzenButton ButtonType="ButtonType.Submit" Text="Save" />
+                    <RadzenButton ButtonStyle="ButtonStyle.Light" Text="Cancel" Click="@(() => Nav.NavigateTo("/models"))" />
+                </RadzenStack>
+            </RadzenRow>
+
+        </RadzenStack>
+    </EditForm>
+</RadzenCard>
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    private readonly FormModel form = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var model = await ModelStore.GetAsync(Id);
+        if (model is null) { Nav.NavigateTo("/models"); return; }
+
+        form.Name = model.Name;
+        form.DisplayName = model.DisplayName;
+        form.ContextWindowSize = model.ContextWindowSize;
+        form.MaxOutputTokens = model.MaxOutputTokens;
+        form.KnowledgeCutoff = DateTime.TryParse(model.KnowledgeCutoff, out var d) ? d : null;
+        form.SupportsText = model.SupportsText;
+        form.SupportsImage = model.SupportsImage;
+        form.SupportsAudio = model.SupportsAudio;
+        form.SupportsVideo = model.SupportsVideo;
+        form.SupportsStreaming = model.SupportsStreaming;
+        form.SupportsFunctionCalling = model.SupportsFunctionCalling;
+        form.SupportsStructuredOutput = model.SupportsStructuredOutput;
+        form.SupportsFineTuning = model.SupportsFineTuning;
+        form.SupportsDistillation = model.SupportsDistillation;
+        form.SupportsToolUse = model.SupportsToolUse;
+        form.SupportsWebSearch = model.SupportsWebSearch;
+        form.SupportsFileSearch = model.SupportsFileSearch;
+        form.SupportsCodeExecution = model.SupportsCodeExecution;
+        form.SupportsMCP = model.SupportsMCP;
+        form.InputTokenCost = model.InputTokenCost;
+        form.CachedTokenCost = model.CachedTokenCost;
+        form.OutputTokenCost = model.OutputTokenCost;
+    }
+
+    private async Task HandleSubmit()
+    {
+        var model = new ModelOptions
+        {
+            Id = Id,
+            Name = form.Name,
+            DisplayName = form.DisplayName,
+            ContextWindowSize = form.ContextWindowSize,
+            MaxOutputTokens = form.MaxOutputTokens,
+            KnowledgeCutoff = form.KnowledgeCutoff?.ToString("yyyy-MM-dd"),
+            SupportsText = form.SupportsText,
+            SupportsImage = form.SupportsImage,
+            SupportsAudio = form.SupportsAudio,
+            SupportsVideo = form.SupportsVideo,
+            SupportsStreaming = form.SupportsStreaming,
+            SupportsFunctionCalling = form.SupportsFunctionCalling,
+            SupportsStructuredOutput = form.SupportsStructuredOutput,
+            SupportsFineTuning = form.SupportsFineTuning,
+            SupportsDistillation = form.SupportsDistillation,
+            SupportsToolUse = form.SupportsToolUse,
+            SupportsWebSearch = form.SupportsWebSearch,
+            SupportsFileSearch = form.SupportsFileSearch,
+            SupportsCodeExecution = form.SupportsCodeExecution,
+            SupportsMCP = form.SupportsMCP,
+            InputTokenCost = form.InputTokenCost,
+            CachedTokenCost = form.CachedTokenCost,
+            OutputTokenCost = form.OutputTokenCost,
+        };
+        await ModelStore.UpdateAsync(model);
+        Nav.NavigateTo("/models");
+    }
+
+    private sealed class FormModel
+    {
+        public string? Name { get; set; }
+        public string? DisplayName { get; set; }
+        public int ContextWindowSize { get; set; }
+        public int MaxOutputTokens { get; set; }
+        public DateTime? KnowledgeCutoff { get; set; }
+        public bool SupportsText { get; set; }
+        public bool SupportsImage { get; set; }
+        public bool SupportsAudio { get; set; }
+        public bool SupportsVideo { get; set; }
+        public bool SupportsStreaming { get; set; }
+        public bool SupportsFunctionCalling { get; set; }
+        public bool SupportsStructuredOutput { get; set; }
+        public bool SupportsFineTuning { get; set; }
+        public bool SupportsDistillation { get; set; }
+        public bool SupportsToolUse { get; set; }
+        public bool SupportsWebSearch { get; set; }
+        public bool SupportsFileSearch { get; set; }
+        public bool SupportsCodeExecution { get; set; }
+        public bool SupportsMCP { get; set; }
+        public double InputTokenCost { get; set; }
+        public double CachedTokenCost { get; set; }
+        public double OutputTokenCost { get; set; }
+    }
+}
