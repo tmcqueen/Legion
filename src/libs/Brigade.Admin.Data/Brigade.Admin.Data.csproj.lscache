@@ -58,6 +58,7 @@ AppDbContext.cs
 Auth/AuthDbContext.cs
 Configurations/
  AgentOptionsConfiguration.cs
+ AgentTemplatesConfiguration.cs
  McpServerOptionsConfiguration.cs
  ProviderOptionsConfiguration.cs
 Extensions/

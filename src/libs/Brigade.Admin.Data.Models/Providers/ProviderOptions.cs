@@ -12,6 +12,7 @@ public enum ProviderType
     HuggingFace,
     GithubCopilot,
     CopilotStudio,
+    Cloudflare,
     Custom
 }
 
