@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace Brigade.Admin.Data.Sqlite.Migrations.AuthDb
+namespace Brigade.Admin.Data.Sqlite.Migrations.Auth
 {
     /// <inheritdoc />
     public partial class InitialCreate : Migration
@@ -11,8 +11,12 @@ namespace Brigade.Admin.Data.Sqlite.Migrations.AuthDb
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.EnsureSchema(
+                name: "security");
+
             migrationBuilder.CreateTable(
                 name: "AspNetRoles",
+                schema: "security",
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "TEXT", nullable: false),
@@ -27,6 +31,7 @@ namespace Brigade.Admin.Data.Sqlite.Migrations.AuthDb
 
             migrationBuilder.CreateTable(
                 name: "AspNetUsers",
+                schema: "security",
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "TEXT", nullable: false),
@@ -52,6 +57,7 @@ namespace Brigade.Admin.Data.Sqlite.Migrations.AuthDb
 
             migrationBuilder.CreateTable(
                 name: "OpenIddictApplications",
+                schema: "security",
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "TEXT", nullable: false),
@@ -78,6 +84,7 @@ namespace Brigade.Admin.Data.Sqlite.Migrations.AuthDb
 
             migrationBuilder.CreateTable(
                 name: "OpenIddictScopes",
+                schema: "security",
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "TEXT", nullable: false),
@@ -97,6 +104,7 @@ namespace Brigade.Admin.Data.Sqlite.Migrations.AuthDb
 
             migrationBuilder.CreateTable(
                 name: "AspNetRoleClaims",
+                schema: "security",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
@@ -111,6 +119,7 @@ namespace Brigade.Admin.Data.Sqlite.Migrations.AuthDb
                     table.ForeignKey(
                         name: "FK_AspNetRoleClaims_AspNetRoles_RoleId",
                         column: x => x.RoleId,
+                        principalSchema: "security",
                         principalTable: "AspNetRoles",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -118,6 +127,7 @@ namespace Brigade.Admin.Data.Sqlite.Migrations.AuthDb
 
             migrationBuilder.CreateTable(
                 name: "AspNetUserClaims",
+                schema: "security",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
@@ -132,6 +142,7 @@ namespace Brigade.Admin.Data.Sqlite.Migrations.AuthDb
                     table.ForeignKey(
                         name: "FK_AspNetUserClaims_AspNetUsers_UserId",
                         column: x => x.UserId,
+                        principalSchema: "security",
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -139,6 +150,7 @@ namespace Brigade.Admin.Data.Sqlite.Migrations.AuthDb
 
             migrationBuilder.CreateTable(
                 name: "AspNetUserLogins",
+                schema: "security",
                 columns: table => new
                 {
                     LoginProvider = table.Column<string>(type: "TEXT", nullable: false),
@@ -152,6 +164,7 @@ namespace Brigade.Admin.Data.Sqlite.Migrations.AuthDb
                     table.ForeignKey(
                         name: "FK_AspNetUserLogins_AspNetUsers_UserId",
                         column: x => x.UserId,
+                        principalSchema: "security",
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -159,6 +172,7 @@ namespace Brigade.Admin.Data.Sqlite.Migrations.AuthDb
 
             migrationBuilder.CreateTable(
                 name: "AspNetUserRoles",
+                schema: "security",
                 columns: table => new
                 {
                     UserId = table.Column<string>(type: "TEXT", nullable: false),
@@ -170,12 +184,14 @@ namespace Brigade.Admin.Data.Sqlite.Migrations.AuthDb
                     table.ForeignKey(
                         name: "FK_AspNetUserRoles_AspNetRoles_RoleId",
                         column: x => x.RoleId,
+                        principalSchema: "security",
                         principalTable: "AspNetRoles",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_AspNetUserRoles_AspNetUsers_UserId",
                         column: x => x.UserId,
+                        principalSchema: "security",
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -183,6 +199,7 @@ namespace Brigade.Admin.Data.Sqlite.Migrations.AuthDb
 
             migrationBuilder.CreateTable(
                 name: "AspNetUserTokens",
+                schema: "security",
                 columns: table => new
                 {
                     UserId = table.Column<string>(type: "TEXT", nullable: false),
@@ -196,6 +213,7 @@ namespace Brigade.Admin.Data.Sqlite.Migrations.AuthDb
                     table.ForeignKey(
                         name: "FK_AspNetUserTokens_AspNetUsers_UserId",
                         column: x => x.UserId,
+                        principalSchema: "security",
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -203,6 +221,7 @@ namespace Brigade.Admin.Data.Sqlite.Migrations.AuthDb
 
             migrationBuilder.CreateTable(
                 name: "OpenIddictAuthorizations",
+                schema: "security",
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "TEXT", nullable: false),
@@ -221,12 +240,14 @@ namespace Brigade.Admin.Data.Sqlite.Migrations.AuthDb
                     table.ForeignKey(
                         name: "FK_OpenIddictAuthorizations_OpenIddictApplications_ApplicationId",
                         column: x => x.ApplicationId,
+                        principalSchema: "security",
                         principalTable: "OpenIddictApplications",
                         principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
                 name: "OpenIddictTokens",
+                schema: "security",
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "TEXT", nullable: false),
@@ -249,81 +270,96 @@ namespace Brigade.Admin.Data.Sqlite.Migrations.AuthDb
                     table.ForeignKey(
                         name: "FK_OpenIddictTokens_OpenIddictApplications_ApplicationId",
                         column: x => x.ApplicationId,
+                        principalSchema: "security",
                         principalTable: "OpenIddictApplications",
                         principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_OpenIddictTokens_OpenIddictAuthorizations_AuthorizationId",
                         column: x => x.AuthorizationId,
+                        principalSchema: "security",
                         principalTable: "OpenIddictAuthorizations",
                         principalColumn: "Id");
                 });
 
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
+                schema: "security",
                 table: "AspNetRoleClaims",
                 column: "RoleId");
 
             migrationBuilder.CreateIndex(
                 name: "RoleNameIndex",
+                schema: "security",
                 table: "AspNetRoles",
                 column: "NormalizedName",
                 unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetUserClaims_UserId",
+                schema: "security",
                 table: "AspNetUserClaims",
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetUserLogins_UserId",
+                schema: "security",
                 table: "AspNetUserLogins",
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetUserRoles_RoleId",
+                schema: "security",
                 table: "AspNetUserRoles",
                 column: "RoleId");
 
             migrationBuilder.CreateIndex(
                 name: "EmailIndex",
+                schema: "security",
                 table: "AspNetUsers",
                 column: "NormalizedEmail");
 
             migrationBuilder.CreateIndex(
                 name: "UserNameIndex",
+                schema: "security",
                 table: "AspNetUsers",
                 column: "NormalizedUserName",
                 unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_OpenIddictApplications_ClientId",
+                schema: "security",
                 table: "OpenIddictApplications",
                 column: "ClientId",
                 unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_OpenIddictAuthorizations_ApplicationId_Status_Subject_Type",
+                schema: "security",
                 table: "OpenIddictAuthorizations",
                 columns: new[] { "ApplicationId", "Status", "Subject", "Type" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_OpenIddictScopes_Name",
+                schema: "security",
                 table: "OpenIddictScopes",
                 column: "Name",
                 unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_OpenIddictTokens_ApplicationId_Status_Subject_Type",
+                schema: "security",
                 table: "OpenIddictTokens",
                 columns: new[] { "ApplicationId", "Status", "Subject", "Type" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_OpenIddictTokens_AuthorizationId",
+                schema: "security",
                 table: "OpenIddictTokens",
                 column: "AuthorizationId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_OpenIddictTokens_ReferenceId",
+                schema: "security",
                 table: "OpenIddictTokens",
                 column: "ReferenceId",
                 unique: true);
@@ -333,37 +369,48 @@ namespace Brigade.Admin.Data.Sqlite.Migrations.AuthDb
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "AspNetRoleClaims");
+                name: "AspNetRoleClaims",
+                schema: "security");
 
             migrationBuilder.DropTable(
-                name: "AspNetUserClaims");
+                name: "AspNetUserClaims",
+                schema: "security");
 
             migrationBuilder.DropTable(
-                name: "AspNetUserLogins");
+                name: "AspNetUserLogins",
+                schema: "security");
 
             migrationBuilder.DropTable(
-                name: "AspNetUserRoles");
+                name: "AspNetUserRoles",
+                schema: "security");
 
             migrationBuilder.DropTable(
-                name: "AspNetUserTokens");
+                name: "AspNetUserTokens",
+                schema: "security");
 
             migrationBuilder.DropTable(
-                name: "OpenIddictScopes");
+                name: "OpenIddictScopes",
+                schema: "security");
 
             migrationBuilder.DropTable(
-                name: "OpenIddictTokens");
+                name: "OpenIddictTokens",
+                schema: "security");
 
             migrationBuilder.DropTable(
-                name: "AspNetRoles");
+                name: "AspNetRoles",
+                schema: "security");
 
             migrationBuilder.DropTable(
-                name: "AspNetUsers");
+                name: "AspNetUsers",
+                schema: "security");
 
             migrationBuilder.DropTable(
-                name: "OpenIddictAuthorizations");
+                name: "OpenIddictAuthorizations",
+                schema: "security");
 
             migrationBuilder.DropTable(
-                name: "OpenIddictApplications");
+                name: "OpenIddictApplications",
+                schema: "security");
         }
     }
 }

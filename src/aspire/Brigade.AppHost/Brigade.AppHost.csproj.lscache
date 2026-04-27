@@ -375,10 +375,10 @@ obj/Debug/net10.0/
  WindowsBase.dll
 <NUGET>/
  aspire.hosting.apphost/13.2.2/lib/net10.0/Aspire.Hosting.AppHost.dll
- aspire.hosting.docker/13.2.2/lib/net8.0/Aspire.Hosting.Docker.dll
- aspire.hosting.postgresql/13.2.2/lib/net8.0/Aspire.Hosting.PostgreSQL.dll
- aspire.hosting/13.2.2/lib/net8.0/Aspire.Hosting.dll
- aspire.npgsql/13.2.2/lib/net10.0/Aspire.Npgsql.dll
+ aspire.hosting.docker/13.2.4/lib/net8.0/Aspire.Hosting.Docker.dll
+ aspire.hosting.postgresql/13.2.4/lib/net8.0/Aspire.Hosting.PostgreSQL.dll
+ aspire.hosting/13.2.4/lib/net8.0/Aspire.Hosting.dll
+ aspire.npgsql/13.2.4/lib/net10.0/Aspire.Npgsql.dll
  aspnetcore.healthchecks.npgsql/9.0.0/lib/net8.0/HealthChecks.NpgSql.dll
  aspnetcore.healthchecks.uris/9.0.0/lib/net8.0/HealthChecks.Uris.dll
  communitytoolkit.aspire.hosting.dbgate/13.1.1/lib/net10.0/CommunityToolkit.Aspire.Hosting.DbGate.dll
@@ -407,10 +407,10 @@ obj/Debug/net10.0/
  npgsql.dependencyinjection/10.0.1/lib/net8.0/Npgsql.DependencyInjection.dll
  npgsql.opentelemetry/10.0.1/lib/net8.0/Npgsql.OpenTelemetry.dll
  npgsql/10.0.1/lib/net10.0/Npgsql.dll
- opentelemetry.api.providerbuilderextensions/1.15.0/lib/net10.0/OpenTelemetry.Api.ProviderBuilderExtensions.dll
- opentelemetry.api/1.15.0/lib/net10.0/OpenTelemetry.Api.dll
- opentelemetry.extensions.hosting/1.15.0/lib/net10.0/OpenTelemetry.Extensions.Hosting.dll
- opentelemetry/1.15.0/lib/net10.0/OpenTelemetry.dll
+ opentelemetry.api.providerbuilderextensions/1.15.3/lib/net10.0/OpenTelemetry.Api.ProviderBuilderExtensions.dll
+ opentelemetry.api/1.15.3/lib/net10.0/OpenTelemetry.Api.dll
+ opentelemetry.extensions.hosting/1.15.3/lib/net10.0/OpenTelemetry.Extensions.Hosting.dll
+ opentelemetry/1.15.3/lib/net10.0/OpenTelemetry.dll
  polly.core/8.6.5/lib/net8.0/Polly.Core.dll
  semver/3.0.0/lib/net5.0/Semver.dll
  streamjsonrpc/2.22.23/lib/net8.0/StreamJsonRpc.dll

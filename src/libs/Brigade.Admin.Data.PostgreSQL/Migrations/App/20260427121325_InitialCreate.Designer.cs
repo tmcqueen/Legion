@@ -2,21 +2,24 @@
 using Brigade.Admin.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace Brigade.Admin.Data.PostgreSQL.Migrations.AgentDb
+namespace Brigade.Admin.Data.PostgreSQL.Migrations.App
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260427121325_InitialCreate")]
+    partial class InitialCreate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.6")
+                .HasAnnotation("ProductVersion", "10.0.7")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -33,7 +36,7 @@ namespace Brigade.Admin.Data.PostgreSQL.Migrations.AgentDb
 
                     b.HasIndex("McpServersId");
 
-                    b.ToTable("AgentMcpServers", (string)null);
+                    b.ToTable("AgentMcpServers", "agents");
                 });
 
             modelBuilder.Entity("AgentOptionsMiddlewareOptions", b =>
@@ -48,7 +51,7 @@ namespace Brigade.Admin.Data.PostgreSQL.Migrations.AgentDb
 
                     b.HasIndex("MiddlewareId");
 
-                    b.ToTable("AgentMiddleware", (string)null);
+                    b.ToTable("AgentMiddleware", "agents");
                 });
 
             modelBuilder.Entity("AgentOptionsModelOptions", b =>
@@ -63,7 +66,7 @@ namespace Brigade.Admin.Data.PostgreSQL.Migrations.AgentDb
 
                     b.HasIndex("ModelsId");
 
-                    b.ToTable("AgentModels", (string)null);
+                    b.ToTable("AgentModels", "agents");
                 });
 
             modelBuilder.Entity("AgentOptionsSkillOptions", b =>
@@ -78,7 +81,7 @@ namespace Brigade.Admin.Data.PostgreSQL.Migrations.AgentDb
 
                     b.HasIndex("SkillsId");
 
-                    b.ToTable("AgentSkills", (string)null);
+                    b.ToTable("AgentSkills", "agents");
                 });
 
             modelBuilder.Entity("AgentOptionsToolOptions", b =>
@@ -93,7 +96,7 @@ namespace Brigade.Admin.Data.PostgreSQL.Migrations.AgentDb
 
                     b.HasIndex("ToolsId");
 
-                    b.ToTable("AgentTools", (string)null);
+                    b.ToTable("AgentTools", "agents");
                 });
 
             modelBuilder.Entity("Brigade.Admin.Data.Models.Agents.AgentOptions", b =>
@@ -181,7 +184,7 @@ namespace Brigade.Admin.Data.PostgreSQL.Migrations.AgentDb
 
                     b.HasKey("Id");
 
-                    b.ToTable("Mcps");
+                    b.ToTable("McpServers", "agents");
                 });
 
             modelBuilder.Entity("Brigade.Admin.Data.Models.Agents.MemoryOptions", b =>
@@ -431,7 +434,7 @@ namespace Brigade.Admin.Data.PostgreSQL.Migrations.AgentDb
 
                     b.HasKey("Id");
 
-                    b.ToTable("Providers");
+                    b.ToTable("Providers", "agents");
                 });
 
             modelBuilder.Entity("ModelOptionsProviderOptions", b =>
@@ -446,7 +449,7 @@ namespace Brigade.Admin.Data.PostgreSQL.Migrations.AgentDb
 
                     b.HasIndex("ProvidersId");
 
-                    b.ToTable("ProviderModels", (string)null);
+                    b.ToTable("ProviderModels", "agents");
                 });
 
             modelBuilder.Entity("AgentOptionsMcpServerOptions", b =>

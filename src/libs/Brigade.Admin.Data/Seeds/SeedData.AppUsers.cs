@@ -12,6 +12,7 @@ internal static partial class SeedData
             UserName = "admin",
             Email = "admin@brigade.local",
             EmailConfirmed = true,
+            Password = "Admin123!"
             // Password should be set in production environment
         }
     };

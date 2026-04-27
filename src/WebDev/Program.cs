@@ -8,7 +8,7 @@ using Brigade.Admin.Data.Services;
 var builder = WebApplication.CreateBuilder(args);
 
 // builder.Services.AddInMemoryAuthDbContext();
-string authDbConnectionString = builder.Configuration.GetConnectionString("AuthDb") ?? "Data Source=auth.db";
+string authDbConnectionString = builder.Configuration.GetConnectionString("Default") ?? "Data Source=auth.db";
 builder.Services.AddSqliteAuthDbContext(authDbConnectionString);
 
 builder.Services.AddIdentityCoreServices();
@@ -24,7 +24,7 @@ builder.Services.AddScoped<DialogService>();
 builder.Services.AddScoped<TooltipService>();
 builder.Services.AddScoped<ContextMenuService>();
 
-string agentDbConnectionString = builder.Configuration.GetConnectionString("AgentDb") ?? "Data Source=agent.db";
+string agentDbConnectionString = builder.Configuration.GetConnectionString("Default") ?? "Data Source=agent.db";
 builder.Services.AddSqliteAppDbContext(agentDbConnectionString);
 // builder.Services.AddInMemoryAgentDbContext();
 builder.Services.AddAgentStores();

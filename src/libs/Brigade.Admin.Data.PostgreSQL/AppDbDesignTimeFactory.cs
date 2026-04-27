@@ -2,7 +2,7 @@ using Brigade.Admin.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 
-namespace Brigade.Admin.Data.PostgreSQL.Migrations;
+namespace Brigade.Admin.Data.PostgreSQL;
 
 public class PostgreSqlDesignTimeFactory : IDesignTimeDbContextFactory<AppDbContext>
 {

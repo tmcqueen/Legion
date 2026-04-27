@@ -2,7 +2,7 @@
 
 #nullable disable
 
-namespace Brigade.Admin.Data.Sqlite.Migrations
+namespace Brigade.Admin.Data.Sqlite.Migrations.App
 {
     /// <inheritdoc />
     public partial class InitialCreate : Migration
@@ -10,8 +10,12 @@ namespace Brigade.Admin.Data.Sqlite.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.EnsureSchema(
+                name: "agents");
+
             migrationBuilder.CreateTable(
-                name: "Mcps",
+                name: "McpServers",
+                schema: "agents",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
@@ -26,11 +30,11 @@ namespace Brigade.Admin.Data.Sqlite.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Mcps", x => x.Id);
+                    table.PrimaryKey("PK_McpServers", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
-                name: "MiddlewareOptions",
+                name: "Middlewares",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
@@ -43,7 +47,7 @@ namespace Brigade.Admin.Data.Sqlite.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_MiddlewareOptions", x => x.Id);
+                    table.PrimaryKey("PK_Middlewares", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -53,7 +57,27 @@ namespace Brigade.Admin.Data.Sqlite.Migrations
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
                     Name = table.Column<string>(type: "TEXT", nullable: true),
-                    DisplayName = table.Column<string>(type: "TEXT", nullable: true)
+                    DisplayName = table.Column<string>(type: "TEXT", nullable: true),
+                    ContextWindowSize = table.Column<int>(type: "INTEGER", nullable: false),
+                    MaxOutputTokens = table.Column<int>(type: "INTEGER", nullable: false),
+                    KnowledgeCutoff = table.Column<string>(type: "TEXT", nullable: true),
+                    SupportsText = table.Column<bool>(type: "INTEGER", nullable: false),
+                    SupportsImage = table.Column<bool>(type: "INTEGER", nullable: false),
+                    SupportsAudio = table.Column<bool>(type: "INTEGER", nullable: false),
+                    SupportsVideo = table.Column<bool>(type: "INTEGER", nullable: false),
+                    SupportsStreaming = table.Column<bool>(type: "INTEGER", nullable: false),
+                    SupportsFunctionCalling = table.Column<bool>(type: "INTEGER", nullable: false),
+                    SupportsStructuredOutput = table.Column<bool>(type: "INTEGER", nullable: false),
+                    SupportsFineTuning = table.Column<bool>(type: "INTEGER", nullable: false),
+                    SupportsDistillation = table.Column<bool>(type: "INTEGER", nullable: false),
+                    SupportsToolUse = table.Column<bool>(type: "INTEGER", nullable: false),
+                    SupportsWebSearch = table.Column<bool>(type: "INTEGER", nullable: false),
+                    SupportsFileSearch = table.Column<bool>(type: "INTEGER", nullable: false),
+                    SupportsCodeExecution = table.Column<bool>(type: "INTEGER", nullable: false),
+                    SupportsMCP = table.Column<bool>(type: "INTEGER", nullable: false),
+                    InputTokenCost = table.Column<double>(type: "REAL", nullable: false),
+                    CachedTokenCost = table.Column<double>(type: "REAL", nullable: false),
+                    OutputTokenCost = table.Column<double>(type: "REAL", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -62,6 +86,7 @@ namespace Brigade.Admin.Data.Sqlite.Migrations
 
             migrationBuilder.CreateTable(
                 name: "Providers",
+                schema: "agents",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
@@ -140,9 +165,10 @@ namespace Brigade.Admin.Data.Sqlite.Migrations
                 {
                     table.PrimaryKey("PK_McpServerHeaders", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_McpServerHeaders_Mcps_McpServerId",
+                        name: "FK_McpServerHeaders_McpServers_McpServerId",
                         column: x => x.McpServerId,
-                        principalTable: "Mcps",
+                        principalSchema: "agents",
+                        principalTable: "McpServers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -165,6 +191,7 @@ namespace Brigade.Admin.Data.Sqlite.Migrations
                     table.ForeignKey(
                         name: "FK_Agents_Providers_ProviderId",
                         column: x => x.ProviderId,
+                        principalSchema: "agents",
                         principalTable: "Providers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -172,6 +199,7 @@ namespace Brigade.Admin.Data.Sqlite.Migrations
 
             migrationBuilder.CreateTable(
                 name: "ProviderModels",
+                schema: "agents",
                 columns: table => new
                 {
                     ModelsId = table.Column<int>(type: "INTEGER", nullable: false),
@@ -189,6 +217,7 @@ namespace Brigade.Admin.Data.Sqlite.Migrations
                     table.ForeignKey(
                         name: "FK_ProviderModels_Providers_ProvidersId",
                         column: x => x.ProvidersId,
+                        principalSchema: "agents",
                         principalTable: "Providers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -196,6 +225,7 @@ namespace Brigade.Admin.Data.Sqlite.Migrations
 
             migrationBuilder.CreateTable(
                 name: "AgentMcpServers",
+                schema: "agents",
                 columns: table => new
                 {
                     AgentsId = table.Column<int>(type: "INTEGER", nullable: false),
@@ -211,15 +241,17 @@ namespace Brigade.Admin.Data.Sqlite.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_AgentMcpServers_Mcps_McpServersId",
+                        name: "FK_AgentMcpServers_McpServers_McpServersId",
                         column: x => x.McpServersId,
-                        principalTable: "Mcps",
+                        principalSchema: "agents",
+                        principalTable: "McpServers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
                 name: "AgentMiddleware",
+                schema: "agents",
                 columns: table => new
                 {
                     AgentsId = table.Column<int>(type: "INTEGER", nullable: false),
@@ -235,15 +267,16 @@ namespace Brigade.Admin.Data.Sqlite.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_AgentMiddleware_MiddlewareOptions_MiddlewareId",
+                        name: "FK_AgentMiddleware_Middlewares_MiddlewareId",
                         column: x => x.MiddlewareId,
-                        principalTable: "MiddlewareOptions",
+                        principalTable: "Middlewares",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
                 name: "AgentModels",
+                schema: "agents",
                 columns: table => new
                 {
                     AgentsId = table.Column<int>(type: "INTEGER", nullable: false),
@@ -268,6 +301,7 @@ namespace Brigade.Admin.Data.Sqlite.Migrations
 
             migrationBuilder.CreateTable(
                 name: "AgentSkills",
+                schema: "agents",
                 columns: table => new
                 {
                     AgentsId = table.Column<int>(type: "INTEGER", nullable: false),
@@ -292,6 +326,7 @@ namespace Brigade.Admin.Data.Sqlite.Migrations
 
             migrationBuilder.CreateTable(
                 name: "AgentTools",
+                schema: "agents",
                 columns: table => new
                 {
                     AgentsId = table.Column<int>(type: "INTEGER", nullable: false),
@@ -341,16 +376,19 @@ namespace Brigade.Admin.Data.Sqlite.Migrations
 
             migrationBuilder.CreateIndex(
                 name: "IX_AgentMcpServers_McpServersId",
+                schema: "agents",
                 table: "AgentMcpServers",
                 column: "McpServersId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_AgentMiddleware_MiddlewareId",
+                schema: "agents",
                 table: "AgentMiddleware",
                 column: "MiddlewareId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_AgentModels_ModelsId",
+                schema: "agents",
                 table: "AgentModels",
                 column: "ModelsId");
 
@@ -361,11 +399,13 @@ namespace Brigade.Admin.Data.Sqlite.Migrations
 
             migrationBuilder.CreateIndex(
                 name: "IX_AgentSkills_SkillsId",
+                schema: "agents",
                 table: "AgentSkills",
                 column: "SkillsId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_AgentTools_ToolsId",
+                schema: "agents",
                 table: "AgentTools",
                 column: "ToolsId");
 
@@ -382,6 +422,7 @@ namespace Brigade.Admin.Data.Sqlite.Migrations
 
             migrationBuilder.CreateIndex(
                 name: "IX_ProviderModels_ProvidersId",
+                schema: "agents",
                 table: "ProviderModels",
                 column: "ProvidersId");
         }
@@ -390,19 +431,24 @@ namespace Brigade.Admin.Data.Sqlite.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "AgentMcpServers");
+                name: "AgentMcpServers",
+                schema: "agents");
 
             migrationBuilder.DropTable(
-                name: "AgentMiddleware");
+                name: "AgentMiddleware",
+                schema: "agents");
 
             migrationBuilder.DropTable(
-                name: "AgentModels");
+                name: "AgentModels",
+                schema: "agents");
 
             migrationBuilder.DropTable(
-                name: "AgentSkills");
+                name: "AgentSkills",
+                schema: "agents");
 
             migrationBuilder.DropTable(
-                name: "AgentTools");
+                name: "AgentTools",
+                schema: "agents");
 
             migrationBuilder.DropTable(
                 name: "McpServerHeaders");
@@ -411,13 +457,14 @@ namespace Brigade.Admin.Data.Sqlite.Migrations
                 name: "Memories");
 
             migrationBuilder.DropTable(
-                name: "ProviderModels");
+                name: "ProviderModels",
+                schema: "agents");
 
             migrationBuilder.DropTable(
                 name: "Workflows");
 
             migrationBuilder.DropTable(
-                name: "MiddlewareOptions");
+                name: "Middlewares");
 
             migrationBuilder.DropTable(
                 name: "Skills");
@@ -426,7 +473,8 @@ namespace Brigade.Admin.Data.Sqlite.Migrations
                 name: "Tools");
 
             migrationBuilder.DropTable(
-                name: "Mcps");
+                name: "McpServers",
+                schema: "agents");
 
             migrationBuilder.DropTable(
                 name: "Agents");
@@ -435,7 +483,8 @@ namespace Brigade.Admin.Data.Sqlite.Migrations
                 name: "Models");
 
             migrationBuilder.DropTable(
-                name: "Providers");
+                name: "Providers",
+                schema: "agents");
         }
     }
 }
