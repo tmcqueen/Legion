@@ -37,7 +37,23 @@
                     <RadzenLabel Text="API Token" />
                 </RadzenColumn>
                 <RadzenColumn Size="8" SizeMD="8" Style="display: block; width: 100%;">
-                    <RadzenPassword Name="ApiToken" @bind-Value="form.ApiToken" style="width: 100%;" />
+                    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem" class="rz-mb-1">
+                        <RadzenToggleButton Text="@(apiTokenSecretMode ? "Secret" : "Raw")"
+                                            Icon="@(apiTokenSecretMode ? "lock" : "lock_open")"
+                                            Value="@apiTokenSecretMode"
+                                            Change="@(v => { apiTokenSecretMode = v; form.ApiToken = null; })"
+                                            ButtonStyle="ButtonStyle.Light" Size="ButtonSize.Small" />
+                    </RadzenStack>
+                    @if (apiTokenSecretMode)
+                    {
+                        <RadzenTextBox Name="ApiToken" @bind-Value="form.ApiToken"
+                                       Placeholder="secret://openai/api_key"
+                                       style="width: 100%;" />
+                    }
+                    else
+                    {
+                        <RadzenPassword Name="ApiToken" @bind-Value="form.ApiToken" style="width: 100%;" />
+                    }
                     <RadzenDataAnnotationValidator Component="ApiToken" Style="position: absolute" />
                 </RadzenColumn>
             </RadzenRow>
@@ -66,6 +82,7 @@
     [Parameter] public int Id { get; set; }
 
     private readonly FormModel form = new();
+    private bool apiTokenSecretMode;
     private List<ModelOptions> allModels = [];
     private IEnumerable<int> selectedModelIds = [];
 
@@ -77,6 +94,7 @@
         form.Name = provider.Name;
         form.ApiUrl = provider.ApiUrl;
         form.ApiToken = provider.ApiToken;
+        apiTokenSecretMode = provider.ApiToken?.StartsWith("secret://") == true;
         selectedModelIds = provider.Models.Select(m => m.Id).ToList();
 
         allModels = await ModelStore.GetAllAsync();
