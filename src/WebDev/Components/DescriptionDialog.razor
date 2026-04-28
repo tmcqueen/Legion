@@ -1,0 +1,15 @@
+@inject DialogService DialogService
+
+<RadzenStack Orientation="Orientation.Vertical" Gap="0.5rem" style="min-width: 300px;">
+    <RadzenTextBox @bind-Value="description" Placeholder="Description" style="width: 100%;" />
+    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End">
+        <RadzenButton Text="Save" Click="@(() => DialogService.Close(description))" />
+        <RadzenButton Text="Cancel" ButtonStyle="ButtonStyle.Light" Click="@(() => DialogService.Close(null))" />
+    </RadzenStack>
+</RadzenStack>
+
+@code {
+    [Parameter] public string? Current { get; set; }
+    private string? description;
+    protected override void OnParametersSet() => description = Current;
+}
