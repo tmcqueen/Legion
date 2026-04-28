@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using Brigade.Admin.Data.Services;
 using Brigade.Admin.Data.Stores;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Builder;
@@ -25,6 +26,7 @@ public static partial class Extensions
         services.AddScoped<ProviderStore>();
         services.AddScoped<ModelStore>();
         services.AddScoped<MiddlewareStore>();
+        services.AddScoped<ISecretsManager, SecretsManager>();
         return services;
     }
     public static async Task DoAgentDbMigration(this WebApplication app)
