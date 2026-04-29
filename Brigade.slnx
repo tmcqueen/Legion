@@ -23,8 +23,11 @@
     <Project Path="src/libs/Brigade.Admin.Data.PostgreSQL/Brigade.Admin.Data.PostgreSQL.csproj" />
     <Project Path="src/libs/Brigade.Admin.Data.Sqlite/Brigade.Admin.Data.Sqlite.csproj" />
   </Folder>
+  <Folder Name="/src/" />
+  <Folder Name="/src/libs/" />
 
   <Folder Name="/Tests/">
     <!-- <Project Path="tests/test-agent/test-agent.csproj" /> -->
+    <Project Path="tests/Brigade.Secrets.Tests/Brigade.Secrets.Tests.csproj" />
   </Folder>
 </Solution>

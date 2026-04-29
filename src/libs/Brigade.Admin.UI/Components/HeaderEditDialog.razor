@@ -18,7 +18,23 @@
                     <RadzenLabel Text="Value" />
                 </RadzenColumn>
                 <RadzenColumn Size="8">
-                    <RadzenTextBox Name="Value" @bind-Value="form.Value" style="width: 100%;" />
+                    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem" class="rz-mb-1">
+                        <RadzenToggleButton Text="@(headerValueSecretMode ? "Secret" : "Raw")"
+                                            Icon="@(headerValueSecretMode ? "lock" : "lock_open")"
+                                            Value="@headerValueSecretMode"
+                                            Change="@(v => { headerValueSecretMode = v; form.Value = null; })"
+                                            ButtonStyle="ButtonStyle.Light" Size="ButtonSize.Small" />
+                    </RadzenStack>
+                    @if (headerValueSecretMode)
+                    {
+                        <RadzenTextBox Name="Value" @bind-Value="form.Value"
+                                       Placeholder="secret://headers/my-key"
+                                       style="width: 100%;" />
+                    }
+                    else
+                    {
+                        <RadzenTextBox Name="Value" @bind-Value="form.Value" style="width: 100%;" />
+                    }
                     <RadzenDataAnnotationValidator Component="Value" Style="position: absolute" />
                 </RadzenColumn>
             </RadzenRow>
@@ -37,11 +53,13 @@
     [Parameter] public string? InitialValue { get; set; }
 
     private readonly FormModel form = new();
+    private bool headerValueSecretMode;
 
     protected override void OnInitialized()
     {
         form.Key = InitialKey;
         form.Value = InitialValue;
+        headerValueSecretMode = InitialValue?.StartsWith("secret://") == true;
     }
 
     private void Submit() => DialogService.Close(form);

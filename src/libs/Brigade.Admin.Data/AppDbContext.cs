@@ -1,3 +1,4 @@
+using Brigade.Admin.Data.Models;
 using Brigade.Admin.Data.Models.Agents;
 using Brigade.Admin.Data.Models.Providers;
 using Microsoft.EntityFrameworkCore;
@@ -16,6 +17,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<ProviderOptions> Providers => Set<ProviderOptions>();
     public DbSet<ModelOptions> Models => Set<ModelOptions>();
     public DbSet<MiddlewareOptions> Middlewares => Set<MiddlewareOptions>();
+    public DbSet<SecretOptions> Secrets => Set<SecretOptions>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

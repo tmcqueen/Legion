@@ -17,4 +17,7 @@
     <PackageReference Include="Microsoft.Agents.AI.OpenAI" />
     <PackageReference Include="Microsoft.Extensions.AI" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\libs\Brigade.Admin.Data\Brigade.Admin.Data.csproj" />
+  </ItemGroup>
 </Project>

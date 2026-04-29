@@ -52,7 +52,23 @@
                     <RadzenLabel Text="Command Line" />
                 </RadzenColumn>
                 <RadzenColumn Size="8" SizeMD="8" Style="display: block; width: 100%;">
-                    <RadzenTextBox Name="CommandLine" @bind-Value="form.CommandLine" style="width: 100%;" />
+                    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem" class="rz-mb-1">
+                        <RadzenToggleButton Text="@(commandLineSecretMode ? "Secret" : "Raw")"
+                                            Icon="@(commandLineSecretMode ? "lock" : "lock_open")"
+                                            Value="@commandLineSecretMode"
+                                            Change="@(v => { commandLineSecretMode = v; form.CommandLine = null; })"
+                                            ButtonStyle="ButtonStyle.Light" Size="ButtonSize.Small" />
+                    </RadzenStack>
+                    @if (commandLineSecretMode)
+                    {
+                        <RadzenTextBox Name="CommandLine" @bind-Value="form.CommandLine"
+                                       Placeholder="secret://mcps/myserver/command"
+                                       style="width: 100%;" />
+                    }
+                    else
+                    {
+                        <RadzenTextBox Name="CommandLine" @bind-Value="form.CommandLine" style="width: 100%;" />
+                    }
                 </RadzenColumn>
             </RadzenRow>
             <RadzenRow>
@@ -117,6 +133,7 @@
 
     private readonly FormModel form = new();
     private readonly List<HeaderForm> headers = [];
+    private bool commandLineSecretMode;
 
     private readonly IEnumerable<KeyValuePair<string, TransportType>> transportTypes =
         Enum.GetValues<TransportType>()
@@ -131,6 +148,7 @@
         form.ServerLabel = mcp.ServerLabel;
         form.ServerUrl = mcp.ServerUrl;
         form.CommandLine = mcp.CommandLine;
+        commandLineSecretMode = mcp.CommandLine?.StartsWith("secret://") == true;
         form.Transport = mcp.Transport;
         form.RequireApproval = mcp.RequireApproval;
         headers.AddRange(mcp.Headers.Select(h => new HeaderForm { Key = h.Key, Value = h.Value }));

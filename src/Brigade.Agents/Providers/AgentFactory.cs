@@ -1,14 +1,26 @@
+using Brigade.Admin.Data.Services;
 using Microsoft.Agents.AI;
 
 namespace Brigade.Agents.Providers;
 
-public sealed class AgentFactory
+public sealed class AgentFactory(ISecretsManager secrets)
 {
-    public AIAgent CreateAgent(AgentOptions options) 
-        => Enum.Parse<ProvidersEnum>(options.Provider ?? "UNSUPPORTED")  switch
+    public async Task<AIAgent> CreateAgentAsync(AgentOptions options, CancellationToken ct = default)
     {
-        ProvidersEnum.MiniMax   => new MiniMaxProvider().CreateAgent(options),
-        ProvidersEnum.Anthropic => new AnthropicProvider().CreateAgent(options),
-        _ => throw new NotSupportedException($"The provider {options.Provider} is not supported.")
-    };
+        if (secrets.IsSecretReference(options.ApiKey))
+        {
+            options = options with
+            {
+                ApiKey = await secrets.ResolveAsync(
+                    new SecretRequest { Path = options.ApiKey! }, ct)
+            };
+        }
+
+        return Enum.Parse<ProvidersEnum>(options.Provider ?? "UNSUPPORTED") switch
+        {
+            ProvidersEnum.MiniMax   => new MiniMaxProvider().CreateAgent(options),
+            ProvidersEnum.Anthropic => new AnthropicProvider().CreateAgent(options),
+            _ => throw new NotSupportedException($"The provider {options.Provider} is not supported.")
+        };
+    }
 }

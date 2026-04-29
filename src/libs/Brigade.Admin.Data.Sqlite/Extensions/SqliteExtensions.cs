@@ -1,3 +1,5 @@
+using Brigade.Admin.Data.Sqlite.Stores;
+using Brigade.Admin.Data.Stores;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -7,6 +9,7 @@ public static class SqliteExtensions
 {
     public static IServiceCollection AddSqliteAppDbContext(this IServiceCollection services, string connectionString)
     {
+        services.AddScoped<ISecretsStore, SqliteSecretsStore>();
         return services.AddDbContext<AppDbContext>(options =>
             options.UseSqlite(connectionString, o => o.MigrationsAssembly("Brigade.Admin.Data.Sqlite")));
     }
