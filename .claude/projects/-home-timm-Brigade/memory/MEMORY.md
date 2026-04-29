@@ -1,3 +1,3 @@
 # Memory Index
 
-- [Agent CRUD UI handoff](project_agent_crud_handoff.md) — CRUD pages complete in Brigade.Admin.UI; WebHost has pre-existing build failures (ServiceDefaults deleted, CS0436 conflicts) to resolve before running
+- [Secrets Management Feature](project_secrets_management.md) — Design approved 2026-04-27; next step is writing-plans skill to create implementation plan

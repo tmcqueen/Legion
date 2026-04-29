@@ -490,8 +490,6 @@ obj/Debug/net10.0/
   Microsoft.Gen.Metrics.dll
 
 [analyzerConfigFiles]
-../../../
- ../../../.editorconfig
- .editorconfig
+../../../.editorconfig
 <DOTNET>/sdk/10.0.203/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevel_10_default.globalconfig
 obj/Debug/net10.0/Brigade.Admin.Data.Sqlite.GeneratedMSBuildEditorConfig.editorconfig
