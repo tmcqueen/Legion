@@ -66,6 +66,7 @@ obj/Debug/net10.0/
  Brigade.Admin.Data.Models.GlobalUsings.g.cs
 ProviderOptions.cs
 SearchBehavior.cs
+SecretOptions.cs
 SkillOptions.cs
 ToolOptions.cs
 WorkflowOptions.cs

@@ -64,7 +64,9 @@ Migrations/
  20260423210314_AddMiddlewares.Designer.cs
  20260423213622_AddModelOptionsFields.cs
  20260423213622_AddModelOptionsFields.Designer.cs
- AgentDbContextModelSnapshot.cs
+ 20260428101256_AddSecrets.cs
+ 20260428101256_AddSecrets.Designer.cs
+ AppDbContextModelSnapshot.cs
  AuthDb/
   20260423121837_InitialCreate.cs
   20260423121837_InitialCreate.Designer.cs
@@ -75,6 +77,7 @@ obj/Debug/net10.0/
  .NETCoreApp,Version=v10.0.AssemblyAttributes.cs
  Brigade.Admin.Data.Sqlite.AssemblyInfo.cs
  Brigade.Admin.Data.Sqlite.GlobalUsings.g.cs
+Stores/SqliteSecretsStore.cs
 
 [metadataReferences]
 ../

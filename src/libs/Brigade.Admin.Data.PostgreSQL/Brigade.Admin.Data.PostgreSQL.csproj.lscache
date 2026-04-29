@@ -67,7 +67,9 @@ Migrations/
   20260423210445_AddMiddlewares.Designer.cs
   20260423213635_AddModelOptionsFields.cs
   20260423213635_AddModelOptionsFields.Designer.cs
-  AgentDbContextModelSnapshot.cs
+  20260428101441_AddSecrets.cs
+  20260428101441_AddSecrets.Designer.cs
+  AppDbContextModelSnapshot.cs
  AuthDbContextDesignTimeFactory.cs
  AuthDbContextModelSnapshot.cs
  PostgreSqlDesignTimeFactory.cs
@@ -75,6 +77,7 @@ obj/Debug/net10.0/
  .NETCoreApp,Version=v10.0.AssemblyAttributes.cs
  Brigade.Admin.Data.PostgreSQL.AssemblyInfo.cs
  Brigade.Admin.Data.PostgreSQL.GlobalUsings.g.cs
+Stores/PostgreSqlSecretsStore.cs
 
 [metadataReferences]
 ../

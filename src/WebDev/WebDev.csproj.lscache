@@ -55,7 +55,9 @@ TemporaryDependencyNodeTargetIdentifier=net10.0
 /warnaserror+:NU1605,SYSLIB0011
 
 [sourceFiles]
-Controllers/HelloWorldController.cs
+Controllers/
+ HelloWorldController.cs
+ SecretsController.cs
 obj/Debug/net10.0/
  .NETCoreApp,Version=v10.0.AssemblyAttributes.cs
  EmbeddedAttribute.cs
@@ -489,21 +491,29 @@ obj/Debug/net10.0/WebDev.GeneratedMSBuildEditorConfig.editorconfig
 [additionalFiles]
 Components/
  App.razor
+ CreateSecretDialog.razor
+ DescriptionDialog.razor
  Pages/
   Counter.razor
   Error.razor
   Home.razor
+  Secrets.razor
   Weather.razor
  Routes.razor
+ SecretValueDialog.razor
  _Imports.razor
 
 [dynamicFiles]
 Components/
  App.razor
+ CreateSecretDialog.razor
+ DescriptionDialog.razor
  Pages/
   Counter.razor
   Error.razor
   Home.razor
+  Secrets.razor
   Weather.razor
  Routes.razor
+ SecretValueDialog.razor
  _Imports.razor

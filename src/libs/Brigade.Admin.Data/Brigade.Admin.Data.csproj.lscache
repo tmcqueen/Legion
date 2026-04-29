@@ -60,6 +60,7 @@ Configurations/
  AgentOptionsConfiguration.cs
  McpServerOptionsConfiguration.cs
  ProviderOptionsConfiguration.cs
+ SecretOptionsConfiguration.cs
 Extensions/
  AddAuthenticationExtensions.cs
  AddAuthorizationExtensions.cs
@@ -82,6 +83,7 @@ Services/
  AdminDbSeedService.cs
  AuthDbSeedService.cs
  CookieRevalidatingAuthenticationStateProvider.cs
+ SecretsManager.cs
 Stores/
  AgentStore.cs
  CatalogStore.cs
@@ -91,6 +93,7 @@ Stores/
  MiddlewareStore.cs
  ModelStore.cs
  ProviderStore.cs
+ SecretsStore.cs
  SkillStore.cs
  ToolStore.cs
  WorkflowStore.cs
