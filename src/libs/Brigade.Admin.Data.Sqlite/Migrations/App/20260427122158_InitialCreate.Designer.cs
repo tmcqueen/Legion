@@ -7,17 +7,17 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace Brigade.Admin.Data.Sqlite.Migrations
+namespace Brigade.Admin.Data.Sqlite.Migrations.App
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260423160055_InitialCreate")]
+    [Migration("20260427122158_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "10.0.6");
+            modelBuilder.HasAnnotation("ProductVersion", "10.0.7");
 
             modelBuilder.Entity("AgentOptionsMcpServerOptions", b =>
                 {
@@ -31,7 +31,7 @@ namespace Brigade.Admin.Data.Sqlite.Migrations
 
                     b.HasIndex("McpServersId");
 
-                    b.ToTable("AgentMcpServers", (string)null);
+                    b.ToTable("AgentMcpServers", "agents");
                 });
 
             modelBuilder.Entity("AgentOptionsMiddlewareOptions", b =>
@@ -46,7 +46,7 @@ namespace Brigade.Admin.Data.Sqlite.Migrations
 
                     b.HasIndex("MiddlewareId");
 
-                    b.ToTable("AgentMiddleware", (string)null);
+                    b.ToTable("AgentMiddleware", "agents");
                 });
 
             modelBuilder.Entity("AgentOptionsModelOptions", b =>
@@ -61,7 +61,7 @@ namespace Brigade.Admin.Data.Sqlite.Migrations
 
                     b.HasIndex("ModelsId");
 
-                    b.ToTable("AgentModels", (string)null);
+                    b.ToTable("AgentModels", "agents");
                 });
 
             modelBuilder.Entity("AgentOptionsSkillOptions", b =>
@@ -76,7 +76,7 @@ namespace Brigade.Admin.Data.Sqlite.Migrations
 
                     b.HasIndex("SkillsId");
 
-                    b.ToTable("AgentSkills", (string)null);
+                    b.ToTable("AgentSkills", "agents");
                 });
 
             modelBuilder.Entity("AgentOptionsToolOptions", b =>
@@ -91,7 +91,7 @@ namespace Brigade.Admin.Data.Sqlite.Migrations
 
                     b.HasIndex("ToolsId");
 
-                    b.ToTable("AgentTools", (string)null);
+                    b.ToTable("AgentTools", "agents");
                 });
 
             modelBuilder.Entity("Brigade.Admin.Data.Models.Agents.AgentOptions", b =>
@@ -173,7 +173,7 @@ namespace Brigade.Admin.Data.Sqlite.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Mcps");
+                    b.ToTable("McpServers", "agents");
                 });
 
             modelBuilder.Entity("Brigade.Admin.Data.Models.Agents.MemoryOptions", b =>
@@ -234,7 +234,7 @@ namespace Brigade.Admin.Data.Sqlite.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("MiddlewareOptions");
+                    b.ToTable("Middlewares");
                 });
 
             modelBuilder.Entity("Brigade.Admin.Data.Models.Agents.SkillOptions", b =>
@@ -318,11 +318,71 @@ namespace Brigade.Admin.Data.Sqlite.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
+                    b.Property<double>("CachedTokenCost")
+                        .HasColumnType("REAL");
+
+                    b.Property<int>("ContextWindowSize")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("DisplayName")
                         .HasColumnType("TEXT");
 
+                    b.Property<double>("InputTokenCost")
+                        .HasColumnType("REAL");
+
+                    b.Property<string>("KnowledgeCutoff")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("MaxOutputTokens")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("Name")
                         .HasColumnType("TEXT");
+
+                    b.Property<double>("OutputTokenCost")
+                        .HasColumnType("REAL");
+
+                    b.Property<bool>("SupportsAudio")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("SupportsCodeExecution")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("SupportsDistillation")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("SupportsFileSearch")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("SupportsFineTuning")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("SupportsFunctionCalling")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("SupportsImage")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("SupportsMCP")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("SupportsStreaming")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("SupportsStructuredOutput")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("SupportsText")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("SupportsToolUse")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("SupportsVideo")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("SupportsWebSearch")
+                        .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
 
@@ -349,7 +409,7 @@ namespace Brigade.Admin.Data.Sqlite.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Providers");
+                    b.ToTable("Providers", "agents");
                 });
 
             modelBuilder.Entity("ModelOptionsProviderOptions", b =>
@@ -364,7 +424,7 @@ namespace Brigade.Admin.Data.Sqlite.Migrations
 
                     b.HasIndex("ProvidersId");
 
-                    b.ToTable("ProviderModels", (string)null);
+                    b.ToTable("ProviderModels", "agents");
                 });
 
             modelBuilder.Entity("AgentOptionsMcpServerOptions", b =>

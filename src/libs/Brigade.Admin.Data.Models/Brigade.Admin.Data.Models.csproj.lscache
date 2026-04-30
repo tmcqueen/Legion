@@ -54,12 +54,18 @@ TemporaryDependencyNodeTargetIdentifier=net10.0
 /warnaserror+:NU1605,SYSLIB0011
 
 [sourceFiles]
-AgentOptions.cs
-ApplicationUser.cs
-McpServerOptions.cs
-MemoryOptions.cs
-MiddlewareOptions.cs
-ModelOptions.cs
+Agents/
+ AgentOptions.cs
+ AgentTemplate.cs
+ McpServerOptions.cs
+ MemoryOptions.cs
+ MiddlewareOptions.cs
+ ModelOptions.cs
+ SearchBehavior.cs
+ SkillOptions.cs
+ ToolOptions.cs
+ WorkflowOptions.cs
+Auth/ApplicationUser.cs
 obj/Debug/net10.0/
  .NETCoreApp,Version=v10.0.AssemblyAttributes.cs
  Brigade.Admin.Data.Models.AssemblyInfo.cs
@@ -241,28 +247,28 @@ WorkflowOptions.cs
  System.Xml.XPath.XDocument.dll
  WindowsBase.dll
 <NUGET>/
- microsoft.aspnetcore.cryptography.internal/10.0.6/lib/net10.0/Microsoft.AspNetCore.Cryptography.Internal.dll
- microsoft.aspnetcore.cryptography.keyderivation/10.0.6/lib/net10.0/Microsoft.AspNetCore.Cryptography.KeyDerivation.dll
- microsoft.aspnetcore.identity.entityframeworkcore/10.0.6/lib/net10.0/Microsoft.AspNetCore.Identity.EntityFrameworkCore.dll
- microsoft.entityframeworkcore.abstractions/10.0.6/lib/net10.0/Microsoft.EntityFrameworkCore.Abstractions.dll
- microsoft.entityframeworkcore.relational/10.0.6/lib/net10.0/Microsoft.EntityFrameworkCore.Relational.dll
- microsoft.entityframeworkcore/10.0.6/lib/net10.0/Microsoft.EntityFrameworkCore.dll
- microsoft.extensions.caching.abstractions/10.0.6/lib/net10.0/Microsoft.Extensions.Caching.Abstractions.dll
- microsoft.extensions.caching.memory/10.0.6/lib/net10.0/Microsoft.Extensions.Caching.Memory.dll
- microsoft.extensions.configuration.abstractions/10.0.6/lib/net10.0/Microsoft.Extensions.Configuration.Abstractions.dll
- microsoft.extensions.configuration.binder/10.0.6/lib/net10.0/Microsoft.Extensions.Configuration.Binder.dll
- microsoft.extensions.configuration/10.0.6/lib/net10.0/Microsoft.Extensions.Configuration.dll
- microsoft.extensions.dependencyinjection.abstractions/10.0.6/lib/net10.0/Microsoft.Extensions.DependencyInjection.Abstractions.dll
- microsoft.extensions.dependencyinjection/10.0.6/lib/net10.0/Microsoft.Extensions.DependencyInjection.dll
- microsoft.extensions.diagnostics.abstractions/10.0.6/lib/net10.0/Microsoft.Extensions.Diagnostics.Abstractions.dll
- microsoft.extensions.diagnostics/10.0.6/lib/net10.0/Microsoft.Extensions.Diagnostics.dll
- microsoft.extensions.identity.core/10.0.6/lib/net10.0/Microsoft.Extensions.Identity.Core.dll
- microsoft.extensions.identity.stores/10.0.6/lib/net10.0/Microsoft.Extensions.Identity.Stores.dll
- microsoft.extensions.logging.abstractions/10.0.6/lib/net10.0/Microsoft.Extensions.Logging.Abstractions.dll
- microsoft.extensions.logging/10.0.6/lib/net10.0/Microsoft.Extensions.Logging.dll
- microsoft.extensions.options.configurationextensions/10.0.6/lib/net10.0/Microsoft.Extensions.Options.ConfigurationExtensions.dll
- microsoft.extensions.options/10.0.6/lib/net10.0/Microsoft.Extensions.Options.dll
- microsoft.extensions.primitives/10.0.6/lib/net10.0/Microsoft.Extensions.Primitives.dll
+ microsoft.aspnetcore.cryptography.internal/10.0.7/lib/net10.0/Microsoft.AspNetCore.Cryptography.Internal.dll
+ microsoft.aspnetcore.cryptography.keyderivation/10.0.7/lib/net10.0/Microsoft.AspNetCore.Cryptography.KeyDerivation.dll
+ microsoft.aspnetcore.identity.entityframeworkcore/10.0.7/lib/net10.0/Microsoft.AspNetCore.Identity.EntityFrameworkCore.dll
+ microsoft.entityframeworkcore.abstractions/10.0.7/lib/net10.0/Microsoft.EntityFrameworkCore.Abstractions.dll
+ microsoft.entityframeworkcore.relational/10.0.7/lib/net10.0/Microsoft.EntityFrameworkCore.Relational.dll
+ microsoft.entityframeworkcore/10.0.7/lib/net10.0/Microsoft.EntityFrameworkCore.dll
+ microsoft.extensions.caching.abstractions/10.0.7/lib/net10.0/Microsoft.Extensions.Caching.Abstractions.dll
+ microsoft.extensions.caching.memory/10.0.7/lib/net10.0/Microsoft.Extensions.Caching.Memory.dll
+ microsoft.extensions.configuration.abstractions/10.0.7/lib/net10.0/Microsoft.Extensions.Configuration.Abstractions.dll
+ microsoft.extensions.configuration.binder/10.0.7/lib/net10.0/Microsoft.Extensions.Configuration.Binder.dll
+ microsoft.extensions.configuration/10.0.7/lib/net10.0/Microsoft.Extensions.Configuration.dll
+ microsoft.extensions.dependencyinjection.abstractions/10.0.7/lib/net10.0/Microsoft.Extensions.DependencyInjection.Abstractions.dll
+ microsoft.extensions.dependencyinjection/10.0.7/lib/net10.0/Microsoft.Extensions.DependencyInjection.dll
+ microsoft.extensions.diagnostics.abstractions/10.0.7/lib/net10.0/Microsoft.Extensions.Diagnostics.Abstractions.dll
+ microsoft.extensions.diagnostics/10.0.7/lib/net10.0/Microsoft.Extensions.Diagnostics.dll
+ microsoft.extensions.identity.core/10.0.7/lib/net10.0/Microsoft.Extensions.Identity.Core.dll
+ microsoft.extensions.identity.stores/10.0.7/lib/net10.0/Microsoft.Extensions.Identity.Stores.dll
+ microsoft.extensions.logging.abstractions/10.0.7/lib/net10.0/Microsoft.Extensions.Logging.Abstractions.dll
+ microsoft.extensions.logging/10.0.7/lib/net10.0/Microsoft.Extensions.Logging.dll
+ microsoft.extensions.options.configurationextensions/10.0.7/lib/net10.0/Microsoft.Extensions.Options.ConfigurationExtensions.dll
+ microsoft.extensions.options/10.0.7/lib/net10.0/Microsoft.Extensions.Options.dll
+ microsoft.extensions.primitives/10.0.7/lib/net10.0/Microsoft.Extensions.Primitives.dll
 
 [analyzerReferences]
 <DOTNET>/packs/Microsoft.NETCore.App.Ref/10.0.7/analyzers/dotnet/cs/
@@ -276,9 +282,9 @@ WorkflowOptions.cs
  Microsoft.CodeAnalysis.CSharp.NetAnalyzers.dll
  Microsoft.CodeAnalysis.NetAnalyzers.dll
 <NUGET>/
- microsoft.entityframeworkcore.analyzers/10.0.6/analyzers/dotnet/cs/Microsoft.EntityFrameworkCore.Analyzers.dll
- microsoft.extensions.logging.abstractions/10.0.6/analyzers/dotnet/roslyn4.4/cs/Microsoft.Extensions.Logging.Generators.dll
- microsoft.extensions.options/10.0.6/analyzers/dotnet/roslyn4.4/cs/Microsoft.Extensions.Options.SourceGeneration.dll
+ microsoft.entityframeworkcore.analyzers/10.0.7/analyzers/dotnet/cs/Microsoft.EntityFrameworkCore.Analyzers.dll
+ microsoft.extensions.logging.abstractions/10.0.7/analyzers/dotnet/roslyn4.4/cs/Microsoft.Extensions.Logging.Generators.dll
+ microsoft.extensions.options/10.0.7/analyzers/dotnet/roslyn4.4/cs/Microsoft.Extensions.Options.SourceGeneration.dll
 
 [analyzerConfigFiles]
 ../../../.editorconfig

@@ -1,3 +1,4 @@
+using Brigade.Admin.Data.Auth;
 using Brigade.Admin.Data.Sqlite.Stores;
 using Brigade.Admin.Data.Stores;
 using Microsoft.EntityFrameworkCore;
@@ -12,5 +13,10 @@ public static class SqliteExtensions
         services.AddScoped<ISecretsStore, SqliteSecretsStore>();
         return services.AddDbContext<AppDbContext>(options =>
             options.UseSqlite(connectionString, o => o.MigrationsAssembly("Brigade.Admin.Data.Sqlite")));
-    }
+    }    
+    
+    public static IServiceCollection AddSqliteAuthDbContext(this IServiceCollection services, string connectionString) =>
+        services.AddDbContext<AuthDbContext>(o =>
+            o.UseSqlite(connectionString, b => b.MigrationsAssembly("Brigade.Admin.Data.Sqlite")));
+
 }

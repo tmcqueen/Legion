@@ -52,9 +52,15 @@
     public string? ReturnUrl { get; set; }
 
     [SupplyParameterFromForm]
-    public LoginModel Model { get; set; } = new();
+    public LoginModel Model { get; set; } = null!;
 
     private string? ErrorMessage { get; set; }
+
+    protected override Task OnInitializedAsync()
+    {
+        Model = new LoginModel();
+        return base.OnInitializedAsync();
+    }
 
     protected override void OnInitialized()
     {

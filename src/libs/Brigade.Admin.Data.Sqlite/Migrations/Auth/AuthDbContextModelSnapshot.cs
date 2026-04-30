@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace Brigade.Admin.Data.Sqlite.Migrations.AuthDb
+namespace Brigade.Admin.Data.Sqlite.Migrations.Auth
 {
     [DbContext(typeof(AuthDbContext))]
     partial class AuthDbContextModelSnapshot : ModelSnapshot
@@ -15,7 +15,9 @@ namespace Brigade.Admin.Data.Sqlite.Migrations.AuthDb
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "10.0.6");
+            modelBuilder
+                .HasDefaultSchema("security")
+                .HasAnnotation("ProductVersion", "10.0.7");
 
             modelBuilder.Entity("Brigade.Admin.Data.Models.Auth.ApplicationUser", b =>
                 {
@@ -78,7 +80,7 @@ namespace Brigade.Admin.Data.Sqlite.Migrations.AuthDb
                         .IsUnique()
                         .HasDatabaseName("UserNameIndex");
 
-                    b.ToTable("AspNetUsers", (string)null);
+                    b.ToTable("AspNetUsers", "security");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -104,7 +106,7 @@ namespace Brigade.Admin.Data.Sqlite.Migrations.AuthDb
                         .IsUnique()
                         .HasDatabaseName("RoleNameIndex");
 
-                    b.ToTable("AspNetRoles", (string)null);
+                    b.ToTable("AspNetRoles", "security");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -127,7 +129,7 @@ namespace Brigade.Admin.Data.Sqlite.Migrations.AuthDb
 
                     b.HasIndex("RoleId");
 
-                    b.ToTable("AspNetRoleClaims", (string)null);
+                    b.ToTable("AspNetRoleClaims", "security");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
@@ -150,7 +152,7 @@ namespace Brigade.Admin.Data.Sqlite.Migrations.AuthDb
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("AspNetUserClaims", (string)null);
+                    b.ToTable("AspNetUserClaims", "security");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
@@ -172,7 +174,7 @@ namespace Brigade.Admin.Data.Sqlite.Migrations.AuthDb
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("AspNetUserLogins", (string)null);
+                    b.ToTable("AspNetUserLogins", "security");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
@@ -187,7 +189,7 @@ namespace Brigade.Admin.Data.Sqlite.Migrations.AuthDb
 
                     b.HasIndex("RoleId");
 
-                    b.ToTable("AspNetUserRoles", (string)null);
+                    b.ToTable("AspNetUserRoles", "security");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
@@ -206,7 +208,7 @@ namespace Brigade.Admin.Data.Sqlite.Migrations.AuthDb
 
                     b.HasKey("UserId", "LoginProvider", "Name");
 
-                    b.ToTable("AspNetUserTokens", (string)null);
+                    b.ToTable("AspNetUserTokens", "security");
                 });
 
             modelBuilder.Entity("OpenIddict.EntityFrameworkCore.Models.OpenIddictEntityFrameworkCoreApplication", b =>
@@ -271,7 +273,7 @@ namespace Brigade.Admin.Data.Sqlite.Migrations.AuthDb
                     b.HasIndex("ClientId")
                         .IsUnique();
 
-                    b.ToTable("OpenIddictApplications", (string)null);
+                    b.ToTable("OpenIddictApplications", "security");
                 });
 
             modelBuilder.Entity("OpenIddict.EntityFrameworkCore.Models.OpenIddictEntityFrameworkCoreAuthorization", b =>
@@ -313,7 +315,7 @@ namespace Brigade.Admin.Data.Sqlite.Migrations.AuthDb
 
                     b.HasIndex("ApplicationId", "Status", "Subject", "Type");
 
-                    b.ToTable("OpenIddictAuthorizations", (string)null);
+                    b.ToTable("OpenIddictAuthorizations", "security");
                 });
 
             modelBuilder.Entity("OpenIddict.EntityFrameworkCore.Models.OpenIddictEntityFrameworkCoreScope", b =>
@@ -354,7 +356,7 @@ namespace Brigade.Admin.Data.Sqlite.Migrations.AuthDb
                     b.HasIndex("Name")
                         .IsUnique();
 
-                    b.ToTable("OpenIddictScopes", (string)null);
+                    b.ToTable("OpenIddictScopes", "security");
                 });
 
             modelBuilder.Entity("OpenIddict.EntityFrameworkCore.Models.OpenIddictEntityFrameworkCoreToken", b =>
@@ -414,7 +416,7 @@ namespace Brigade.Admin.Data.Sqlite.Migrations.AuthDb
 
                     b.HasIndex("ApplicationId", "Status", "Subject", "Type");
 
-                    b.ToTable("OpenIddictTokens", (string)null);
+                    b.ToTable("OpenIddictTokens", "security");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

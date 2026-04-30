@@ -6,8 +6,10 @@ namespace Brigade.Admin.Data.Configurations;
 
 public class McpServerOptionsConfiguration : IEntityTypeConfiguration<McpServerOptions>
 {
+    private const string Schema = "agents";
     public void Configure(EntityTypeBuilder<McpServerOptions> builder)
     {
+        builder.ToTable("McpServers", schema: Schema);
         builder.HasMany(m => m.Headers)
             .WithOne(h => h.McpServer)
             .HasForeignKey(h => h.McpServerId)

@@ -9,6 +9,7 @@ public class AuthDbContext(DbContextOptions<AuthDbContext> options)
 {
     protected override void OnModelCreating(ModelBuilder builder)
     {
+        builder.HasDefaultSchema("security");
         base.OnModelCreating(builder);
         builder.UseOpenIddict();
     }

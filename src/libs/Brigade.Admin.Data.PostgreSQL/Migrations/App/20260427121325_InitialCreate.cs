@@ -3,7 +3,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace Brigade.Admin.Data.PostgreSQL.Migrations.AgentDb
+namespace Brigade.Admin.Data.PostgreSQL.Migrations.App
 {
     /// <inheritdoc />
     public partial class InitialCreate : Migration
@@ -11,8 +11,12 @@ namespace Brigade.Admin.Data.PostgreSQL.Migrations.AgentDb
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.EnsureSchema(
+                name: "agents");
+
             migrationBuilder.CreateTable(
-                name: "Mcps",
+                name: "McpServers",
+                schema: "agents",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
@@ -27,11 +31,11 @@ namespace Brigade.Admin.Data.PostgreSQL.Migrations.AgentDb
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Mcps", x => x.Id);
+                    table.PrimaryKey("PK_McpServers", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
-                name: "MiddlewareOptions",
+                name: "Middlewares",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
@@ -44,7 +48,7 @@ namespace Brigade.Admin.Data.PostgreSQL.Migrations.AgentDb
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_MiddlewareOptions", x => x.Id);
+                    table.PrimaryKey("PK_Middlewares", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -54,7 +58,27 @@ namespace Brigade.Admin.Data.PostgreSQL.Migrations.AgentDb
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Name = table.Column<string>(type: "text", nullable: true),
-                    DisplayName = table.Column<string>(type: "text", nullable: true)
+                    DisplayName = table.Column<string>(type: "text", nullable: true),
+                    ContextWindowSize = table.Column<int>(type: "integer", nullable: false),
+                    MaxOutputTokens = table.Column<int>(type: "integer", nullable: false),
+                    KnowledgeCutoff = table.Column<string>(type: "text", nullable: true),
+                    SupportsText = table.Column<bool>(type: "boolean", nullable: false),
+                    SupportsImage = table.Column<bool>(type: "boolean", nullable: false),
+                    SupportsAudio = table.Column<bool>(type: "boolean", nullable: false),
+                    SupportsVideo = table.Column<bool>(type: "boolean", nullable: false),
+                    SupportsStreaming = table.Column<bool>(type: "boolean", nullable: false),
+                    SupportsFunctionCalling = table.Column<bool>(type: "boolean", nullable: false),
+                    SupportsStructuredOutput = table.Column<bool>(type: "boolean", nullable: false),
+                    SupportsFineTuning = table.Column<bool>(type: "boolean", nullable: false),
+                    SupportsDistillation = table.Column<bool>(type: "boolean", nullable: false),
+                    SupportsToolUse = table.Column<bool>(type: "boolean", nullable: false),
+                    SupportsWebSearch = table.Column<bool>(type: "boolean", nullable: false),
+                    SupportsFileSearch = table.Column<bool>(type: "boolean", nullable: false),
+                    SupportsCodeExecution = table.Column<bool>(type: "boolean", nullable: false),
+                    SupportsMCP = table.Column<bool>(type: "boolean", nullable: false),
+                    InputTokenCost = table.Column<double>(type: "double precision", nullable: false),
+                    CachedTokenCost = table.Column<double>(type: "double precision", nullable: false),
+                    OutputTokenCost = table.Column<double>(type: "double precision", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -63,6 +87,7 @@ namespace Brigade.Admin.Data.PostgreSQL.Migrations.AgentDb
 
             migrationBuilder.CreateTable(
                 name: "Providers",
+                schema: "agents",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
@@ -141,9 +166,10 @@ namespace Brigade.Admin.Data.PostgreSQL.Migrations.AgentDb
                 {
                     table.PrimaryKey("PK_McpServerHeaders", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_McpServerHeaders_Mcps_McpServerId",
+                        name: "FK_McpServerHeaders_McpServers_McpServerId",
                         column: x => x.McpServerId,
-                        principalTable: "Mcps",
+                        principalSchema: "agents",
+                        principalTable: "McpServers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -166,6 +192,7 @@ namespace Brigade.Admin.Data.PostgreSQL.Migrations.AgentDb
                     table.ForeignKey(
                         name: "FK_Agents_Providers_ProviderId",
                         column: x => x.ProviderId,
+                        principalSchema: "agents",
                         principalTable: "Providers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -173,6 +200,7 @@ namespace Brigade.Admin.Data.PostgreSQL.Migrations.AgentDb
 
             migrationBuilder.CreateTable(
                 name: "ProviderModels",
+                schema: "agents",
                 columns: table => new
                 {
                     ModelsId = table.Column<int>(type: "integer", nullable: false),
@@ -190,6 +218,7 @@ namespace Brigade.Admin.Data.PostgreSQL.Migrations.AgentDb
                     table.ForeignKey(
                         name: "FK_ProviderModels_Providers_ProvidersId",
                         column: x => x.ProvidersId,
+                        principalSchema: "agents",
                         principalTable: "Providers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -197,6 +226,7 @@ namespace Brigade.Admin.Data.PostgreSQL.Migrations.AgentDb
 
             migrationBuilder.CreateTable(
                 name: "AgentMcpServers",
+                schema: "agents",
                 columns: table => new
                 {
                     AgentsId = table.Column<int>(type: "integer", nullable: false),
@@ -212,15 +242,17 @@ namespace Brigade.Admin.Data.PostgreSQL.Migrations.AgentDb
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_AgentMcpServers_Mcps_McpServersId",
+                        name: "FK_AgentMcpServers_McpServers_McpServersId",
                         column: x => x.McpServersId,
-                        principalTable: "Mcps",
+                        principalSchema: "agents",
+                        principalTable: "McpServers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
                 name: "AgentMiddleware",
+                schema: "agents",
                 columns: table => new
                 {
                     AgentsId = table.Column<int>(type: "integer", nullable: false),
@@ -236,15 +268,16 @@ namespace Brigade.Admin.Data.PostgreSQL.Migrations.AgentDb
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_AgentMiddleware_MiddlewareOptions_MiddlewareId",
+                        name: "FK_AgentMiddleware_Middlewares_MiddlewareId",
                         column: x => x.MiddlewareId,
-                        principalTable: "MiddlewareOptions",
+                        principalTable: "Middlewares",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
                 name: "AgentModels",
+                schema: "agents",
                 columns: table => new
                 {
                     AgentsId = table.Column<int>(type: "integer", nullable: false),
@@ -269,6 +302,7 @@ namespace Brigade.Admin.Data.PostgreSQL.Migrations.AgentDb
 
             migrationBuilder.CreateTable(
                 name: "AgentSkills",
+                schema: "agents",
                 columns: table => new
                 {
                     AgentsId = table.Column<int>(type: "integer", nullable: false),
@@ -293,6 +327,7 @@ namespace Brigade.Admin.Data.PostgreSQL.Migrations.AgentDb
 
             migrationBuilder.CreateTable(
                 name: "AgentTools",
+                schema: "agents",
                 columns: table => new
                 {
                     AgentsId = table.Column<int>(type: "integer", nullable: false),
@@ -342,16 +377,19 @@ namespace Brigade.Admin.Data.PostgreSQL.Migrations.AgentDb
 
             migrationBuilder.CreateIndex(
                 name: "IX_AgentMcpServers_McpServersId",
+                schema: "agents",
                 table: "AgentMcpServers",
                 column: "McpServersId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_AgentMiddleware_MiddlewareId",
+                schema: "agents",
                 table: "AgentMiddleware",
                 column: "MiddlewareId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_AgentModels_ModelsId",
+                schema: "agents",
                 table: "AgentModels",
                 column: "ModelsId");
 
@@ -362,11 +400,13 @@ namespace Brigade.Admin.Data.PostgreSQL.Migrations.AgentDb
 
             migrationBuilder.CreateIndex(
                 name: "IX_AgentSkills_SkillsId",
+                schema: "agents",
                 table: "AgentSkills",
                 column: "SkillsId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_AgentTools_ToolsId",
+                schema: "agents",
                 table: "AgentTools",
                 column: "ToolsId");
 
@@ -383,6 +423,7 @@ namespace Brigade.Admin.Data.PostgreSQL.Migrations.AgentDb
 
             migrationBuilder.CreateIndex(
                 name: "IX_ProviderModels_ProvidersId",
+                schema: "agents",
                 table: "ProviderModels",
                 column: "ProvidersId");
         }
@@ -391,19 +432,24 @@ namespace Brigade.Admin.Data.PostgreSQL.Migrations.AgentDb
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "AgentMcpServers");
+                name: "AgentMcpServers",
+                schema: "agents");
 
             migrationBuilder.DropTable(
-                name: "AgentMiddleware");
+                name: "AgentMiddleware",
+                schema: "agents");
 
             migrationBuilder.DropTable(
-                name: "AgentModels");
+                name: "AgentModels",
+                schema: "agents");
 
             migrationBuilder.DropTable(
-                name: "AgentSkills");
+                name: "AgentSkills",
+                schema: "agents");
 
             migrationBuilder.DropTable(
-                name: "AgentTools");
+                name: "AgentTools",
+                schema: "agents");
 
             migrationBuilder.DropTable(
                 name: "McpServerHeaders");
@@ -412,13 +458,14 @@ namespace Brigade.Admin.Data.PostgreSQL.Migrations.AgentDb
                 name: "Memories");
 
             migrationBuilder.DropTable(
-                name: "ProviderModels");
+                name: "ProviderModels",
+                schema: "agents");
 
             migrationBuilder.DropTable(
                 name: "Workflows");
 
             migrationBuilder.DropTable(
-                name: "MiddlewareOptions");
+                name: "Middlewares");
 
             migrationBuilder.DropTable(
                 name: "Skills");
@@ -427,7 +474,8 @@ namespace Brigade.Admin.Data.PostgreSQL.Migrations.AgentDb
                 name: "Tools");
 
             migrationBuilder.DropTable(
-                name: "Mcps");
+                name: "McpServers",
+                schema: "agents");
 
             migrationBuilder.DropTable(
                 name: "Agents");
@@ -436,7 +484,8 @@ namespace Brigade.Admin.Data.PostgreSQL.Migrations.AgentDb
                 name: "Models");
 
             migrationBuilder.DropTable(
-                name: "Providers");
+                name: "Providers",
+                schema: "agents");
         }
     }
 }

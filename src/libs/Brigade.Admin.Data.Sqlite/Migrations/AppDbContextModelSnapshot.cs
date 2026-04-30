@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace Brigade.Admin.Data.Sqlite.Migrations
+namespace Brigade.Admin.Data.Sqlite.Migrations.App
 {
     [DbContext(typeof(AppDbContext))]
     partial class AppDbContextModelSnapshot : ModelSnapshot
@@ -15,7 +15,7 @@ namespace Brigade.Admin.Data.Sqlite.Migrations
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "10.0.6");
+            modelBuilder.HasAnnotation("ProductVersion", "10.0.7");
 
             modelBuilder.Entity("AgentOptionsMcpServerOptions", b =>
                 {
@@ -29,7 +29,7 @@ namespace Brigade.Admin.Data.Sqlite.Migrations
 
                     b.HasIndex("McpServersId");
 
-                    b.ToTable("AgentMcpServers", (string)null);
+                    b.ToTable("AgentMcpServers", "agents");
                 });
 
             modelBuilder.Entity("AgentOptionsMiddlewareOptions", b =>
@@ -44,7 +44,7 @@ namespace Brigade.Admin.Data.Sqlite.Migrations
 
                     b.HasIndex("MiddlewareId");
 
-                    b.ToTable("AgentMiddleware", (string)null);
+                    b.ToTable("AgentMiddleware", "agents");
                 });
 
             modelBuilder.Entity("AgentOptionsModelOptions", b =>
@@ -59,7 +59,7 @@ namespace Brigade.Admin.Data.Sqlite.Migrations
 
                     b.HasIndex("ModelsId");
 
-                    b.ToTable("AgentModels", (string)null);
+                    b.ToTable("AgentModels", "agents");
                 });
 
             modelBuilder.Entity("AgentOptionsSkillOptions", b =>
@@ -74,7 +74,7 @@ namespace Brigade.Admin.Data.Sqlite.Migrations
 
                     b.HasIndex("SkillsId");
 
-                    b.ToTable("AgentSkills", (string)null);
+                    b.ToTable("AgentSkills", "agents");
                 });
 
             modelBuilder.Entity("AgentOptionsToolOptions", b =>
@@ -89,7 +89,7 @@ namespace Brigade.Admin.Data.Sqlite.Migrations
 
                     b.HasIndex("ToolsId");
 
-                    b.ToTable("AgentTools", (string)null);
+                    b.ToTable("AgentTools", "agents");
                 });
 
             modelBuilder.Entity("Brigade.Admin.Data.Models.Agents.AgentOptions", b =>
@@ -171,7 +171,7 @@ namespace Brigade.Admin.Data.Sqlite.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Mcps");
+                    b.ToTable("McpServers", "agents");
                 });
 
             modelBuilder.Entity("Brigade.Admin.Data.Models.Agents.MemoryOptions", b =>
@@ -407,7 +407,7 @@ namespace Brigade.Admin.Data.Sqlite.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Providers");
+                    b.ToTable("Providers", "agents");
                 });
 
             modelBuilder.Entity("Brigade.Admin.Data.Models.SecretOptions", b =>
@@ -454,7 +454,7 @@ namespace Brigade.Admin.Data.Sqlite.Migrations
 
                     b.HasIndex("ProvidersId");
 
-                    b.ToTable("ProviderModels", (string)null);
+                    b.ToTable("ProviderModels", "agents");
                 });
 
             modelBuilder.Entity("AgentOptionsMcpServerOptions", b =>

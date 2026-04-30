@@ -383,7 +383,7 @@ Tools/
  System.Xml.XPath.XDocument.dll
  WindowsBase.dll
 <NUGET>/
- anthropic/12.16.0/lib/net9.0/Anthropic.dll
+ anthropic/12.17.0/lib/net9.0/Anthropic.dll
  github.copilot.sdk/0.1.29/lib/net8.0/GitHub.Copilot.SDK.dll
  google.protobuf/3.30.2/lib/net5.0/Google.Protobuf.dll
  microsoft.agents.ai.abstractions/1.1.0/lib/net10.0/Microsoft.Agents.AI.Abstractions.dll
@@ -398,7 +398,8 @@ Tools/
  microsoft.entityframeworkcore.relational/10.0.6/lib/net10.0/Microsoft.EntityFrameworkCore.Relational.dll
  microsoft.entityframeworkcore/10.0.6/lib/net10.0/Microsoft.EntityFrameworkCore.dll
  microsoft.extensions.ai.abstractions/10.5.0/lib/net10.0/Microsoft.Extensions.AI.Abstractions.dll
- microsoft.extensions.ai.openai/10.4.0/lib/net10.0/Microsoft.Extensions.AI.OpenAI.dll
+ microsoft.extensions.ai.evaluation/10.4.0/lib/net10.0/Microsoft.Extensions.AI.Evaluation.dll
+ microsoft.extensions.ai.openai/10.5.0/lib/net10.0/Microsoft.Extensions.AI.OpenAI.dll
  microsoft.extensions.ai/10.5.0/lib/net10.0/Microsoft.Extensions.AI.dll
  microsoft.extensions.ambientmetadata.application/10.3.0/lib/net10.0/Microsoft.Extensions.AmbientMetadata.Application.dll
  microsoft.extensions.compliance.abstractions/10.4.0/lib/net10.0/Microsoft.Extensions.Compliance.Abstractions.dll
