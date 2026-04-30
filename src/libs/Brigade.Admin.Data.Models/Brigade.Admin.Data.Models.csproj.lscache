@@ -70,12 +70,8 @@ obj/Debug/net10.0/
  .NETCoreApp,Version=v10.0.AssemblyAttributes.cs
  Brigade.Admin.Data.Models.AssemblyInfo.cs
  Brigade.Admin.Data.Models.GlobalUsings.g.cs
-ProviderOptions.cs
-SearchBehavior.cs
+Providers/ProviderOptions.cs
 SecretOptions.cs
-SkillOptions.cs
-ToolOptions.cs
-WorkflowOptions.cs
 
 [metadataReferences]
 <DOTNET>/packs/Microsoft.NETCore.App.Ref/10.0.7/ref/net10.0/

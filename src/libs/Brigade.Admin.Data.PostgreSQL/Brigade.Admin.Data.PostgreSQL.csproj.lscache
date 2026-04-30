@@ -54,23 +54,18 @@ TemporaryDependencyNodeTargetIdentifier=net10.0
 /warnaserror+:NU1605,SYSLIB0011
 
 [sourceFiles]
-Extensions/
- PostgreSqlAuthExtensions.cs
- PostgreSqlExtensions.cs
-Migrations/
- 20260420002113_initial-migration.cs
- 20260420002113_initial-migration.Designer.cs
- AgentDb/
-  20260423160114_InitialCreate.cs
-  20260423160114_InitialCreate.Designer.cs
-  20260423210445_AddMiddlewares.cs
-  20260423210445_AddMiddlewares.Designer.cs
-  20260423213635_AddModelOptionsFields.cs
-  20260423213635_AddModelOptionsFields.Designer.cs
-  20260428101441_AddSecrets.cs
-  20260428101441_AddSecrets.Designer.cs
-  AppDbContextModelSnapshot.cs
- AuthDbContextDesignTimeFactory.cs
+AppDbDesignTimeFactory.cs
+AuthDbContextDesignTimeFactory.cs
+Extensions/PostgreSqlExtensions.cs
+Migrations/App/
+ 20260427121325_InitialCreate.cs
+ 20260427121325_InitialCreate.Designer.cs
+ 20260428101441_AddSecrets.cs
+ 20260428101441_AddSecrets.Designer.cs
+ AppDbContextModelSnapshot.cs
+Migrations/Auth/
+ 20260427121331_InitialCreate.cs
+ 20260427121331_InitialCreate.Designer.cs
  AuthDbContextModelSnapshot.cs
 obj/Debug/net10.0/
  .NETCoreApp,Version=v10.0.AssemblyAttributes.cs
