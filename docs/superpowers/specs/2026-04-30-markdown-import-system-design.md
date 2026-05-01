@@ -21,34 +21,14 @@ Users need a flexible way to manage, organize, and version system prompts, skill
 
 ## Foundational Convention: Branded UUID v7 Primary Keys
 
-**All models in Brigade use branded `readonly record struct` IDs backed by UUID v7.** This applies to the new tables introduced here and to all existing tables (which will be migrated in a separate effort — see Section 7).
+This feature uses the Brigade-wide branded ID convention. **See [`2026-04-30-uuid7-branded-ids-design.md`](2026-04-30-uuid7-branded-ids-design.md) for the full pattern, EF Core converter registration, and migration strategy.**
 
-### Pattern
+The three new entities introduced here follow the same pattern:
+- `PromptDefinitionId` — UUID v7, PK for `PromptDefinition`
+- `PromptVersionId` — UUID v7, PK for `PromptVersion`
+- `AgentPromptAssignmentId` — UUID v7, PK for `AgentPromptAssignment`
 
-```csharp
-readonly record struct PromptDefinitionId(Guid Value)
-{
-    public static PromptDefinitionId New() => new(Guid.CreateVersion7());
-    public static implicit operator Guid(PromptDefinitionId id) => id.Value;
-    public static implicit operator PromptDefinitionId(Guid value) => new(value);
-    public override string ToString() => Value.ToString();
-}
-```
-
-Each entity gets its own ID type (e.g., `PromptDefinitionId`, `PromptVersionId`, `AgentPromptAssignmentId`). EF Core maps these to `uuid` columns via a value converter registered in `OnModelCreating`:
-
-```csharp
-// Shared helper — call once per ID type in OnModelCreating
-modelBuilder.Entity<PromptDefinition>()
-    .Property(e => e.Id)
-    .HasConversion(id => id.Value, value => new PromptDefinitionId(value));
-```
-
-**Why UUID v7?** Time-ordered UUIDs prevent B-tree index fragmentation (random UUIDs scatter inserts across the index; v7 UUIDs append near the end). `Guid.CreateVersion7()` is available in .NET 9.
-
-**Why branded structs?** The compiler rejects `PromptVersionId` where a `PromptDefinitionId` is expected, eliminating a class of ID-mixup bugs that are invisible at runtime.
-
-**Existing tables:** `SecretOptions`, auth tables, and all other existing entities will have their `int Id` columns replaced with `uuid` + branded ID types in a dedicated migration. That migration is **out of scope** for this feature but must be completed before this feature ships to avoid mixed ID conventions in the codebase.
+**Prerequisite:** The UUID7 migration spec must be completed and merged before this feature is implemented.
 
 ---
 
@@ -490,13 +470,12 @@ DropTable("prompt_definitions");
 
 ## Section 7: Future Considerations
 
-1. **UUID7 migration for existing tables** — `SecretOptions`, auth tables, and all other existing entities must have their `int Id` columns replaced with `uuid` + branded ID types before this feature ships. Requires a dedicated migration and regeneration of all EF Core migrations.
-2. **Recommender agents** — specialized agents that search tool descriptions and recommend tools. Out of scope; separate feature.
-3. **Abstractions layer** — introduce `Brigade.Admin.Abstractions` to decouple `Brigade.Agents` from `Brigade.Admin.Data`. Currently both `ISecretsManager` and `IPromptStore` create a data→runtime dependency.
-4. **Prompt templates** — parameterized prompts with variable substitution (e.g., `${AGENT_NAME}`). Future enhancement.
-5. **Versioning comparisons** — diff view between versions in the history modal.
-6. **Bulk operations** — rename paths in bulk, reassign prompts across agents.
-7. **Audit log** — formal audit trail (who published, who deleted). Currently covered by `created_by`; a separate `prompt_audit_log` table could be added via migration.
+1. **Recommender agents** — specialized agents that search tool descriptions and recommend tools. Out of scope; separate feature.
+2. **Abstractions layer** — introduce `Brigade.Admin.Abstractions` to decouple `Brigade.Agents` from `Brigade.Admin.Data`. Currently both `ISecretsManager` and `IPromptStore` create a data→runtime dependency.
+3. **Prompt templates** — parameterized prompts with variable substitution (e.g., `${AGENT_NAME}`). Future enhancement.
+4. **Versioning comparisons** — diff view between versions in the history modal.
+5. **Bulk operations** — rename paths in bulk, reassign prompts across agents.
+6. **Audit log** — formal audit trail (who published, who deleted). Currently covered by `created_by`; a separate `prompt_audit_log` table could be added via migration.
 
 ---
 
