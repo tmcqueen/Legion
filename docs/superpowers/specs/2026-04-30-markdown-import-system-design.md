@@ -2,7 +2,7 @@
 
 **Date:** 2026-04-30  
 **Project:** Brigade (WebDev + Brigade.Agents + Brigade.Admin.Data)  
-**Status:** Approved (rev 2 — Opus review applied)
+**Status:** Approved (rev 3 — UUID7 branded IDs)
 
 ---
 
@@ -19,27 +19,61 @@ Users need a flexible way to manage, organize, and version system prompts, skill
 
 ---
 
+## Foundational Convention: Branded UUID v7 Primary Keys
+
+**All models in Brigade use branded `readonly record struct` IDs backed by UUID v7.** This applies to the new tables introduced here and to all existing tables (which will be migrated in a separate effort — see Section 7).
+
+### Pattern
+
+```csharp
+readonly record struct PromptDefinitionId(Guid Value)
+{
+    public static PromptDefinitionId New() => new(Guid.CreateVersion7());
+    public static implicit operator Guid(PromptDefinitionId id) => id.Value;
+    public static implicit operator PromptDefinitionId(Guid value) => new(value);
+    public override string ToString() => Value.ToString();
+}
+```
+
+Each entity gets its own ID type (e.g., `PromptDefinitionId`, `PromptVersionId`, `AgentPromptAssignmentId`). EF Core maps these to `uuid` columns via a value converter registered in `OnModelCreating`:
+
+```csharp
+// Shared helper — call once per ID type in OnModelCreating
+modelBuilder.Entity<PromptDefinition>()
+    .Property(e => e.Id)
+    .HasConversion(id => id.Value, value => new PromptDefinitionId(value));
+```
+
+**Why UUID v7?** Time-ordered UUIDs prevent B-tree index fragmentation (random UUIDs scatter inserts across the index; v7 UUIDs append near the end). `Guid.CreateVersion7()` is available in .NET 9.
+
+**Why branded structs?** The compiler rejects `PromptVersionId` where a `PromptDefinitionId` is expected, eliminating a class of ID-mixup bugs that are invisible at runtime.
+
+**Existing tables:** `SecretOptions`, auth tables, and all other existing entities will have their `int Id` columns replaced with `uuid` + branded ID types in a dedicated migration. That migration is **out of scope** for this feature but must be completed before this feature ships to avoid mixed ID conventions in the codebase.
+
+---
+
 ## Section 1: Architecture Overview & Data Model
 
 ### Core Entities
 
-**PromptDefinition** — one row per logical prompt identity (path). Holds per-path metadata that never changes between versions.
+**PromptDefinition** — one row per logical prompt identity. Holds per-path metadata that never changes between versions.
 
 Fields:
-- `Path` — primary key. Hierarchical path (e.g., `/Agents/Prompts/Bash-Command`). Matches `^(/[\w\s-]+)+$` (allows word characters, spaces, and hyphens per segment, separated by `/`).
+- `Id: PromptDefinitionId` — primary key (UUID v7)
+- `Path: string` — unique index. Hierarchical path (e.g., `/Agents/Prompts/Bash-Command`). Matches `^(/[\w\s-]+)+$` (allows word characters, spaces, and hyphens per segment, separated by `/`).
 - `Type` — enum: `Prompt`, `Skill`, `ToolDescription`
-- `Category` — enum: `Foundation`, `Constraints`, `TaskSpecific`, `Overrides`. Owned by the path definition; never changes between versions. To move a prompt to a different category, create a new path.
+- `Category` — enum: `Foundation`, `Constraints`, `TaskSpecific`, `Overrides`. Owned by the definition; never changes between versions. To move a prompt to a different category, create a new definition.
 - `IsDefaultIncluded` — bool. When `true`, agents auto-include this prompt on creation.
 - `CreatedAt` — DateTime (UTC)
-- `DeletedAt` — DateTime? (UTC). Null = active path; set = soft-deleted (not shown in tree unless archived filter is enabled).
+- `DeletedAt` — DateTime? (UTC). Null = active; set = soft-deleted (hidden unless archived filter enabled).
 
 ---
 
 **PromptVersion** — immutable record for each version of a prompt, skill, or tool description. **Published and Archived versions are immutable.** Draft versions are mutable until published.
 
 Fields:
-- `Id` — primary key (GUID)
-- `Path` — foreign key to `PromptDefinition.Path` (not null)
+- `Id: PromptVersionId` — primary key (UUID v7)
+- `DefinitionId: PromptDefinitionId` — foreign key to `PromptDefinition.Id` (not null)
 - `Status` — enum: `Draft`, `Published`, `Archived`. Replaces the old `IsActive` bool.
   - `Draft` — work in progress; mutable; not visible to agents
   - `Published` — the active version; immutable; used by agents at runtime
@@ -50,23 +84,22 @@ Fields:
 - `CreatedBy` — string storing `"{subjectId}:{displayName}"` (e.g., `"abc123:timm"`). Structured so display name changes don't lose the original author identity.
 - `Notes` — optional user notes (e.g., "migrated from legacy system")
 
-**Database constraint:** Filtered unique index on `(Path) WHERE Status = 'Published'` — ensures only one published version per path.
-- PostgreSQL: `CREATE UNIQUE INDEX ix_prompt_versions_path_published ON prompt_versions (path) WHERE status = 'Published';`
-- SQLite: `CREATE UNIQUE INDEX ix_prompt_versions_path_published ON prompt_versions (path) WHERE status = 'Published';`
-- In EF Core `OnModelCreating`: `.HasIndex(v => v.Path).HasFilter("\"status\" = 'Published'").IsUnique()`
+**Database constraint:** Filtered unique index on `(DefinitionId) WHERE Status = 'Published'` — ensures only one published version per definition.
+- PostgreSQL/SQLite: `CREATE UNIQUE INDEX ix_prompt_versions_definition_published ON prompt_versions (definition_id) WHERE status = 'Published';`
+- In EF Core `OnModelCreating`: `.HasIndex(v => v.DefinitionId).HasFilter("\"status\" = 'Published'").IsUnique()`
 
 ---
 
-**AgentPromptAssignment** — junction table linking agents to the prompt definitions they include. Stores `DefinitionPath` (not a version ID), so agents always resolve the current published version at runtime.
+**AgentPromptAssignment** — junction table linking agents to prompt definitions. Stores `DefinitionId` so agents always resolve the current published version at runtime.
 
 Fields:
-- `Id` — primary key (GUID)
-- `AgentId` — foreign key to the Agent entity (verify exact table name during implementation)
-- `DefinitionPath` — foreign key to `PromptDefinition.Path`
+- `Id: AgentPromptAssignmentId` — primary key (UUID v7)
+- `AgentId: AgentId` — foreign key to the Agent entity (verify exact table/type name during implementation; will adopt branded ID when the existing-tables migration runs)
+- `DefinitionId: PromptDefinitionId` — foreign key to `PromptDefinition.Id`
 - `Order` — int. Controls display order within a category in the prompt selector UI. Also determines concatenation order **within** the same category (e.g., two `TaskSpecific` prompts are concatenated in ascending `Order`).
 
 **Constraints:**
-- Unique index: `(AgentId, DefinitionPath)`
+- Unique index: `(AgentId, DefinitionId)`
 - Cascade delete: if agent is deleted, its assignments are deleted
 
 ---
@@ -250,7 +283,7 @@ SET status = CASE
     WHEN status = 'Published' THEN 'Archived'
     ELSE status
 END
-WHERE path = @path AND (id = @newVersionId OR status = 'Published');
+WHERE definition_id = @definitionId AND (id = @newVersionId OR status = 'Published');
 ```
 
 This ensures there is never a window where zero published versions exist for the path.
@@ -264,24 +297,24 @@ This ensures there is never a window where zero published versions exist for the
 ```csharp
 // Brigade.Admin.Data.Services
 Task<PromptVersion?> GetPublishedPromptAsync(string path, CancellationToken ct = default);
-Task<PromptVersion?> GetPromptVersionAsync(Guid id, CancellationToken ct = default);
-Task<List<PromptVersion>> GetAgentPromptsAsync(Guid agentId, CancellationToken ct = default);
+Task<PromptVersion?> GetPromptVersionAsync(PromptVersionId id, CancellationToken ct = default);
+Task<List<PromptVersion>> GetAgentPromptsAsync(AgentId agentId, CancellationToken ct = default);
   // Returns published versions for agent's assignments, sorted by Category then Order
-Task<List<PromptVersion>> GetPromptHistoryAsync(string path, CancellationToken ct = default);
+Task<List<PromptVersion>> GetPromptHistoryAsync(PromptDefinitionId definitionId, CancellationToken ct = default);
   // Returns all versions (Draft, Published, Archived) newest first
 Task<PromptVersion> CreateDraftAsync(
-  string path, string content, string? frontmatter, string createdBy, string? notes,
-  CancellationToken ct = default);
+  PromptDefinitionId definitionId, string content, string? frontmatter,
+  string createdBy, string? notes, CancellationToken ct = default);
   // Creates a Draft version (mutable until published)
-Task UpdateDraftAsync(Guid draftId, string content, string? frontmatter, CancellationToken ct = default);
+Task UpdateDraftAsync(PromptVersionId draftId, string content, string? frontmatter, CancellationToken ct = default);
   // Mutates an existing Draft (auto-save)
-Task PublishDraftAsync(Guid draftId, CancellationToken ct = default);
+Task PublishDraftAsync(PromptVersionId draftId, CancellationToken ct = default);
   // Atomic: archives current Published, promotes Draft to Published
-Task DiscardDraftAsync(Guid draftId, CancellationToken ct = default);
+Task DiscardDraftAsync(PromptVersionId draftId, CancellationToken ct = default);
   // Deletes the Draft row
-Task RepublishArchivedAsync(Guid archivedVersionId, CancellationToken ct = default);
+Task RepublishArchivedAsync(PromptVersionId archivedVersionId, CancellationToken ct = default);
   // Promotes an Archived version back to Published (archives current Published)
-Task DeleteDefinitionAsync(string path, CancellationToken ct = default);
+Task DeleteDefinitionAsync(PromptDefinitionId definitionId, CancellationToken ct = default);
   // Soft-delete: sets PromptDefinition.DeletedAt
 Task<List<PromptDefinition>> SearchDefinitionsAsync(
   string query, string? typeFilter = null, bool includeDeleted = false, CancellationToken ct = default);
@@ -372,15 +405,16 @@ Cache implementation is deferred to a follow-up; the `IPromptStore` interface is
 
 ## Section 5: Data Storage & Migration
 
-**Two new tables.** The migration creates `prompt_definitions` first, then `prompt_versions` with its FK, then `agent_prompt_assignments`.
+**Two new tables.** All primary keys are `uuid` (UUID v7, generated by the application layer). The migration creates `prompt_definitions` first, then `prompt_versions`, then `agent_prompt_assignments`.
 
 ```csharp
 // Up
 
-// 1. Parent: one row per logical prompt path
+// 1. Parent: one row per logical prompt definition
 CreateTable("prompt_definitions", table => new
 {
-    path               = table.Column<string>(maxLength: 500, nullable: false),
+    id                 = table.Column<Guid>(nullable: false),              // PK — UUID v7 PromptDefinitionId
+    path               = table.Column<string>(maxLength: 500, nullable: false), // unique
     type               = table.Column<string>(maxLength: 50,  nullable: false), // Prompt | Skill | ToolDescription
     category           = table.Column<string>(maxLength: 50,  nullable: false), // Foundation | Constraints | TaskSpecific | Overrides
     is_default_included = table.Column<bool>(nullable: false, defaultValue: false),
@@ -388,38 +422,38 @@ CreateTable("prompt_definitions", table => new
     deleted_at         = table.Column<DateTime>(nullable: true),
     PrimaryKey         = "pk_prompt_definitions"
 });
+CreateIndex("prompt_definitions", new[] { "path" }, unique: true, name: "ix_prompt_definitions_path");
 
-// 2. Versions: one row per version of a path
+// 2. Versions: one row per version of a definition
 CreateTable("prompt_versions", table => new
 {
-    id           = table.Column<Guid>(nullable: false),
-    path         = table.Column<string>(maxLength: 500, nullable: false),  // FK → prompt_definitions.path
-    status       = table.Column<string>(maxLength: 20, nullable: false),   // Draft | Published | Archived
-    content      = table.Column<string>(nullable: false),
-    frontmatter  = table.Column<string>(nullable: true),
-    created_at   = table.Column<DateTime>(nullable: false),
-    created_by   = table.Column<string>(maxLength: 512, nullable: false),  // "{subjectId}:{displayName}"
-    notes        = table.Column<string>(nullable: true),
-    PrimaryKey   = "pk_prompt_versions",
-    ForeignKey   = ("path", "prompt_definitions", "path")
+    id            = table.Column<Guid>(nullable: false),              // PK — UUID v7 PromptVersionId
+    definition_id = table.Column<Guid>(nullable: false),              // FK → prompt_definitions.id
+    status        = table.Column<string>(maxLength: 20, nullable: false),  // Draft | Published | Archived
+    content       = table.Column<string>(nullable: false),
+    frontmatter   = table.Column<string>(nullable: true),
+    created_at    = table.Column<DateTime>(nullable: false),
+    created_by    = table.Column<string>(maxLength: 512, nullable: false), // "{subjectId}:{displayName}"
+    notes         = table.Column<string>(nullable: true),
+    PrimaryKey    = "pk_prompt_versions",
+    ForeignKey    = ("definition_id", "prompt_definitions", "id")
 });
 
-// Filtered unique index: only one Published version per path
-// EF Core: .HasIndex(v => v.Path).HasFilter("\"status\" = 'Published'").IsUnique()
-Sql("CREATE UNIQUE INDEX ix_prompt_versions_path_published ON prompt_versions (path) WHERE status = 'Published';");
+// Filtered unique index: only one Published version per definition
+// EF Core: .HasIndex(v => v.DefinitionId).HasFilter("\"status\" = 'Published'").IsUnique()
+Sql("CREATE UNIQUE INDEX ix_prompt_versions_definition_published ON prompt_versions (definition_id) WHERE status = 'Published';");
 
 // 3. Junction: which prompts each agent has selected
 CreateTable("agent_prompt_assignments", table => new
 {
-    id              = table.Column<Guid>(nullable: false),
-    agent_id        = table.Column<Guid>(nullable: false),           // FK → [AgentTable].id (verify name during implementation)
-    definition_path = table.Column<string>(maxLength: 500, nullable: false), // FK → prompt_definitions.path
-    order           = table.Column<int>(nullable: false, defaultValue: 0),
-    PrimaryKey      = "pk_agent_prompt_assignments",
-    ForeignKey      = ("definition_path", "prompt_definitions", "path")
+    id            = table.Column<Guid>(nullable: false),  // PK — UUID v7 AgentPromptAssignmentId
+    agent_id      = table.Column<Guid>(nullable: false),  // FK → [AgentTable].id (verify name; will be branded AgentId post-migration)
+    definition_id = table.Column<Guid>(nullable: false),  // FK → prompt_definitions.id
+    order         = table.Column<int>(nullable: false, defaultValue: 0),
+    PrimaryKey    = "pk_agent_prompt_assignments",
+    ForeignKey    = ("definition_id", "prompt_definitions", "id")
 });
-
-CreateIndex("agent_prompt_assignments", new[] { "agent_id", "definition_path" }, unique: true);
+CreateIndex("agent_prompt_assignments", new[] { "agent_id", "definition_id" }, unique: true);
 
 // Down: drop in reverse dependency order
 DropTable("agent_prompt_assignments");
@@ -456,12 +490,13 @@ DropTable("prompt_definitions");
 
 ## Section 7: Future Considerations
 
-1. **Recommender agents** — specialized agents that search tool descriptions and recommend tools. Out of scope; separate feature.
-2. **Abstractions layer** — introduce `Brigade.Admin.Abstractions` to decouple `Brigade.Agents` from `Brigade.Admin.Data`. Currently both `ISecretsManager` and `IPromptStore` create a data→runtime dependency.
-3. **Prompt templates** — parameterized prompts with variable substitution (e.g., `${AGENT_NAME}`). Future enhancement.
-4. **Versioning comparisons** — diff view between versions in the history modal.
-5. **Bulk operations** — rename paths in bulk, reassign prompts across agents.
-6. **Audit log** — formal audit trail (who published, who deleted). Currently covered by `created_by`; a separate `prompt_audit_log` table could be added via migration.
+1. **UUID7 migration for existing tables** — `SecretOptions`, auth tables, and all other existing entities must have their `int Id` columns replaced with `uuid` + branded ID types before this feature ships. Requires a dedicated migration and regeneration of all EF Core migrations.
+2. **Recommender agents** — specialized agents that search tool descriptions and recommend tools. Out of scope; separate feature.
+3. **Abstractions layer** — introduce `Brigade.Admin.Abstractions` to decouple `Brigade.Agents` from `Brigade.Admin.Data`. Currently both `ISecretsManager` and `IPromptStore` create a data→runtime dependency.
+4. **Prompt templates** — parameterized prompts with variable substitution (e.g., `${AGENT_NAME}`). Future enhancement.
+5. **Versioning comparisons** — diff view between versions in the history modal.
+6. **Bulk operations** — rename paths in bulk, reassign prompts across agents.
+7. **Audit log** — formal audit trail (who published, who deleted). Currently covered by `created_by`; a separate `prompt_audit_log` table could be added via migration.
 
 ---
 
