@@ -32,6 +32,7 @@ builder.Services.AddAgentStores();
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddControllers();
+builder.Services.AddHttpClient("import");
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
