@@ -8,10 +8,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\libs\Brigade.Admin.UI\Brigade.Admin.UI.csproj" />
-    <ProjectReference Include="..\libs\Brigade.Admin.Auth\Brigade.Admin.Auth.csproj" />
-    <ProjectReference Include="..\libs\Brigade.Admin.Data\Brigade.Admin.Data.csproj" />
-    <ProjectReference Include="..\libs\Brigade.Admin.Data.Sqlite\Brigade.Admin.Data.Sqlite.csproj" />
+    <ProjectReference Include="..\libs\Legion.Admin.UI\Legion.Admin.UI.csproj" />
+    <ProjectReference Include="..\libs\Legion.Admin.Auth\Legion.Admin.Auth.csproj" />
+    <ProjectReference Include="..\libs\Legion.Admin.Data\Legion.Admin.Data.csproj" />
+    <ProjectReference Include="..\libs\Legion.Admin.Data.Sqlite\Legion.Admin.Data.Sqlite.csproj" />
   </ItemGroup>
 
   <ItemGroup>

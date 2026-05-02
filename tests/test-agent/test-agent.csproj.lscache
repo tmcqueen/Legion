@@ -21,7 +21,7 @@ ProjectAssetsFile=<PATH>obj/project.assets.json
 RootNamespace=test_agent
 RunAnalyzers=
 RunAnalyzersDuringLiveAnalysis=
-SolutionPath=<PATH>../../Brigade.slnx
+SolutionPath=<PATH>../../Legion.slnx
 TargetFrameworkIdentifier=.NETCoreApp
 TargetPath=<PATH>bin/Debug/net10.0/test-agent.dll
 TargetRefPath=<PATH>obj/Debug/net10.0/ref/test-agent.dll
@@ -61,7 +61,7 @@ obj/Debug/net10.0/
 Program.cs
 
 [metadataReferences]
-../../src/Brigade.Agents/obj/Debug/net10.0/ref/Brigade.Agents.dll
+../../src/Legion.Agents/obj/Debug/net10.0/ref/Legion.Agents.dll
 <DOTNET>/packs/Microsoft.NETCore.App.Ref/10.0.7/ref/net10.0/
  Microsoft.CSharp.dll
  Microsoft.VisualBasic.Core.dll

@@ -8,6 +8,6 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="../../src/Brigade.Agents/Brigade.Agents.csproj" />
+    <ProjectReference Include="../../src/Legion.Agents/Legion.Agents.csproj" />
   </ItemGroup>
 </Project>

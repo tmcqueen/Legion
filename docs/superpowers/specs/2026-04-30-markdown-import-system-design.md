@@ -1,7 +1,7 @@
 # Markdown-Based Prompt, Skill, and Tool Import System — Design Spec
 
 **Date:** 2026-04-30  
-**Project:** Brigade (WebDev + Brigade.Agents + Brigade.Admin.Data)  
+**Project:** Legion (WebDev + Legion.Agents + Legion.Admin.Data)  
 **Status:** Approved (rev 3 — UUID7 branded IDs)
 
 ---
@@ -21,7 +21,7 @@ Users need a flexible way to manage, organize, and version system prompts, skill
 
 ## Foundational Convention: Branded UUID v7 Primary Keys
 
-This feature uses the Brigade-wide branded ID convention. **See [`2026-04-30-uuid7-branded-ids-design.md`](2026-04-30-uuid7-branded-ids-design.md) for the full pattern, EF Core converter registration, and migration strategy.**
+This feature uses the Legion-wide branded ID convention. **See [`2026-04-30-uuid7-branded-ids-design.md`](2026-04-30-uuid7-branded-ids-design.md) for the full pattern, EF Core converter registration, and migration strategy.**
 
 The three new entities introduced here follow the same pattern:
 - `PromptDefinitionId` — UUID v7, PK for `PromptDefinition`
@@ -270,12 +270,12 @@ This ensures there is never a window where zero published versions exist for the
 
 ### IPromptStore Interface Placement
 
-`IPromptStore` lives in `Brigade.Admin.Data.Services` (same namespace as `ISecretsManager`). The layering relationship (`Brigade.Agents` → `Brigade.Admin.Data`) already exists for `ISecretsManager` and will continue here. A future refactor could introduce a `Brigade.Admin.Abstractions` project to decouple the runtime from the data layer, but that is out of scope for this feature.
+`IPromptStore` lives in `Legion.Admin.Data.Services` (same namespace as `ISecretsManager`). The layering relationship (`Legion.Agents` → `Legion.Admin.Data`) already exists for `ISecretsManager` and will continue here. A future refactor could introduce a `Legion.Admin.Abstractions` project to decouple the runtime from the data layer, but that is out of scope for this feature.
 
 ### IPromptStore Interface
 
 ```csharp
-// Brigade.Admin.Data.Services
+// Legion.Admin.Data.Services
 Task<PromptVersion?> GetPublishedPromptAsync(string path, CancellationToken ct = default);
 Task<PromptVersion?> GetPromptVersionAsync(PromptVersionId id, CancellationToken ct = default);
 Task<List<PromptVersion>> GetAgentPromptsAsync(AgentId agentId, CancellationToken ct = default);
@@ -332,7 +332,7 @@ Path segments containing slashes must use query parameters or catch-all routes:
 - `GET /api/agents/{agentId}/prompts` — get prompt assignments for agent
 - `POST /api/agents/{agentId}/prompts` — bulk update assignments (replace all)
 
-### Brigade.Agents — Updated AgentFactory
+### Legion.Agents — Updated AgentFactory
 
 ```csharp
 public async Task<AIAgent> CreateAgentAsync(Guid agentId, AgentOptions options, CancellationToken ct = default)
@@ -471,7 +471,7 @@ DropTable("prompt_definitions");
 ## Section 7: Future Considerations
 
 1. **Recommender agents** — specialized agents that search tool descriptions and recommend tools. Out of scope; separate feature.
-2. **Abstractions layer** — introduce `Brigade.Admin.Abstractions` to decouple `Brigade.Agents` from `Brigade.Admin.Data`. Currently both `ISecretsManager` and `IPromptStore` create a data→runtime dependency.
+2. **Abstractions layer** — introduce `Legion.Admin.Abstractions` to decouple `Legion.Agents` from `Legion.Admin.Data`. Currently both `ISecretsManager` and `IPromptStore` create a data→runtime dependency.
 3. **Prompt templates** — parameterized prompts with variable substitution (e.g., `${AGENT_NAME}`). Future enhancement.
 4. **Versioning comparisons** — diff view between versions in the history modal.
 5. **Bulk operations** — rename paths in bulk, reassign prompts across agents.

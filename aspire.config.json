@@ -1,5 +1,5 @@
 {
   "appHost": {
-    "path": "src/Brigade.AppHost/Brigade.AppHost.csproj"
+    "path": "src/aspire/Legion.AppHost/Legion.AppHost.csproj"
   }
 }

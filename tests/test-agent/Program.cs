@@ -1,7 +1,7 @@
 ﻿using System.Text.Json;
-using Brigade.Agents.Providers;
+using Legion.Agents.Providers;
 
-namespace Brigade.Tests.Agent;
+namespace Legion.Tests.Agent;
 
 public class Program
 {

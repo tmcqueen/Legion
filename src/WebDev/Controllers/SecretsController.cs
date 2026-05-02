@@ -1,4 +1,4 @@
-using Brigade.Admin.Data.Stores;
+using Legion.Admin.Data.Stores;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

@@ -1,0 +1,33 @@
+<Solution>
+    <Project Path="src/Legion.Agents/Legion.Agents.csproj" />
+    <Project Path="src/Legion.WebHost/Legion.WebHost.csproj" />
+    <Project Path="src/WebDev/WebDev.csproj" />
+
+  <Folder Name="/Aspire/">
+    <Project Path="src/aspire/Legion.AppHost/Legion.AppHost.csproj" />
+    <Project Path="src/aspire/Legion.ServiceDefaults/Legion.ServiceDefaults.csproj" />
+  </Folder>
+
+  <Folder Name="/Orleans/">
+    <Project Path="src/orleans/Legion.SiloHost.Abstractions/Legion.SiloHost.Abstractions.csproj" />
+    <Project Path="src/orleans/Legion.SiloHost.Common/Legion.SiloHost.Common.csproj" />
+    <Project Path="src/orleans/Legion.SiloHost.Grains/Legion.SiloHost.Grains.csproj" />
+    <Project Path="src/orleans/Legion.SiloHost.Server/Legion.SiloHost.Server.csproj" />
+  </Folder>
+
+  <Folder Name="/ClassLibraries/">
+    <Project Path="src/libs/Legion.Admin.Auth/Legion.Admin.Auth.csproj" />
+    <Project Path="src/libs/Legion.Admin.UI/Legion.Admin.UI.csproj" />
+    <Project Path="src/libs/Legion.Admin.Data/Legion.Admin.Data.csproj" />
+    <Project Path="src/libs/Legion.Admin.Data.Models/Legion.Admin.Data.Models.csproj" />
+    <Project Path="src/libs/Legion.Admin.Data.PostgreSQL/Legion.Admin.Data.PostgreSQL.csproj" />
+    <Project Path="src/libs/Legion.Admin.Data.Sqlite/Legion.Admin.Data.Sqlite.csproj" />
+  </Folder>
+  <Folder Name="/src/" />
+  <Folder Name="/src/libs/" />
+
+  <Folder Name="/Tests/">
+    <!-- <Project Path="tests/test-agent/test-agent.csproj" /> -->
+    <Project Path="tests/Legion.Secrets.Tests/Legion.Secrets.Tests.csproj" />
+  </Folder>
+</Solution>

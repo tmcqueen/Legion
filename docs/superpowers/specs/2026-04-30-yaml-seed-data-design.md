@@ -1,7 +1,7 @@
 # YAML-Based Seed Data — Design Spec
 
 **Date:** 2026-04-30
-**Project:** Brigade.Admin.Data + WebDev
+**Project:** Legion.Admin.Data + WebDev
 **Status:** Approved (rev 2 — Opus review applied)
 **Depends on:** `2026-04-30-uuid7-branded-ids-design.md`
 **Prerequisite for:** `2026-04-30-markdown-import-system-design.md`
@@ -10,7 +10,7 @@
 
 ## Overview
 
-Seed data is currently hardcoded in static `SeedData.*` partial classes inside `Brigade.Admin.Data`. This replaces that system with YAML files in `src/WebDev/seed/`, loaded and applied at startup by the existing seed services.
+Seed data is currently hardcoded in static `SeedData.*` partial classes inside `Legion.Admin.Data`. This replaces that system with YAML files in `src/WebDev/seed/`, loaded and applied at startup by the existing seed services.
 
 **Goals:**
 - Seed data is editable without recompiling — edit source YAML files in `src/WebDev/seed/`, rebuild, restart
@@ -44,7 +44,7 @@ Files are marked **Copy to Output Directory: Always** in `WebDev.csproj`:
 
 ### Seed Folder Path (Configurable)
 
-The seed folder path is read from configuration, defaulting to `ContentRootPath/seed`. This allows `Brigade.WebHost` (the Aspire-hosted app) or any other host to point at its own seed folder without changing library code:
+The seed folder path is read from configuration, defaulting to `ContentRootPath/seed`. This allows `Legion.WebHost` (the Aspire-hosted app) or any other host to point at its own seed folder without changing library code:
 
 ```json
 // appsettings.Development.json
@@ -70,7 +70,7 @@ Each file contains one or more top-level keys identifying the entity type. Files
 ```yaml
 agents:
   - name: Default Agent
-    description: The default Brigade agent
+    description: The default Legion agent
 ```
 
 No `id` field. IDs are auto-generated as UUID v7 at insert time if the agent does not already exist (matched by `name`).
@@ -80,7 +80,7 @@ No `id` field. IDs are auto-generated as UUID v7 at insert time if the agent doe
 ```yaml
 users:
   - userName: admin
-    email: admin@brigade.local
+    email: admin@legion.local
     emailConfirmed: true
     password: "${Seeding:AdminPassword}"
 ```
@@ -94,11 +94,11 @@ dotnet user-secrets set "Seeding:AdminPassword" "Admin123!"
 
 ```yaml
 oidc-applications:
-  - clientId: brigade-bff-client-id
+  - clientId: legion-bff-client-id
     clientSecret: "${Seeding:BffClientSecret}"
     clientType: confidential
     consentType: implicit
-    displayName: Brigade BFF
+    displayName: Legion BFF
     redirectUris:
       - "${OpenIddict:Authority}/signin-oidc"
     postLogoutRedirectUris:
@@ -111,16 +111,16 @@ oidc-applications:
       - rt:code
       - scp:openid
       - scp:profile
-      - scp:brigade-api
+      - scp:legion-api
 
-  - clientId: brigade-api-client-id
+  - clientId: legion-api-client-id
     clientSecret: "${Seeding:ApiClientSecret}"
     clientType: confidential
-    displayName: Brigade API Test Client
+    displayName: Legion API Test Client
     permissions:
       - ept:token
       - gt:client_credentials
-      - scp:brigade-api
+      - scp:legion-api
 ```
 
 **`clientSecret` must use `${ConfigKey}` interpolation.** Permissions use raw OpenIddict prefix strings (`ept:`, `gt:`, `rt:`, `scp:`). The loader validates each permission against known prefixes at load time and logs a warning on unrecognised values.
@@ -129,9 +129,9 @@ oidc-applications:
 
 ```yaml
 oidc-scopes:
-  - name: brigade-api
+  - name: legion-api
     resources:
-      - brigade-webhost
+      - legion-webhost
 ```
 
 ---
@@ -202,7 +202,7 @@ Unknown top-level keys are logged as warnings and skipped (no crash).
 All entity types use dedicated DTOs for YAML deserialization. This isolates YAML field names from EF Core model shapes and OpenIddict descriptor internals.
 
 ```csharp
-// Brigade.Admin.Data/Seeds/Dtos/SeedAgentDto.cs
+// Legion.Admin.Data/Seeds/Dtos/SeedAgentDto.cs
 record SeedAgentDto
 {
     public string Name { get; init; } = "";
@@ -210,7 +210,7 @@ record SeedAgentDto
     // Add fields as AgentOptions grows; Id is not sourced from YAML
 }
 
-// Brigade.Admin.Data/Seeds/Dtos/SeedUserDto.cs
+// Legion.Admin.Data/Seeds/Dtos/SeedUserDto.cs
 record SeedUserDto
 {
     public string UserName { get; init; } = "";
@@ -219,7 +219,7 @@ record SeedUserDto
     public string Password { get; init; } = "";  // must be interpolated
 }
 
-// Brigade.Admin.Data/Seeds/Dtos/OidcApplicationDto.cs
+// Legion.Admin.Data/Seeds/Dtos/OidcApplicationDto.cs
 record OidcApplicationDto
 {
     public string ClientId { get; init; } = "";
@@ -251,7 +251,7 @@ record OidcApplicationDto
     }
 }
 
-// Brigade.Admin.Data/Seeds/Dtos/OidcScopeDto.cs
+// Legion.Admin.Data/Seeds/Dtos/OidcScopeDto.cs
 record OidcScopeDto
 {
     public string Name { get; init; } = "";
@@ -263,7 +263,7 @@ record OidcScopeDto
 
 ## YAML Loader
 
-`YamlSeedLoader` in `Brigade.Admin.Data/Seeds/` handles discovery, parsing, interpolation, security checks, and dispatch into `SeedPayload`.
+`YamlSeedLoader` in `Legion.Admin.Data/Seeds/` handles discovery, parsing, interpolation, security checks, and dispatch into `SeedPayload`.
 
 ```csharp
 public class YamlSeedLoader(IConfiguration configuration, ILogger<YamlSeedLoader> logger)
@@ -405,7 +405,7 @@ private async Task SeedUsersAsync(List<SeedUserDto> users, UserManager<Applicati
 
 ## NuGet Dependency
 
-Add `YamlDotNet` to `Brigade.Admin.Data`:
+Add `YamlDotNet` to `Legion.Admin.Data`:
 
 ```xml
 <PackageReference Include="YamlDotNet" Version="16.*" />
@@ -424,8 +424,8 @@ Set `"Seeding:Source": "Yaml"` in `appsettings.Development.json`. Services check
 Create the four YAML files under `src/WebDev/seed/` as shown above. Add sensitive values to User Secrets:
 ```
 dotnet user-secrets set "Seeding:AdminPassword" "Admin123!"
-dotnet user-secrets set "Seeding:BffClientSecret" "brigade-bff-client-secret"
-dotnet user-secrets set "Seeding:ApiClientSecret" "brigade-api-client-secret"
+dotnet user-secrets set "Seeding:BffClientSecret" "legion-bff-client-secret"
+dotnet user-secrets set "Seeding:ApiClientSecret" "legion-api-client-secret"
 ```
 
 ### Step 3 — Verify parity
@@ -435,10 +435,10 @@ Run both code paths against a clean database and confirm identical seed state.
 ### Step 4 — Delete legacy code
 
 Remove:
-- `Brigade.Admin.Data/Seeds/SeedData.Agents.cs`
-- `Brigade.Admin.Data/Seeds/SeedData.AppUsers.cs`
-- `Brigade.Admin.Data/Seeds/SeedData.Application.cs`
-- `Brigade.Admin.Data/Seeds/SeedData.Scope.cs`
+- `Legion.Admin.Data/Seeds/SeedData.Agents.cs`
+- `Legion.Admin.Data/Seeds/SeedData.AppUsers.cs`
+- `Legion.Admin.Data/Seeds/SeedData.Application.cs`
+- `Legion.Admin.Data/Seeds/SeedData.Scope.cs`
 
 Remove the `"Legacy"` branch from both seed services and the `Seeding:Source` flag check.
 
@@ -458,25 +458,25 @@ Remove the `"Legacy"` branch from both seed services and the `Seeding:Source` fl
 - `src/WebDev/seed/users.yml`
 - `src/WebDev/seed/oidc-applications.yml`
 - `src/WebDev/seed/oidc-scopes.yml`
-- `Brigade.Admin.Data/Seeds/YamlSeedLoader.cs`
-- `Brigade.Admin.Data/Seeds/SeedPayload.cs`
-- `Brigade.Admin.Data/Seeds/Dtos/SeedAgentDto.cs`
-- `Brigade.Admin.Data/Seeds/Dtos/SeedUserDto.cs`
-- `Brigade.Admin.Data/Seeds/Dtos/OidcApplicationDto.cs`
-- `Brigade.Admin.Data/Seeds/Dtos/OidcScopeDto.cs`
+- `Legion.Admin.Data/Seeds/YamlSeedLoader.cs`
+- `Legion.Admin.Data/Seeds/SeedPayload.cs`
+- `Legion.Admin.Data/Seeds/Dtos/SeedAgentDto.cs`
+- `Legion.Admin.Data/Seeds/Dtos/SeedUserDto.cs`
+- `Legion.Admin.Data/Seeds/Dtos/OidcApplicationDto.cs`
+- `Legion.Admin.Data/Seeds/Dtos/OidcScopeDto.cs`
 
 **Modified:**
-- `Brigade.Admin.Data/Services/AdminDbSeedService.cs` — use `YamlSeedLoader`; add `Seeding:Source` guard; add idempotency
-- `Brigade.Admin.Data/Services/AuthDbSeedService.cs` — use `YamlSeedLoader`; add `Seeding:Source` guard; add user idempotency
+- `Legion.Admin.Data/Services/AdminDbSeedService.cs` — use `YamlSeedLoader`; add `Seeding:Source` guard; add idempotency
+- `Legion.Admin.Data/Services/AuthDbSeedService.cs` — use `YamlSeedLoader`; add `Seeding:Source` guard; add user idempotency
 - `WebDev/WebDev.csproj` — copy rule for `seed/**/*.yml` and `*.yaml`
-- `Brigade.Admin.Data/Brigade.Admin.Data.csproj` — add `YamlDotNet` reference
+- `Legion.Admin.Data/Legion.Admin.Data.csproj` — add `YamlDotNet` reference
 - `WebDev/appsettings.Development.json` — add `Seeding:Path` and `Seeding:Source`
 
 **Deleted (after Step 4):**
-- `Brigade.Admin.Data/Seeds/SeedData.Agents.cs`
-- `Brigade.Admin.Data/Seeds/SeedData.AppUsers.cs`
-- `Brigade.Admin.Data/Seeds/SeedData.Application.cs`
-- `Brigade.Admin.Data/Seeds/SeedData.Scope.cs`
+- `Legion.Admin.Data/Seeds/SeedData.Agents.cs`
+- `Legion.Admin.Data/Seeds/SeedData.AppUsers.cs`
+- `Legion.Admin.Data/Seeds/SeedData.Application.cs`
+- `Legion.Admin.Data/Seeds/SeedData.Scope.cs`
 
 ---
 

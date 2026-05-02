@@ -4,11 +4,11 @@
 <Router 
     AppAssembly="typeof(Program).Assembly" 
     AdditionalAssemblies="[
-        typeof(Brigade.Admin.UI.Pages.Login).Assembly
+        typeof(Legion.Admin.UI.Pages.Login).Assembly
     ]"
-    NotFoundPage="typeof(Brigade.Admin.UI.Pages.NotFound)">
+    NotFoundPage="typeof(Legion.Admin.UI.Pages.NotFound)">
     <Found Context="routeData">
-        <AuthorizeRouteView RouteData="routeData" DefaultLayout="typeof(Brigade.Admin.UI.Layouts.MainLayout)">
+        <AuthorizeRouteView RouteData="routeData" DefaultLayout="typeof(Legion.Admin.UI.Layouts.MainLayout)">
             <NotAuthorized>
                 @{ Navigation.NavigateTo("/account/login", forceLoad: true); }
             </NotAuthorized>

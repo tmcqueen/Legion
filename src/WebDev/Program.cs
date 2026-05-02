@@ -1,9 +1,9 @@
 using WebDev.Components;
-using Brigade.Admin.Auth;
+using Legion.Admin.Auth;
 using Microsoft.AspNetCore.HttpOverrides;
 using Radzen;
-using Brigade.Admin.Data;
-using Brigade.Admin.Data.Services;
+using Legion.Admin.Data;
+using Legion.Admin.Data.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -89,7 +89,7 @@ app.UseAntiforgery();
 app.MapControllers();
 app.MapDefaultControllerRoute();
 app.MapRazorComponents<App>()
-   .AddAdditionalAssemblies(typeof(Brigade.Admin.UI.Pages.Login).Assembly)
+   .AddAdditionalAssemblies(typeof(Legion.Admin.UI.Pages.Login).Assembly)
    .AddInteractiveServerRenderMode();
 
 
