@@ -37,4 +37,10 @@
     <PackageReference Include="Radzen.Blazor" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Include="seed\**\*.yml;seed\**\*.yaml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
 </Project>

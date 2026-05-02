@@ -1,0 +1,5 @@
+users:
+  - userName: admin
+    email: admin@legion.local
+    emailConfirmed: true
+    password: "${Seeding:AdminPassword}"

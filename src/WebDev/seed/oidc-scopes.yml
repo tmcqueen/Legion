@@ -1,0 +1,4 @@
+oidc-scopes:
+  - name: legion-api
+    resources:
+      - legion-webhost

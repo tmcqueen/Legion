@@ -1,0 +1,3 @@
+agents:
+  - name: Default Agent
+    description: The default Legion agent

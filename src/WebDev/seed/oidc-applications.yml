@@ -1,0 +1,28 @@
+oidc-applications:
+  - clientId: legion-bff-client-id
+    clientSecret: "${Seeding:BffClientSecret}"
+    clientType: confidential
+    consentType: implicit
+    displayName: Legion BFF
+    redirectUris:
+      - "${OpenIddict:Authority}/signin-oidc"
+    postLogoutRedirectUris:
+      - "${OpenIddict:Authority}/signout-callback-oidc"
+    permissions:
+      - ept:authorization
+      - ept:end_session
+      - ept:token
+      - gt:authorization_code
+      - rt:code
+      - scp:openid
+      - scp:profile
+      - scp:legion-api
+
+  - clientId: legion-api-client-id
+    clientSecret: "${Seeding:ApiClientSecret}"
+    clientType: confidential
+    displayName: Legion API Test Client
+    permissions:
+      - ept:token
+      - gt:client_credentials
+      - scp:legion-api
