@@ -95,6 +95,7 @@ public class ImportController(IPromptStore store, IHttpClientFactory httpClientF
 
                 results.Add(new { path = item.Path, status = "ok", versionId = (Guid)version.Id });
             }
+            catch (OperationCanceledException) { throw; }
             catch (Exception ex)
             {
                 results.Add(new { path = item.Path, status = "error", message = ex.Message });
@@ -143,7 +144,7 @@ public class ImportController(IPromptStore store, IHttpClientFactory httpClientF
 
     private static string Capitalize(string s) =>
         string.IsNullOrEmpty(s) ? s :
-        string.Join("-", s.Split('-').Select(p => char.ToUpperInvariant(p[0]) + p[1..]));
+        string.Join("-", s.Split('-').Select(p => string.IsNullOrEmpty(p) ? p : char.ToUpperInvariant(p[0]) + p[1..]));
 
     private static async Task<string?> CheckSsrfAsync(Uri uri)
     {
@@ -161,14 +162,29 @@ public class ImportController(IPromptStore store, IHttpClientFactory httpClientF
 
     private static bool IsBlockedIp(IPAddress ip)
     {
+        // Unwrap IPv4-mapped IPv6 addresses (::ffff:x.x.x.x) before family checks
+        if (ip.IsIPv4MappedToIPv6)
+            ip = ip.MapToIPv4();
+
         if (IPAddress.IsLoopback(ip)) return true;
+
         if (ip.AddressFamily == System.Net.Sockets.AddressFamily.InterNetworkV6)
-            return ip.Equals(IPAddress.IPv6Loopback) || ip.IsIPv6LinkLocal;
+            return ip.Equals(IPAddress.IPv6Loopback)
+                || ip.IsIPv6LinkLocal
+                || IsIPv6Ula(ip);
+
         var bytes = ip.GetAddressBytes();
         return bytes[0] == 10 ||
                (bytes[0] == 172 && bytes[1] >= 16 && bytes[1] <= 31) ||
                (bytes[0] == 192 && bytes[1] == 168) ||
-               (bytes[0] == 169 && bytes[1] == 254);
+               (bytes[0] == 169 && bytes[1] == 254) ||
+               (bytes[0] == 100 && bytes[1] >= 64 && bytes[1] <= 127);
+    }
+
+    private static bool IsIPv6Ula(IPAddress ip)
+    {
+        var bytes = ip.GetAddressBytes();
+        return (bytes[0] & 0xFE) == 0xFC; // fc00::/7 ULA range
     }
 }
 

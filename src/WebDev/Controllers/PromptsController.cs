@@ -71,6 +71,7 @@ public class PromptsController(IPromptStore store) : ControllerBase
             return CreatedAtAction(nameof(GetVersion), new { id = (Guid)version.Id }, version);
         }
         catch (ArgumentException ex) { return BadRequest(ex.Message); }
+        catch (KeyNotFoundException ex) { return NotFound(ex.Message); }
         catch (InvalidOperationException ex) { return Conflict(ex.Message); }
     }
 
@@ -130,8 +131,12 @@ public class PromptsController(IPromptStore store) : ControllerBase
         var defs = await store.SearchDefinitionsAsync(path, ct: ct);
         var def = defs.FirstOrDefault(d => d.Path == path);
         if (def is null) return NotFound();
-        await store.DeleteDefinitionAsync(def.Id, ct);
-        return NoContent();
+        try
+        {
+            await store.DeleteDefinitionAsync(def.Id, ct);
+            return NoContent();
+        }
+        catch (KeyNotFoundException ex) { return NotFound(ex.Message); }
     }
 }
 

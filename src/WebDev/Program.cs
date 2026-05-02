@@ -32,7 +32,9 @@ builder.Services.AddAgentStores();
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddControllers();
-builder.Services.AddHttpClient("import");
+builder.Services.AddHttpClient("import")
+    .ConfigurePrimaryHttpMessageHandler(() =>
+        new SocketsHttpHandler { AllowAutoRedirect = false });
 
 // Add services to the container.
 builder.Services.AddRazorComponents()

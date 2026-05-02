@@ -21,11 +21,15 @@ public class AgentPromptsController(IPromptStore store) : ControllerBase
     public async Task<IActionResult> SetAssignments(
         Guid agentId, [FromBody] List<AssignmentItem> items, CancellationToken ct = default)
     {
-        await store.SetAgentAssignmentsAsync(
-            (AgentOptionsId)agentId,
-            items.Select(i => ((PromptDefinitionId)i.DefinitionId, i.Order)),
-            ct);
-        return NoContent();
+        try
+        {
+            await store.SetAgentAssignmentsAsync(
+                (AgentOptionsId)agentId,
+                items.Select(i => ((PromptDefinitionId)i.DefinitionId, i.Order)),
+                ct);
+            return NoContent();
+        }
+        catch (ArgumentException ex) { return BadRequest(ex.Message); }
     }
 }
 
