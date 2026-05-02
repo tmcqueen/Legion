@@ -110,7 +110,8 @@
 
     private Task OnExpand(TreeExpandEventArgs args)
     {
-        if (args.Value is PromptTreeNode node) args.Children.Data = node.Children;
+        if (args.Value is PromptTreeNode node && args.Children is not null)
+            args.Children.Data = node.Children;
         return Task.CompletedTask;
     }
 
