@@ -1,6 +1,7 @@
-
-using Legion.Admin.Data.Seeds;
 using Legion.Admin.Data.Auth;
+using Legion.Admin.Data.Models.Auth;
+using Legion.Admin.Data.Seeds;
+using Legion.Admin.Data.Seeds.Dtos;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
@@ -8,92 +9,124 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using OpenIddict.Abstractions;
-using Legion.Admin.Data.Models.Auth;
 
 namespace Legion.Admin.Data.Services;
 
-public class AuthDbSeedService : IHostedService
+public class AuthDbSeedService(
+    ILogger<AuthDbSeedService> logger,
+    IServiceProvider serviceProvider,
+    IWebHostEnvironment env,
+    IConfiguration configuration,
+    YamlSeedLoader loader) : IHostedService
 {
-    private readonly IServiceProvider _serviceProvider;
-    private readonly string _env;
-    private readonly ILogger<AuthDbSeedService> _logger;
-    private readonly string _authority;
-
-    public AuthDbSeedService(ILogger<AuthDbSeedService> logger,
-                             IServiceProvider serviceProvider,
-                             IWebHostEnvironment env,
-                             IConfiguration configuration)
-    {
-        _serviceProvider = serviceProvider;
-        _env = env.EnvironmentName;
-        _logger = logger;
-        _authority = configuration["OpenIddict:Authority"]           
-            ?? throw new InvalidOperationException("OpenIddict:Authority is required in configuration.")   ;
-    }
-    
     public async Task StartAsync(CancellationToken cancellationToken)
     {
-        using var scope = _serviceProvider.CreateScope();
-        var context = scope.ServiceProvider.GetRequiredService<AuthDbContext>();
-        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>(); 
+        if (env.EnvironmentName != "Development") return;
+        if (configuration["Seeding:Source"] == "Legacy")
+        {
+            await RunLegacyAsync(cancellationToken);
+            return;
+        }
+
+        var seedPath = ResolveSeedPath();
+        var payload = loader.LoadAll(seedPath);
+
+        using var scope = serviceProvider.CreateScope();
+        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
         var appManager = scope.ServiceProvider.GetRequiredService<IOpenIddictApplicationManager>();
         var scopeManager = scope.ServiceProvider.GetRequiredService<IOpenIddictScopeManager>();
-        // var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
 
-        // Seed the database with initial data if necessary
-        if (_env == "Development")
-        {
-            await SeedUsersAsync(SeedData.GetDefaultAppUsers(), userManager);
-            await SeedApplicationsAsync(SeedData.GetDefaultApplications(_authority), appManager);
-
-            await SeedScopesAsync(SeedData.GetDefaultAppScopes(), scopeManager);
-            // await SeedRolesAsync(SeedData.GetDefaultRoles(), roleManager);
-        }
+        await SeedUsersAsync(payload.Users, userManager);
+        await SeedApplicationsAsync(
+            payload.OidcApplications.Select(d => d.ToDescriptor()).ToList(),
+            appManager,
+            cancellationToken);
+        await SeedScopesAsync(
+            payload.OidcScopes.Select(d => d.ToDescriptor()).ToList(),
+            scopeManager,
+            cancellationToken);
     }
 
     public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
 
-    private async Task SeedUsersAsync(List<SeedData.SeedUser> defaultUsers, UserManager<ApplicationUser> userManager)
+    private string ResolveSeedPath()
     {
-        foreach (var seedUser in defaultUsers)
-        {
-            var user = seedUser.ToApplicationUser();
+        var configured = configuration["Seeding:Path"] ?? "seed";
+        return Path.IsPathRooted(configured)
+            ? configured
+            : Path.Combine(env.ContentRootPath, configured);
+    }
 
-            var result = await userManager.CreateAsync(user, seedUser.Password);
-            if (!result.Succeeded)
+    private async Task RunLegacyAsync(CancellationToken cancellationToken)
+    {
+        using var scope = serviceProvider.CreateScope();
+        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+        var appManager = scope.ServiceProvider.GetRequiredService<IOpenIddictApplicationManager>();
+        var scopeManager = scope.ServiceProvider.GetRequiredService<IOpenIddictScopeManager>();
+
+        var authority = configuration["OpenIddict:Authority"]
+            ?? throw new InvalidOperationException("OpenIddict:Authority is required in configuration.");
+
+        await SeedUsersAsync(SeedData.GetDefaultAppUsers()
+            .Select(u => new SeedUserDto
             {
-                _logger.LogError("Failed to create user {UserName}: {Errors}",
-                    user.UserName, string.Join(", ", result.Errors.Select(e => e.Description)));
-            }
+                UserName = u.UserName ?? "",
+                Email = u.Email ?? "",
+                EmailConfirmed = u.EmailConfirmed,
+                Password = u.Password
+            }).ToList(), userManager);
+        await SeedApplicationsAsync(SeedData.GetDefaultApplications(authority), appManager, cancellationToken);
+        await SeedScopesAsync(SeedData.GetDefaultAppScopes(), scopeManager, cancellationToken);
+    }
+
+    private async Task SeedUsersAsync(List<SeedUserDto> users, UserManager<ApplicationUser> userManager)
+    {
+        foreach (var dto in users)
+        {
+            var existing = await userManager.FindByNameAsync(dto.UserName);
+            if (existing is not null) continue;
+
+            var user = new ApplicationUser
+            {
+                UserName = dto.UserName,
+                Email = dto.Email,
+                EmailConfirmed = dto.EmailConfirmed
+            };
+            var result = await userManager.CreateAsync(user, dto.Password);
+            if (!result.Succeeded)
+                logger.LogError("Failed to create user {UserName}: {Errors}",
+                    dto.UserName, string.Join(", ", result.Errors.Select(e => e.Description)));
         }
     }
 
-    private async Task SeedApplicationsAsync(List<OpenIddictApplicationDescriptor> defaultApps, IOpenIddictApplicationManager appManager, CancellationToken ct = default)
+    private async Task SeedApplicationsAsync(List<OpenIddictApplicationDescriptor> apps,
+        IOpenIddictApplicationManager appManager, CancellationToken ct)
     {
-        foreach (var app in defaultApps)
+        foreach (var app in apps)
         {
-            if (app is null) continue;
-            if (app.ClientId is null) continue;
+            if (app?.ClientId is null) continue;
             var existing = await appManager.FindByClientIdAsync(app.ClientId, ct);
             if (existing is null)
+            {
                 await appManager.CreateAsync(app, ct);
+            }
             else
             {
                 var stored = new OpenIddictApplicationDescriptor();
                 await appManager.PopulateAsync(stored, existing, ct);
-                app.ClientSecret = stored.ClientSecret;
+                app.ClientSecret = stored.ClientSecret;  // preserve existing secret
                 await appManager.PopulateAsync(existing, app, ct);
                 await appManager.UpdateAsync(existing, ct);
             }
         }
     }
 
-    private async Task SeedScopesAsync(List<OpenIddictScopeDescriptor> defaultScopes, IOpenIddictScopeManager scopeManager, CancellationToken ct = default)
+    private async Task SeedScopesAsync(List<OpenIddictScopeDescriptor> scopes,
+        IOpenIddictScopeManager scopeManager, CancellationToken ct)
     {
-        foreach (var descriptor in defaultScopes)
+        foreach (var descriptor in scopes)
         {
-            if (descriptor is null) continue;
-            if (descriptor.Name is null) continue;
+            if (descriptor?.Name is null) continue;
             var existing = await scopeManager.FindByNameAsync(descriptor.Name, ct);
             if (existing is null)
                 await scopeManager.CreateAsync(descriptor, ct);
@@ -104,23 +137,4 @@ public class AuthDbSeedService : IHostedService
             }
         }
     }
-
-    private async Task SeedRolesAsync(List<string> defaultRoles, RoleManager<IdentityRole> roleManager)
-    {
-        foreach (var roleName in defaultRoles)
-        {
-            if (!await roleManager.RoleExistsAsync(roleName))
-            {
-                var result = await roleManager.CreateAsync(new IdentityRole(roleName));
-                if (!result.Succeeded)
-                {
-                    _logger.LogError("Failed to create role {RoleName}: {Errors}",
-                        roleName, string.Join(", ", result.Errors.Select(e => e.Description)));
-                }
-            }
-        }
-    }
-
-
-}   
-
+}
