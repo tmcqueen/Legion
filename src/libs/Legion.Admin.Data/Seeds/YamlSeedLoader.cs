@@ -113,12 +113,6 @@ public class YamlSeedLoader(IConfiguration configuration, ILogger<YamlSeedLoader
                 throw new InvalidOperationException(
                     $"Seed file '{fileName}': '{field}' contains an unresolved placeholder '{value}'. " +
                     $"Set the config key via User Secrets or environment variables.");
-
-            if (!string.IsNullOrEmpty(value))
-                logger.LogWarning(
-                    "Seed file '{File}': '{Field}' contains a literal value. " +
-                    "Use ${{ConfigKey}} and store the value in User Secrets or an environment variable.",
-                    Path.GetFileName(fileName), field);
         }
     }
 
