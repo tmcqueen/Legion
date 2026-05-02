@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Brigade.Admin.Data.Sqlite.Migrations.Auth
 {
     [DbContext(typeof(AuthDbContext))]
-    [Migration("20260427122204_InitialCreate")]
+    [Migration("20260502004727_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />

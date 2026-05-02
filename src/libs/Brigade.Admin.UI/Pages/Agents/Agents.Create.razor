@@ -133,11 +133,11 @@
     private List<SkillOptions> allSkills = [];
     private List<McpServerOptions> allMcps = [];
     private List<MiddlewareOptions> allMiddleware = [];
-    private IEnumerable<int> selectedToolIds = [];
-    private IEnumerable<int> selectedSkillIds = [];
-    private IEnumerable<int> selectedModelIds = [];
-    private IEnumerable<int> selectedMcpIds = [];
-    private IEnumerable<int> selectedMiddlewareIds = [];
+    private IEnumerable<ToolOptionsId> selectedToolIds = [];
+    private IEnumerable<SkillOptionsId> selectedSkillIds = [];
+    private IEnumerable<ModelOptionsId> selectedModelIds = [];
+    private IEnumerable<McpServerOptionsId> selectedMcpIds = [];
+    private IEnumerable<MiddlewareOptionsId> selectedMiddlewareIds = [];
 
     private IEnumerable<ModelOptions> providerModels =>
         allProviders.FirstOrDefault(p => p.Id == form.ProviderId)?.Models ?? [];
@@ -160,30 +160,31 @@
     {
         var agent = new AgentOptions
         {
+            Id = AgentOptionsId.New(),
             Name = form.Name,
             MaxTokens = form.MaxTokens,
             Description = form.Description,
             Instructions = form.Instructions,
-            ProviderId = form.ProviderId ?? 0,
+            ProviderId = form.ProviderId ?? throw new InvalidOperationException("Provider is required."),
         };
         var saved = await AgentStore.AddAsync(agent);
         if (selectedToolIds.Any())
-            await AgentStore.AssignToolsAsync(saved.Id, selectedToolIds);
+            await AgentStore.AssignToolsAsync(saved.Id, selectedToolIds.Select(id => id.Value));
         if (selectedSkillIds.Any())
-            await AgentStore.AssignSkillsAsync(saved.Id, selectedSkillIds);
+            await AgentStore.AssignSkillsAsync(saved.Id, selectedSkillIds.Select(id => id.Value));
         if (selectedModelIds.Any())
-            await AgentStore.AssignModelsAsync(saved.Id, selectedModelIds);
+            await AgentStore.AssignModelsAsync(saved.Id, selectedModelIds.Select(id => id.Value));
         if (selectedMcpIds.Any())
-            await AgentStore.AssignMcpServersAsync(saved.Id, selectedMcpIds);
+            await AgentStore.AssignMcpServersAsync(saved.Id, selectedMcpIds.Select(id => id.Value));
         if (selectedMiddlewareIds.Any())
-            await AgentStore.AssignMiddlewareAsync(saved.Id, selectedMiddlewareIds);
+            await AgentStore.AssignMiddlewareAsync(saved.Id, selectedMiddlewareIds.Select(id => id.Value));
         Nav.NavigateTo("/agents");
     }
 
     private sealed class FormModel
     {
         public string? Name { get; set; }
-        public int? ProviderId { get; set; }
+        public ProviderOptionsId? ProviderId { get; set; }
         public int? MaxTokens { get; set; }
         public string? Description { get; set; }
         public string? Instructions { get; set; }

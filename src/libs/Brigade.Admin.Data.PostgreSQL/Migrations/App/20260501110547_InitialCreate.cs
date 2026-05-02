@@ -1,5 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
-using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
@@ -19,8 +19,7 @@ namespace Brigade.Admin.Data.PostgreSQL.Migrations.App
                 schema: "agents",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
                     Name = table.Column<string>(type: "text", nullable: true),
                     Description = table.Column<string>(type: "text", nullable: true),
                     ServerUrl = table.Column<string>(type: "text", nullable: true),
@@ -38,8 +37,7 @@ namespace Brigade.Admin.Data.PostgreSQL.Migrations.App
                 name: "Middlewares",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
                     Name = table.Column<string>(type: "text", nullable: true),
                     Description = table.Column<string>(type: "text", nullable: true),
                     Scope = table.Column<int>(type: "integer", nullable: false),
@@ -55,8 +53,7 @@ namespace Brigade.Admin.Data.PostgreSQL.Migrations.App
                 name: "Models",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
                     Name = table.Column<string>(type: "text", nullable: true),
                     DisplayName = table.Column<string>(type: "text", nullable: true),
                     ContextWindowSize = table.Column<int>(type: "integer", nullable: false),
@@ -90,8 +87,7 @@ namespace Brigade.Admin.Data.PostgreSQL.Migrations.App
                 schema: "agents",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
                     Name = table.Column<string>(type: "text", nullable: true),
                     Type = table.Column<int>(type: "integer", nullable: false),
                     ApiUrl = table.Column<string>(type: "text", nullable: true),
@@ -103,11 +99,26 @@ namespace Brigade.Admin.Data.PostgreSQL.Migrations.App
                 });
 
             migrationBuilder.CreateTable(
+                name: "Secrets",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Path = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
+                    Description = table.Column<string>(type: "text", nullable: true),
+                    EncryptedValue = table.Column<string>(type: "text", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Secrets", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Skills",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
                     Name = table.Column<string>(type: "text", nullable: true),
                     Description = table.Column<string>(type: "text", nullable: true),
                     License = table.Column<string>(type: "text", nullable: true),
@@ -126,8 +137,7 @@ namespace Brigade.Admin.Data.PostgreSQL.Migrations.App
                 name: "Tools",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
                     Name = table.Column<string>(type: "text", nullable: true),
                     Description = table.Column<string>(type: "text", nullable: true),
                     ParametersSchema = table.Column<string>(type: "text", nullable: true)
@@ -141,8 +151,7 @@ namespace Brigade.Admin.Data.PostgreSQL.Migrations.App
                 name: "Workflows",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
                     Name = table.Column<string>(type: "text", nullable: true),
                     Description = table.Column<string>(type: "text", nullable: true),
                     Content = table.Column<string>(type: "text", nullable: true)
@@ -156,11 +165,10 @@ namespace Brigade.Admin.Data.PostgreSQL.Migrations.App
                 name: "McpServerHeaders",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
                     Key = table.Column<string>(type: "text", nullable: true),
                     Value = table.Column<string>(type: "text", nullable: true),
-                    McpServerId = table.Column<int>(type: "integer", nullable: false)
+                    McpServerId = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -178,13 +186,15 @@ namespace Brigade.Admin.Data.PostgreSQL.Migrations.App
                 name: "Agents",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
                     Name = table.Column<string>(type: "text", nullable: true),
                     Description = table.Column<string>(type: "text", nullable: true),
                     Instructions = table.Column<string>(type: "text", nullable: true),
                     MaxTokens = table.Column<int>(type: "integer", nullable: true),
-                    ProviderId = table.Column<int>(type: "integer", nullable: false)
+                    ProviderId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Discriminator = table.Column<string>(type: "character varying(13)", maxLength: 13, nullable: false),
+                    TemplateName = table.Column<string>(type: "text", nullable: true),
+                    TemplateDescription = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -203,8 +213,8 @@ namespace Brigade.Admin.Data.PostgreSQL.Migrations.App
                 schema: "agents",
                 columns: table => new
                 {
-                    ModelsId = table.Column<int>(type: "integer", nullable: false),
-                    ProvidersId = table.Column<int>(type: "integer", nullable: false)
+                    ModelsId = table.Column<Guid>(type: "uuid", nullable: false),
+                    ProvidersId = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -229,8 +239,8 @@ namespace Brigade.Admin.Data.PostgreSQL.Migrations.App
                 schema: "agents",
                 columns: table => new
                 {
-                    AgentsId = table.Column<int>(type: "integer", nullable: false),
-                    McpServersId = table.Column<int>(type: "integer", nullable: false)
+                    AgentsId = table.Column<Guid>(type: "uuid", nullable: false),
+                    McpServersId = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -255,8 +265,8 @@ namespace Brigade.Admin.Data.PostgreSQL.Migrations.App
                 schema: "agents",
                 columns: table => new
                 {
-                    AgentsId = table.Column<int>(type: "integer", nullable: false),
-                    MiddlewareId = table.Column<int>(type: "integer", nullable: false)
+                    AgentsId = table.Column<Guid>(type: "uuid", nullable: false),
+                    MiddlewareId = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -280,8 +290,8 @@ namespace Brigade.Admin.Data.PostgreSQL.Migrations.App
                 schema: "agents",
                 columns: table => new
                 {
-                    AgentsId = table.Column<int>(type: "integer", nullable: false),
-                    ModelsId = table.Column<int>(type: "integer", nullable: false)
+                    AgentsId = table.Column<Guid>(type: "uuid", nullable: false),
+                    ModelsId = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -305,8 +315,8 @@ namespace Brigade.Admin.Data.PostgreSQL.Migrations.App
                 schema: "agents",
                 columns: table => new
                 {
-                    AgentsId = table.Column<int>(type: "integer", nullable: false),
-                    SkillsId = table.Column<int>(type: "integer", nullable: false)
+                    AgentsId = table.Column<Guid>(type: "uuid", nullable: false),
+                    SkillsId = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -330,8 +340,8 @@ namespace Brigade.Admin.Data.PostgreSQL.Migrations.App
                 schema: "agents",
                 columns: table => new
                 {
-                    AgentsId = table.Column<int>(type: "integer", nullable: false),
-                    ToolsId = table.Column<int>(type: "integer", nullable: false)
+                    AgentsId = table.Column<Guid>(type: "uuid", nullable: false),
+                    ToolsId = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -354,9 +364,8 @@ namespace Brigade.Admin.Data.PostgreSQL.Migrations.App
                 name: "Memories",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    AgentId = table.Column<int>(type: "integer", nullable: false),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    AgentId = table.Column<Guid>(type: "uuid", nullable: false),
                     SearchTime = table.Column<int>(type: "integer", nullable: false),
                     MaxResults = table.Column<int>(type: "integer", nullable: true),
                     FunctionToolName = table.Column<string>(type: "text", nullable: true),
@@ -426,6 +435,12 @@ namespace Brigade.Admin.Data.PostgreSQL.Migrations.App
                 schema: "agents",
                 table: "ProviderModels",
                 column: "ProvidersId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Secrets_Path",
+                table: "Secrets",
+                column: "Path",
+                unique: true);
         }
 
         /// <inheritdoc />
@@ -460,6 +475,9 @@ namespace Brigade.Admin.Data.PostgreSQL.Migrations.App
             migrationBuilder.DropTable(
                 name: "ProviderModels",
                 schema: "agents");
+
+            migrationBuilder.DropTable(
+                name: "Secrets");
 
             migrationBuilder.DropTable(
                 name: "Workflows");

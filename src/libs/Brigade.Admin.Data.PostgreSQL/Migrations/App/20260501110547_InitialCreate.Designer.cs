@@ -9,107 +9,109 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace Brigade.Admin.Data.PostgreSQL.Migrations.AgentDb
+namespace Brigade.Admin.Data.PostgreSQL.Migrations.App
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260428101441_AddSecrets")]
-    partial class AddSecrets
+    [Migration("20260501110547_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.6")
+                .HasAnnotation("ProductVersion", "10.0.7")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
             modelBuilder.Entity("AgentOptionsMcpServerOptions", b =>
                 {
-                    b.Property<int>("AgentsId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("AgentsId")
+                        .HasColumnType("uuid");
 
-                    b.Property<int>("McpServersId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("McpServersId")
+                        .HasColumnType("uuid");
 
                     b.HasKey("AgentsId", "McpServersId");
 
                     b.HasIndex("McpServersId");
 
-                    b.ToTable("AgentMcpServers", (string)null);
+                    b.ToTable("AgentMcpServers", "agents");
                 });
 
             modelBuilder.Entity("AgentOptionsMiddlewareOptions", b =>
                 {
-                    b.Property<int>("AgentsId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("AgentsId")
+                        .HasColumnType("uuid");
 
-                    b.Property<int>("MiddlewareId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("MiddlewareId")
+                        .HasColumnType("uuid");
 
                     b.HasKey("AgentsId", "MiddlewareId");
 
                     b.HasIndex("MiddlewareId");
 
-                    b.ToTable("AgentMiddleware", (string)null);
+                    b.ToTable("AgentMiddleware", "agents");
                 });
 
             modelBuilder.Entity("AgentOptionsModelOptions", b =>
                 {
-                    b.Property<int>("AgentsId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("AgentsId")
+                        .HasColumnType("uuid");
 
-                    b.Property<int>("ModelsId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("ModelsId")
+                        .HasColumnType("uuid");
 
                     b.HasKey("AgentsId", "ModelsId");
 
                     b.HasIndex("ModelsId");
 
-                    b.ToTable("AgentModels", (string)null);
+                    b.ToTable("AgentModels", "agents");
                 });
 
             modelBuilder.Entity("AgentOptionsSkillOptions", b =>
                 {
-                    b.Property<int>("AgentsId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("AgentsId")
+                        .HasColumnType("uuid");
 
-                    b.Property<int>("SkillsId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("SkillsId")
+                        .HasColumnType("uuid");
 
                     b.HasKey("AgentsId", "SkillsId");
 
                     b.HasIndex("SkillsId");
 
-                    b.ToTable("AgentSkills", (string)null);
+                    b.ToTable("AgentSkills", "agents");
                 });
 
             modelBuilder.Entity("AgentOptionsToolOptions", b =>
                 {
-                    b.Property<int>("AgentsId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("AgentsId")
+                        .HasColumnType("uuid");
 
-                    b.Property<int>("ToolsId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("ToolsId")
+                        .HasColumnType("uuid");
 
                     b.HasKey("AgentsId", "ToolsId");
 
                     b.HasIndex("ToolsId");
 
-                    b.ToTable("AgentTools", (string)null);
+                    b.ToTable("AgentTools", "agents");
                 });
 
             modelBuilder.Entity("Brigade.Admin.Data.Models.Agents.AgentOptions", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Description")
                         .HasColumnType("text");
+
+                    b.Property<string>("Discriminator")
+                        .IsRequired()
+                        .HasMaxLength(13)
+                        .HasColumnType("character varying(13)");
 
                     b.Property<string>("Instructions")
                         .HasColumnType("text");
@@ -120,29 +122,30 @@ namespace Brigade.Admin.Data.PostgreSQL.Migrations.AgentDb
                     b.Property<string>("Name")
                         .HasColumnType("text");
 
-                    b.Property<int>("ProviderId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("ProviderId")
+                        .HasColumnType("uuid");
 
                     b.HasKey("Id");
 
                     b.HasIndex("ProviderId");
 
                     b.ToTable("Agents");
+
+                    b.HasDiscriminator<string>("Discriminator").HasValue("AgentOptions");
+
+                    b.UseTphMappingStrategy();
                 });
 
             modelBuilder.Entity("Brigade.Admin.Data.Models.Agents.McpServerHeaders", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Key")
                         .HasColumnType("text");
 
-                    b.Property<int>("McpServerId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("McpServerId")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Value")
                         .HasColumnType("text");
@@ -156,11 +159,8 @@ namespace Brigade.Admin.Data.PostgreSQL.Migrations.AgentDb
 
             modelBuilder.Entity("Brigade.Admin.Data.Models.Agents.McpServerOptions", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("CommandLine")
                         .HasColumnType("text");
@@ -185,19 +185,16 @@ namespace Brigade.Admin.Data.PostgreSQL.Migrations.AgentDb
 
                     b.HasKey("Id");
 
-                    b.ToTable("Mcps");
+                    b.ToTable("McpServers", "agents");
                 });
 
             modelBuilder.Entity("Brigade.Admin.Data.Models.Agents.MemoryOptions", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("AgentId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("AgentId")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("ContextPrompt")
                         .HasColumnType("text");
@@ -227,11 +224,8 @@ namespace Brigade.Admin.Data.PostgreSQL.Migrations.AgentDb
 
             modelBuilder.Entity("Brigade.Admin.Data.Models.Agents.MiddlewareOptions", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Content")
                         .HasColumnType("text");
@@ -255,11 +249,8 @@ namespace Brigade.Admin.Data.PostgreSQL.Migrations.AgentDb
 
             modelBuilder.Entity("Brigade.Admin.Data.Models.Agents.SkillOptions", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("AllowedTools")
                         .HasColumnType("text");
@@ -292,11 +283,8 @@ namespace Brigade.Admin.Data.PostgreSQL.Migrations.AgentDb
 
             modelBuilder.Entity("Brigade.Admin.Data.Models.Agents.ToolOptions", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Description")
                         .HasColumnType("text");
@@ -314,11 +302,8 @@ namespace Brigade.Admin.Data.PostgreSQL.Migrations.AgentDb
 
             modelBuilder.Entity("Brigade.Admin.Data.Models.Agents.WorkflowOptions", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Content")
                         .HasColumnType("text");
@@ -336,11 +321,8 @@ namespace Brigade.Admin.Data.PostgreSQL.Migrations.AgentDb
 
             modelBuilder.Entity("Brigade.Admin.Data.Models.Providers.ModelOptions", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
 
                     b.Property<double>("CachedTokenCost")
                         .HasColumnType("double precision");
@@ -415,11 +397,8 @@ namespace Brigade.Admin.Data.PostgreSQL.Migrations.AgentDb
 
             modelBuilder.Entity("Brigade.Admin.Data.Models.Providers.ProviderOptions", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("ApiToken")
                         .HasColumnType("text");
@@ -435,16 +414,13 @@ namespace Brigade.Admin.Data.PostgreSQL.Migrations.AgentDb
 
                     b.HasKey("Id");
 
-                    b.ToTable("Providers");
+                    b.ToTable("Providers", "agents");
                 });
 
             modelBuilder.Entity("Brigade.Admin.Data.Models.SecretOptions", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -474,17 +450,30 @@ namespace Brigade.Admin.Data.PostgreSQL.Migrations.AgentDb
 
             modelBuilder.Entity("ModelOptionsProviderOptions", b =>
                 {
-                    b.Property<int>("ModelsId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("ModelsId")
+                        .HasColumnType("uuid");
 
-                    b.Property<int>("ProvidersId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("ProvidersId")
+                        .HasColumnType("uuid");
 
                     b.HasKey("ModelsId", "ProvidersId");
 
                     b.HasIndex("ProvidersId");
 
-                    b.ToTable("ProviderModels", (string)null);
+                    b.ToTable("ProviderModels", "agents");
+                });
+
+            modelBuilder.Entity("Brigade.Admin.Data.Models.Agents.AgentTemplate", b =>
+                {
+                    b.HasBaseType("Brigade.Admin.Data.Models.Agents.AgentOptions");
+
+                    b.Property<string>("TemplateDescription")
+                        .HasColumnType("text");
+
+                    b.Property<string>("TemplateName")
+                        .HasColumnType("text");
+
+                    b.HasDiscriminator().HasValue("AgentTemplate");
                 });
 
             modelBuilder.Entity("AgentOptionsMcpServerOptions", b =>

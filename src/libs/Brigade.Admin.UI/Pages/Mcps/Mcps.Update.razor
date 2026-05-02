@@ -1,4 +1,4 @@
-@page "/mcps/{Id:int}/edit"
+@page "/mcps/{Id:guid}/edit"
 @layout MainLayout
 @rendermode InteractiveServer
 @attribute [Authorize]
@@ -129,7 +129,7 @@
 </RadzenCard>
 
 @code {
-    [Parameter] public int Id { get; set; }
+    [Parameter] public Guid Id { get; set; }
 
     private readonly FormModel form = new();
     private readonly List<HeaderForm> headers = [];
@@ -188,7 +188,12 @@
         };
         await McpStore.UpdateAsync(mcp);
         await McpStore.ReplaceHeadersAsync(Id,
-            headers.Select(h => new McpServerHeaders { Key = h.Key, Value = h.Value }).ToList());
+            headers.Select(h => new McpServerHeaders
+            {
+                Id = McpServerHeadersId.New(),
+                Key = h.Key,
+                Value = h.Value
+            }).ToList());
         Nav.NavigateTo("/mcps");
     }
 

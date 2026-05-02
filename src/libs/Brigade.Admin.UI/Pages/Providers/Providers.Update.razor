@@ -1,4 +1,4 @@
-@page "/providers/{Id:int}/edit"
+@page "/providers/{Id:guid}/edit"
 @layout MainLayout
 @rendermode InteractiveServer
 @attribute [Authorize]
@@ -79,12 +79,12 @@
 </RadzenCard>
 
 @code {
-    [Parameter] public int Id { get; set; }
+    [Parameter] public Guid Id { get; set; }
 
     private readonly FormModel form = new();
     private bool apiTokenSecretMode;
     private List<ModelOptions> allModels = [];
-    private IEnumerable<int> selectedModelIds = [];
+    private IEnumerable<ModelOptionsId> selectedModelIds = [];
 
     protected override async Task OnInitializedAsync()
     {
@@ -110,7 +110,7 @@
             ApiToken = form.ApiToken,
         };
         await ProviderStore.UpdateAsync(provider);
-        await ProviderStore.AssignModelsAsync(Id, selectedModelIds);
+        await ProviderStore.AssignModelsAsync(Id, selectedModelIds.Select(id => id.Value));
         Nav.NavigateTo("/providers");
     }
 

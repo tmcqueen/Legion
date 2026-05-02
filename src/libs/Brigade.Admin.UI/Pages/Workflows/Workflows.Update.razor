@@ -1,4 +1,4 @@
-@page "/workflows/{Id:int}/edit"
+@page "/workflows/{Id:guid}/edit"
 @layout MainLayout
 @rendermode InteractiveServer
 @attribute [Authorize]
@@ -51,7 +51,7 @@
 </RadzenCard>
 
 @code {
-    [Parameter] public int Id { get; set; }
+    [Parameter] public Guid Id { get; set; }
 
     private readonly FormModel form = new();
 

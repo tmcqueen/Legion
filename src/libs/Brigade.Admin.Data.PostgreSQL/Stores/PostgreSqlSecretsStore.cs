@@ -30,17 +30,18 @@ public class PostgreSqlSecretsStore(AppDbContext db, IConfiguration config) : IS
     public async Task<SecretOptions> CreateAsync(string path, string? description, string plaintext, CancellationToken ct = default)
     {
         var key = EncryptionKey;
+        var newId = SecretOptionsId.New();
         await db.Database.ExecuteSqlRawAsync(
             """
-            INSERT INTO "Secrets" ("Path", "Description", "EncryptedValue", "CreatedAt", "UpdatedAt")
-            VALUES ({0}, {1}, pgp_sym_encrypt({2}, {3})::text, NOW(), NOW())
+            INSERT INTO "Secrets" ("Id", "Path", "Description", "EncryptedValue", "CreatedAt", "UpdatedAt")
+            VALUES ({0}, {1}, {2}, pgp_sym_encrypt({3}, {4})::text, NOW(), NOW())
             """,
-            [path, description as object ?? DBNull.Value, plaintext, key], ct);
+            [newId.Value, path, description as object ?? DBNull.Value, plaintext, key], ct);
 
         return await db.Secrets.AsNoTracking().FirstAsync(s => s.Path == path, ct);
     }
 
-    public async Task UpdateValueAsync(int id, string plaintext, CancellationToken ct = default)
+    public async Task UpdateValueAsync(Guid id, string plaintext, CancellationToken ct = default)
     {
         var key = EncryptionKey;
         await db.Database.ExecuteSqlRawAsync(
@@ -51,16 +52,17 @@ public class PostgreSqlSecretsStore(AppDbContext db, IConfiguration config) : IS
             [plaintext, key, id], ct);
     }
 
-    public async Task UpdateDescriptionAsync(int id, string? description, CancellationToken ct = default)
+    public async Task UpdateDescriptionAsync(Guid id, string? description, CancellationToken ct = default)
     {
-        var secret = await db.Secrets.FindAsync([id], ct);
+        var typedId = (SecretOptionsId)id;
+        var secret = await db.Secrets.FindAsync([typedId], ct);
         if (secret is null) return;
         secret.Description = description;
         secret.UpdatedAt = DateTime.UtcNow;
         await db.SaveChangesAsync(ct);
     }
 
-    public async Task<string?> DecryptAsync(int id, CancellationToken ct = default)
+    public async Task<string?> DecryptAsync(Guid id, CancellationToken ct = default)
     {
         var key = EncryptionKey;
         var results = await db.Database
@@ -71,9 +73,10 @@ public class PostgreSqlSecretsStore(AppDbContext db, IConfiguration config) : IS
         return results.FirstOrDefault();
     }
 
-    public async Task DeleteAsync(int id, CancellationToken ct = default)
+    public async Task DeleteAsync(Guid id, CancellationToken ct = default)
     {
-        var secret = await db.Secrets.FindAsync([id], ct);
+        var typedId = (SecretOptionsId)id;
+        var secret = await db.Secrets.FindAsync([typedId], ct);
         if (secret is not null)
         {
             db.Secrets.Remove(secret);

@@ -4,7 +4,7 @@ namespace Brigade.Admin.Data.Models.Providers;
 
 public record ModelOptions
 {
-    public int Id { get; set; }
+    public ModelOptionsId Id { get; set; }
     public string? Name { get; set; }
     public string? DisplayName { get; set; }
     

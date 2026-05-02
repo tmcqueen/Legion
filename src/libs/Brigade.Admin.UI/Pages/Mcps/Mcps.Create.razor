@@ -145,6 +145,7 @@
     {
         var mcp = new McpServerOptions
         {
+            Id = McpServerOptionsId.New(),
             Name = form.Name,
             Description = form.Description,
             ServerLabel = form.ServerLabel,
@@ -152,7 +153,12 @@
             CommandLine = form.CommandLine,
             Transport = form.Transport,
             RequireApproval = form.RequireApproval,
-            Headers = headers.Select(h => new McpServerHeaders { Key = h.Key, Value = h.Value }).ToList(),
+            Headers = headers.Select(h => new McpServerHeaders
+            {
+                Id = McpServerHeadersId.New(),
+                Key = h.Key,
+                Value = h.Value
+            }).ToList(),
         };
         await McpStore.AddAsync(mcp);
         Nav.NavigateTo("/mcps");

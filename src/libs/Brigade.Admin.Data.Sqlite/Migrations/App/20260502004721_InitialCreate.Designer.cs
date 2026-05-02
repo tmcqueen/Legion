@@ -8,100 +8,104 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace Brigade.Admin.Data.Sqlite.Migrations
+namespace Brigade.Admin.Data.Sqlite.Migrations.App
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260428101256_AddSecrets")]
-    partial class AddSecrets
+    [Migration("20260502004721_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "10.0.6");
+            modelBuilder.HasAnnotation("ProductVersion", "10.0.7");
 
             modelBuilder.Entity("AgentOptionsMcpServerOptions", b =>
                 {
-                    b.Property<int>("AgentsId")
-                        .HasColumnType("INTEGER");
+                    b.Property<Guid>("AgentsId")
+                        .HasColumnType("TEXT");
 
-                    b.Property<int>("McpServersId")
-                        .HasColumnType("INTEGER");
+                    b.Property<Guid>("McpServersId")
+                        .HasColumnType("TEXT");
 
                     b.HasKey("AgentsId", "McpServersId");
 
                     b.HasIndex("McpServersId");
 
-                    b.ToTable("AgentMcpServers", (string)null);
+                    b.ToTable("AgentMcpServers", "agents");
                 });
 
             modelBuilder.Entity("AgentOptionsMiddlewareOptions", b =>
                 {
-                    b.Property<int>("AgentsId")
-                        .HasColumnType("INTEGER");
+                    b.Property<Guid>("AgentsId")
+                        .HasColumnType("TEXT");
 
-                    b.Property<int>("MiddlewareId")
-                        .HasColumnType("INTEGER");
+                    b.Property<Guid>("MiddlewareId")
+                        .HasColumnType("TEXT");
 
                     b.HasKey("AgentsId", "MiddlewareId");
 
                     b.HasIndex("MiddlewareId");
 
-                    b.ToTable("AgentMiddleware", (string)null);
+                    b.ToTable("AgentMiddleware", "agents");
                 });
 
             modelBuilder.Entity("AgentOptionsModelOptions", b =>
                 {
-                    b.Property<int>("AgentsId")
-                        .HasColumnType("INTEGER");
+                    b.Property<Guid>("AgentsId")
+                        .HasColumnType("TEXT");
 
-                    b.Property<int>("ModelsId")
-                        .HasColumnType("INTEGER");
+                    b.Property<Guid>("ModelsId")
+                        .HasColumnType("TEXT");
 
                     b.HasKey("AgentsId", "ModelsId");
 
                     b.HasIndex("ModelsId");
 
-                    b.ToTable("AgentModels", (string)null);
+                    b.ToTable("AgentModels", "agents");
                 });
 
             modelBuilder.Entity("AgentOptionsSkillOptions", b =>
                 {
-                    b.Property<int>("AgentsId")
-                        .HasColumnType("INTEGER");
+                    b.Property<Guid>("AgentsId")
+                        .HasColumnType("TEXT");
 
-                    b.Property<int>("SkillsId")
-                        .HasColumnType("INTEGER");
+                    b.Property<Guid>("SkillsId")
+                        .HasColumnType("TEXT");
 
                     b.HasKey("AgentsId", "SkillsId");
 
                     b.HasIndex("SkillsId");
 
-                    b.ToTable("AgentSkills", (string)null);
+                    b.ToTable("AgentSkills", "agents");
                 });
 
             modelBuilder.Entity("AgentOptionsToolOptions", b =>
                 {
-                    b.Property<int>("AgentsId")
-                        .HasColumnType("INTEGER");
+                    b.Property<Guid>("AgentsId")
+                        .HasColumnType("TEXT");
 
-                    b.Property<int>("ToolsId")
-                        .HasColumnType("INTEGER");
+                    b.Property<Guid>("ToolsId")
+                        .HasColumnType("TEXT");
 
                     b.HasKey("AgentsId", "ToolsId");
 
                     b.HasIndex("ToolsId");
 
-                    b.ToTable("AgentTools", (string)null);
+                    b.ToTable("AgentTools", "agents");
                 });
 
             modelBuilder.Entity("Brigade.Admin.Data.Models.Agents.AgentOptions", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                    b.Property<Guid>("Id")
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Description")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Discriminator")
+                        .IsRequired()
+                        .HasMaxLength(13)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Instructions")
@@ -113,27 +117,30 @@ namespace Brigade.Admin.Data.Sqlite.Migrations
                     b.Property<string>("Name")
                         .HasColumnType("TEXT");
 
-                    b.Property<int>("ProviderId")
-                        .HasColumnType("INTEGER");
+                    b.Property<Guid>("ProviderId")
+                        .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
                     b.HasIndex("ProviderId");
 
                     b.ToTable("Agents");
+
+                    b.HasDiscriminator<string>("Discriminator").HasValue("AgentOptions");
+
+                    b.UseTphMappingStrategy();
                 });
 
             modelBuilder.Entity("Brigade.Admin.Data.Models.Agents.McpServerHeaders", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                    b.Property<Guid>("Id")
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Key")
                         .HasColumnType("TEXT");
 
-                    b.Property<int>("McpServerId")
-                        .HasColumnType("INTEGER");
+                    b.Property<Guid>("McpServerId")
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Value")
                         .HasColumnType("TEXT");
@@ -147,9 +154,8 @@ namespace Brigade.Admin.Data.Sqlite.Migrations
 
             modelBuilder.Entity("Brigade.Admin.Data.Models.Agents.McpServerOptions", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                    b.Property<Guid>("Id")
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("CommandLine")
                         .HasColumnType("TEXT");
@@ -174,17 +180,16 @@ namespace Brigade.Admin.Data.Sqlite.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Mcps");
+                    b.ToTable("McpServers", "agents");
                 });
 
             modelBuilder.Entity("Brigade.Admin.Data.Models.Agents.MemoryOptions", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                    b.Property<Guid>("Id")
+                        .HasColumnType("TEXT");
 
-                    b.Property<int>("AgentId")
-                        .HasColumnType("INTEGER");
+                    b.Property<Guid>("AgentId")
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("ContextPrompt")
                         .HasColumnType("TEXT");
@@ -214,9 +219,8 @@ namespace Brigade.Admin.Data.Sqlite.Migrations
 
             modelBuilder.Entity("Brigade.Admin.Data.Models.Agents.MiddlewareOptions", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                    b.Property<Guid>("Id")
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Content")
                         .HasColumnType("TEXT");
@@ -240,9 +244,8 @@ namespace Brigade.Admin.Data.Sqlite.Migrations
 
             modelBuilder.Entity("Brigade.Admin.Data.Models.Agents.SkillOptions", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                    b.Property<Guid>("Id")
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("AllowedTools")
                         .HasColumnType("TEXT");
@@ -275,9 +278,8 @@ namespace Brigade.Admin.Data.Sqlite.Migrations
 
             modelBuilder.Entity("Brigade.Admin.Data.Models.Agents.ToolOptions", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                    b.Property<Guid>("Id")
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Description")
                         .HasColumnType("TEXT");
@@ -295,9 +297,8 @@ namespace Brigade.Admin.Data.Sqlite.Migrations
 
             modelBuilder.Entity("Brigade.Admin.Data.Models.Agents.WorkflowOptions", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                    b.Property<Guid>("Id")
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Content")
                         .HasColumnType("TEXT");
@@ -315,9 +316,8 @@ namespace Brigade.Admin.Data.Sqlite.Migrations
 
             modelBuilder.Entity("Brigade.Admin.Data.Models.Providers.ModelOptions", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                    b.Property<Guid>("Id")
+                        .HasColumnType("TEXT");
 
                     b.Property<double>("CachedTokenCost")
                         .HasColumnType("REAL");
@@ -392,9 +392,8 @@ namespace Brigade.Admin.Data.Sqlite.Migrations
 
             modelBuilder.Entity("Brigade.Admin.Data.Models.Providers.ProviderOptions", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                    b.Property<Guid>("Id")
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("ApiToken")
                         .HasColumnType("TEXT");
@@ -410,14 +409,13 @@ namespace Brigade.Admin.Data.Sqlite.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Providers");
+                    b.ToTable("Providers", "agents");
                 });
 
             modelBuilder.Entity("Brigade.Admin.Data.Models.SecretOptions", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                    b.Property<Guid>("Id")
+                        .HasColumnType("TEXT");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
@@ -447,17 +445,30 @@ namespace Brigade.Admin.Data.Sqlite.Migrations
 
             modelBuilder.Entity("ModelOptionsProviderOptions", b =>
                 {
-                    b.Property<int>("ModelsId")
-                        .HasColumnType("INTEGER");
+                    b.Property<Guid>("ModelsId")
+                        .HasColumnType("TEXT");
 
-                    b.Property<int>("ProvidersId")
-                        .HasColumnType("INTEGER");
+                    b.Property<Guid>("ProvidersId")
+                        .HasColumnType("TEXT");
 
                     b.HasKey("ModelsId", "ProvidersId");
 
                     b.HasIndex("ProvidersId");
 
-                    b.ToTable("ProviderModels", (string)null);
+                    b.ToTable("ProviderModels", "agents");
+                });
+
+            modelBuilder.Entity("Brigade.Admin.Data.Models.Agents.AgentTemplate", b =>
+                {
+                    b.HasBaseType("Brigade.Admin.Data.Models.Agents.AgentOptions");
+
+                    b.Property<string>("TemplateDescription")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("TemplateName")
+                        .HasColumnType("TEXT");
+
+                    b.HasDiscriminator().HasValue("AgentTemplate");
                 });
 
             modelBuilder.Entity("AgentOptionsMcpServerOptions", b =>

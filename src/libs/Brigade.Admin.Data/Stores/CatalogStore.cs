@@ -3,7 +3,10 @@ using Microsoft.Extensions.Caching.Memory;
 
 namespace Brigade.Admin.Data.Stores;
 
-public abstract class CatalogStore<TEntity>(AppDbContext db, IMemoryCache cache)
+public abstract class CatalogStore<TEntity>(
+    AppDbContext db,
+    IMemoryCache cache,
+    Func<Guid, object> keyFactory)
     : IStore<TEntity>
     where TEntity : class
 {
@@ -25,8 +28,8 @@ public abstract class CatalogStore<TEntity>(AppDbContext db, IMemoryCache cache)
     protected virtual IQueryable<TEntity> BuildAllQuery() =>
         Db.Set<TEntity>().AsNoTracking();
 
-    public virtual async Task<TEntity?> GetAsync(int id, CancellationToken ct = default) =>
-        await Db.Set<TEntity>().FindAsync([id], ct);
+    public virtual async Task<TEntity?> GetAsync(Guid id, CancellationToken ct = default) =>
+        await Db.Set<TEntity>().FindAsync([keyFactory(id)], ct);
 
     public async Task<TEntity> AddAsync(TEntity entity, CancellationToken ct = default)
     {
@@ -44,9 +47,9 @@ public abstract class CatalogStore<TEntity>(AppDbContext db, IMemoryCache cache)
         cache.Remove(AllKey);
     }
 
-    public async Task DeleteAsync(int id, CancellationToken ct = default)
+    public async Task DeleteAsync(Guid id, CancellationToken ct = default)
     {
-        var entity = await Db.Set<TEntity>().FindAsync([id], ct);
+        var entity = await Db.Set<TEntity>().FindAsync([keyFactory(id)], ct);
         if (entity is not null)
         {
             Db.Set<TEntity>().Remove(entity);

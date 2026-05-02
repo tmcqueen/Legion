@@ -1,3 +1,4 @@
+using Brigade.Admin.Data.Models;
 using Brigade.Admin.Data.Models.Providers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -11,6 +12,8 @@ public class ProviderOptionsConfiguration : IEntityTypeConfiguration<ProviderOpt
     public void Configure(EntityTypeBuilder<ProviderOptions> builder)
     {
         builder.ToTable("Providers", schema: Schema);
+        builder.Property(p => p.Id)
+            .HasConversion(id => id.Value, value => new ProviderOptionsId(value));
         builder.HasMany(p => p.Models)
             .WithMany(m => m.Providers)
             .UsingEntity(t => t.ToTable("ProviderModels", schema: Schema));

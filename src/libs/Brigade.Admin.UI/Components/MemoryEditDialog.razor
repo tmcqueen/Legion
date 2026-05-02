@@ -68,7 +68,7 @@
 </RadzenStack>
 
 @code {
-    [Parameter] public int AgentId { get; set; }
+    [Parameter] public Guid AgentId { get; set; }
     [Parameter] public MemoryOptions? ExistingMemory { get; set; }
 
     private readonly FormModel form = new();
@@ -96,7 +96,7 @@
         saving = true;
         var memory = new MemoryOptions
         {
-            Id = ExistingMemory?.Id ?? 0,
+            Id = ExistingMemory?.Id ?? MemoryOptionsId.New(),
             AgentId = AgentId,
             SearchTime = form.SearchTime,
             MaxResults = form.MaxResults,

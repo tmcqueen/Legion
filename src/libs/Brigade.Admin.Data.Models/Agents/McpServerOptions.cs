@@ -10,16 +10,16 @@ public enum TransportType
 
 public record McpServerHeaders
 {
-    public int Id { get; set; }
+    public McpServerHeadersId Id { get; set; }
     public string? Key { get; set; }
     public string? Value { get; set; }
-    public int McpServerId { get; set; }
+    public McpServerOptionsId McpServerId { get; set; }
     public McpServerOptions? McpServer { get; set; }
 }
 
 public record McpServerOptions
 {
-    public int Id { get; set; }
+    public McpServerOptionsId Id { get; set; }
     public string? Name { get; set; }
     public string? Description { get; set; }
     public string? ServerUrl { get; set; }

@@ -1,4 +1,4 @@
-@page "/agents/{Id:int}/edit"
+@page "/agents/{Id:guid}/edit"
 @layout MainLayout
 @rendermode InteractiveServer
 @attribute [Authorize]
@@ -148,7 +148,7 @@
 </RadzenCard>
 
 @code {
-    [Parameter] public int Id { get; set; }
+    [Parameter] public Guid Id { get; set; }
 
     private readonly FormModel form = new();
     private List<ProviderOptions> allProviders = [];
@@ -156,11 +156,11 @@
     private List<SkillOptions> allSkills = [];
     private List<McpServerOptions> allMcps = [];
     private List<MiddlewareOptions> allMiddleware = [];
-    private IEnumerable<int> selectedToolIds = [];
-    private IEnumerable<int> selectedSkillIds = [];
-    private IEnumerable<int> selectedModelIds = [];
-    private IEnumerable<int> selectedMcpIds = [];
-    private IEnumerable<int> selectedMiddlewareIds = [];
+    private IEnumerable<ToolOptionsId> selectedToolIds = [];
+    private IEnumerable<SkillOptionsId> selectedSkillIds = [];
+    private IEnumerable<ModelOptionsId> selectedModelIds = [];
+    private IEnumerable<McpServerOptionsId> selectedMcpIds = [];
+    private IEnumerable<MiddlewareOptionsId> selectedMiddlewareIds = [];
     private MemoryOptions? agentMemory;
 
     private IEnumerable<ModelOptions> providerModels =>
@@ -172,7 +172,7 @@
         if (agent is null) { Nav.NavigateTo("/agents"); return; }
 
         form.Name = agent.Name;
-        form.ProviderId = agent.ProviderId == 0 ? null : agent.ProviderId;
+        form.ProviderId = agent.ProviderId;
         form.MaxTokens = agent.MaxTokens;
         form.Description = agent.Description;
         form.Instructions = agent.Instructions;
@@ -217,21 +217,21 @@
             MaxTokens = form.MaxTokens,
             Description = form.Description,
             Instructions = form.Instructions,
-            ProviderId = form.ProviderId ?? 0,
+            ProviderId = form.ProviderId ?? throw new InvalidOperationException("Provider is required."),
         };
         await AgentStore.UpdateAsync(agent);
-        await AgentStore.AssignToolsAsync(Id, selectedToolIds);
-        await AgentStore.AssignSkillsAsync(Id, selectedSkillIds);
-        await AgentStore.AssignModelsAsync(Id, selectedModelIds);
-        await AgentStore.AssignMcpServersAsync(Id, selectedMcpIds);
-        await AgentStore.AssignMiddlewareAsync(Id, selectedMiddlewareIds);
+        await AgentStore.AssignToolsAsync(Id, selectedToolIds.Select(id => id.Value));
+        await AgentStore.AssignSkillsAsync(Id, selectedSkillIds.Select(id => id.Value));
+        await AgentStore.AssignModelsAsync(Id, selectedModelIds.Select(id => id.Value));
+        await AgentStore.AssignMcpServersAsync(Id, selectedMcpIds.Select(id => id.Value));
+        await AgentStore.AssignMiddlewareAsync(Id, selectedMiddlewareIds.Select(id => id.Value));
         Nav.NavigateTo("/agents");
     }
 
     private sealed class FormModel
     {
         public string? Name { get; set; }
-        public int? ProviderId { get; set; }
+        public ProviderOptionsId? ProviderId { get; set; }
         public int? MaxTokens { get; set; }
         public string? Description { get; set; }
         public string? Instructions { get; set; }

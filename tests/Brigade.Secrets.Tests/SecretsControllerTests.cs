@@ -1,4 +1,5 @@
 using Brigade.Admin.Data.Stores;
+using Brigade.Admin.Data.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using NSubstitute;
@@ -32,10 +33,11 @@ public class SecretsControllerTests
     [Fact]
     public async Task Reveal_ExistingSecret_ReturnsPlaintext()
     {
-        _store.DecryptAsync(42).Returns("sk-secret-value");
+        var id = SecretOptionsId.New();
+        _store.DecryptAsync(id.Value).Returns("sk-secret-value");
         var controller = BuildController();
 
-        var result = await controller.Reveal(42) as OkObjectResult;
+        var result = await controller.Reveal(id.Value) as OkObjectResult;
 
         Assert.NotNull(result);
         var json = System.Text.Json.JsonSerializer.Serialize(result.Value);
@@ -45,10 +47,11 @@ public class SecretsControllerTests
     [Fact]
     public async Task Reveal_NotFound_Returns404()
     {
-        _store.DecryptAsync(99).Returns((string?)null);
+        var id = SecretOptionsId.New();
+        _store.DecryptAsync(id.Value).Returns((string?)null);
         var controller = BuildController();
 
-        var result = await controller.Reveal(99);
+        var result = await controller.Reveal(id.Value);
 
         Assert.IsType<NotFoundResult>(result);
     }

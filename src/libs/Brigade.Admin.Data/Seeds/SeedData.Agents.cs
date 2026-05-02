@@ -1,3 +1,4 @@
+using Brigade.Admin.Data.Models;
 using Brigade.Admin.Data.Models.Agents;
 
 namespace Brigade.Admin.Data.Seeds;
@@ -8,6 +9,7 @@ internal static partial class SeedData
     {
         new ()
         {
+            Id = AgentOptionsId.New(),
             Name = "Default Agent",
         }
     };

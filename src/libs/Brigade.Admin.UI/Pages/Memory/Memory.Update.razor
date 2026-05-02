@@ -1,4 +1,4 @@
-@page "/memory/{Id:int}/edit"
+@page "/memory/{Id:guid}/edit"
 @layout MainLayout
 @rendermode InteractiveServer
 @attribute [Authorize]
@@ -8,7 +8,7 @@
 <PageTitle>Edit Memory</PageTitle>
 
 @code {
-    [Parameter] public int Id { get; set; }
+    [Parameter] public Guid Id { get; set; }
 
     protected override async Task OnInitializedAsync()
     {

@@ -30,9 +30,9 @@ public class SecretsManagerTests
     [Fact]
     public async Task ResolveAsync_LeafPath_TextPlain_ReturnsPlainValue()
     {
-        var leaf = new SecretOptions { Id = 1, Path = "openai/key" };
+        var leaf = new SecretOptions { Id = SecretOptionsId.New(), Path = "openai/key" };
         _store.FindByPathAsync("openai/key").Returns(leaf);
-        _store.DecryptAsync(1).Returns("sk-secret-value");
+        _store.DecryptAsync(leaf.Id).Returns("sk-secret-value");
 
         var result = await _sut.ResolveAsync(new SecretRequest { Path = "secret://openai/key" });
 
@@ -42,9 +42,9 @@ public class SecretsManagerTests
     [Fact]
     public async Task ResolveAsync_LeafPath_TextJson_ReturnsJsonObject()
     {
-        var leaf = new SecretOptions { Id = 1, Path = "openai/client_ids/test" };
+        var leaf = new SecretOptions { Id = SecretOptionsId.New(), Path = "openai/client_ids/test" };
         _store.FindByPathAsync("openai/client_ids/test").Returns(leaf);
-        _store.DecryptAsync(1).Returns("foo");
+        _store.DecryptAsync(leaf.Id).Returns("foo");
 
         var result = await _sut.ResolveAsync(new SecretRequest
         {
@@ -59,12 +59,11 @@ public class SecretsManagerTests
     public async Task ResolveAsync_CollectionPath_TextPlain_ReturnsUrlEncodedPairs()
     {
         _store.FindByPathAsync("openai/client_ids").Returns((SecretOptions?)null);
-        _store.GetChildrenAsync("openai/client_ids").Returns([
-            new SecretOptions { Id = 1, Path = "openai/client_ids/test" },
-            new SecretOptions { Id = 2, Path = "openai/client_ids/prod" }
-        ]);
-        _store.DecryptAsync(1).Returns("foo");
-        _store.DecryptAsync(2).Returns("bar");
+        var test = new SecretOptions { Id = SecretOptionsId.New(), Path = "openai/client_ids/test" };
+        var prod = new SecretOptions { Id = SecretOptionsId.New(), Path = "openai/client_ids/prod" };
+        _store.GetChildrenAsync("openai/client_ids").Returns([test, prod]);
+        _store.DecryptAsync(test.Id).Returns("foo");
+        _store.DecryptAsync(prod.Id).Returns("bar");
 
         var result = await _sut.ResolveAsync(new SecretRequest { Path = "secret://openai/client_ids" });
 
@@ -75,10 +74,9 @@ public class SecretsManagerTests
     public async Task ResolveAsync_CollectionPath_TextJson_ReturnsJsonArray()
     {
         _store.FindByPathAsync("openai/client_ids").Returns((SecretOptions?)null);
-        _store.GetChildrenAsync("openai/client_ids").Returns([
-            new SecretOptions { Id = 1, Path = "openai/client_ids/test" }
-        ]);
-        _store.DecryptAsync(1).Returns("foo");
+        var child = new SecretOptions { Id = SecretOptionsId.New(), Path = "openai/client_ids/test" };
+        _store.GetChildrenAsync("openai/client_ids").Returns([child]);
+        _store.DecryptAsync(child.Id).Returns("foo");
 
         var result = await _sut.ResolveAsync(new SecretRequest
         {

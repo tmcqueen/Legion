@@ -2,7 +2,7 @@ namespace Brigade.Admin.Data.Models.Agents;
 
 public record SkillOptions
 {
-    public int Id { get; init; }
+    public SkillOptionsId Id { get; init; }
     public string? Name { get; init; }
     public string? Description { get; init; }
     public string? License { get; init; }

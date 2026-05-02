@@ -1,3 +1,4 @@
+using Brigade.Admin.Data.Models;
 using Brigade.Admin.Data.Models.Agents;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -10,6 +11,10 @@ public class AgentOptionsConfiguration : IEntityTypeConfiguration<AgentOptions>
 
     public void Configure(EntityTypeBuilder<AgentOptions> builder)
     {
+        builder.Property(a => a.Id)
+            .HasConversion(id => id.Value, value => new AgentOptionsId(value));
+        builder.Property(a => a.ProviderId)
+            .HasConversion(id => id.Value, value => new ProviderOptionsId(value));
 
         builder.HasMany(a => a.McpServers)
             .WithMany(m => m.Agents)

@@ -18,7 +18,7 @@ public enum ProviderType
 
 public record ProviderOptions
 {
-    public int Id { get; init; }
+    public ProviderOptionsId Id { get; init; }
     public string? Name { get; init; }
     public ProviderType Type { get; init; }
     public string? ApiUrl { get; init; }

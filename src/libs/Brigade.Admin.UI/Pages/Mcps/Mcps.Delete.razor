@@ -1,4 +1,4 @@
-@page "/mcps/{Id:int}/delete"
+@page "/mcps/{Id:guid}/delete"
 @layout MainLayout
 @rendermode InteractiveServer
 @attribute [Authorize]
@@ -30,7 +30,7 @@
 }
 
 @code {
-    [Parameter] public int Id { get; set; }
+    [Parameter] public Guid Id { get; set; }
 
     private McpServerOptions? mcp;
 

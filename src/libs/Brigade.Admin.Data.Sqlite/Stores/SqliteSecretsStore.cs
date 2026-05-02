@@ -25,6 +25,7 @@ public class SqliteSecretsStore(AppDbContext db) : ISecretsStore
     {
         var secret = new SecretOptions
         {
+            Id = SecretOptionsId.New(),
             Path = path,
             Description = description,
             EncryptedValue = plaintext,
@@ -36,33 +37,39 @@ public class SqliteSecretsStore(AppDbContext db) : ISecretsStore
         return secret;
     }
 
-    public async Task UpdateValueAsync(int id, string plaintext, CancellationToken ct = default)
+    public async Task UpdateValueAsync(Guid id, string plaintext, CancellationToken ct = default)
     {
-        var secret = await db.Secrets.FindAsync([id], ct);
+        var typedId = (SecretOptionsId)id;
+        var secret = await db.Secrets.FindAsync([typedId], ct);
         if (secret is null) return;
         secret.EncryptedValue = plaintext;
         secret.UpdatedAt = DateTime.UtcNow;
         await db.SaveChangesAsync(ct);
     }
 
-    public async Task UpdateDescriptionAsync(int id, string? description, CancellationToken ct = default)
+    public async Task UpdateDescriptionAsync(Guid id, string? description, CancellationToken ct = default)
     {
-        var secret = await db.Secrets.FindAsync([id], ct);
+        var typedId = (SecretOptionsId)id;
+        var secret = await db.Secrets.FindAsync([typedId], ct);
         if (secret is null) return;
         secret.Description = description;
         secret.UpdatedAt = DateTime.UtcNow;
         await db.SaveChangesAsync(ct);
     }
 
-    public Task<string?> DecryptAsync(int id, CancellationToken ct = default) =>
-        db.Secrets.AsNoTracking()
-            .Where(s => s.Id == id)
+    public Task<string?> DecryptAsync(Guid id, CancellationToken ct = default)
+    {
+        var typedId = (SecretOptionsId)id;
+        return db.Secrets.AsNoTracking()
+            .Where(s => s.Id == typedId)
             .Select(s => (string?)s.EncryptedValue)
             .FirstOrDefaultAsync(ct);
+    }
 
-    public async Task DeleteAsync(int id, CancellationToken ct = default)
+    public async Task DeleteAsync(Guid id, CancellationToken ct = default)
     {
-        var secret = await db.Secrets.FindAsync([id], ct);
+        var typedId = (SecretOptionsId)id;
+        var secret = await db.Secrets.FindAsync([typedId], ct);
         if (secret is not null)
         {
             db.Secrets.Remove(secret);

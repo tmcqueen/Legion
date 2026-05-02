@@ -8,8 +8,8 @@ namespace WebDev.Controllers;
 [Authorize(Roles = "admin")]
 public class SecretsController(ISecretsStore store) : ControllerBase
 {
-    [HttpPost("{id:int}/reveal")]
-    public async Task<IActionResult> Reveal(int id, CancellationToken ct = default)
+    [HttpPost("{id:guid}/reveal")]
+    public async Task<IActionResult> Reveal(Guid id, CancellationToken ct = default)
     {
         var value = await store.DecryptAsync(id, ct);
         if (value is null) return NotFound();

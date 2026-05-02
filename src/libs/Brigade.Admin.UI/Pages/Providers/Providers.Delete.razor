@@ -1,4 +1,4 @@
-@page "/providers/{Id:int}/delete"
+@page "/providers/{Id:guid}/delete"
 @layout MainLayout
 @rendermode InteractiveServer
 @attribute [Authorize]
@@ -29,7 +29,7 @@
 }
 
 @code {
-    [Parameter] public int Id { get; set; }
+    [Parameter] public Guid Id { get; set; }
 
     private ProviderOptions? provider;
 

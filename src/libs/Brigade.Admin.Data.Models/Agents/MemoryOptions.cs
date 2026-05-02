@@ -2,9 +2,9 @@ namespace Brigade.Admin.Data.Models.Agents;
 
 public record MemoryOptions
 {
-    public int Id { get; init; }
+    public MemoryOptionsId Id { get; init; }
 
-    public int AgentId { get; set; }
+    public AgentOptionsId AgentId { get; set; }
     public AgentOptions? Agent { get; set; }
 
     public SearchBehavior SearchTime { get; init; } = SearchBehavior.BeforeAIInvoke;

@@ -65,7 +65,7 @@
 @code {
     private readonly FormModel form = new();
     private List<ModelOptions> allModels = [];
-    private IEnumerable<int> selectedModelIds = [];
+    private IEnumerable<ModelOptionsId> selectedModelIds = [];
 
     protected override async Task OnInitializedAsync()
     {
@@ -76,13 +76,14 @@
     {
         var provider = new ProviderOptions
         {
+            Id = ProviderOptionsId.New(),
             Name = form.Name,
             ApiUrl = form.ApiUrl,
             ApiToken = form.ApiToken,
         };
         var saved = await ProviderStore.AddAsync(provider);
         if (selectedModelIds.Any())
-            await ProviderStore.AssignModelsAsync(saved.Id, selectedModelIds);
+            await ProviderStore.AssignModelsAsync(saved.Id, selectedModelIds.Select(id => id.Value));
         Nav.NavigateTo("/providers");
     }
 

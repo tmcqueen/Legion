@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
@@ -18,8 +19,7 @@ namespace Brigade.Admin.Data.Sqlite.Migrations.App
                 schema: "agents",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
+                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
                     Name = table.Column<string>(type: "TEXT", nullable: true),
                     Description = table.Column<string>(type: "TEXT", nullable: true),
                     ServerUrl = table.Column<string>(type: "TEXT", nullable: true),
@@ -37,8 +37,7 @@ namespace Brigade.Admin.Data.Sqlite.Migrations.App
                 name: "Middlewares",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
+                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
                     Name = table.Column<string>(type: "TEXT", nullable: true),
                     Description = table.Column<string>(type: "TEXT", nullable: true),
                     Scope = table.Column<int>(type: "INTEGER", nullable: false),
@@ -54,8 +53,7 @@ namespace Brigade.Admin.Data.Sqlite.Migrations.App
                 name: "Models",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
+                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
                     Name = table.Column<string>(type: "TEXT", nullable: true),
                     DisplayName = table.Column<string>(type: "TEXT", nullable: true),
                     ContextWindowSize = table.Column<int>(type: "INTEGER", nullable: false),
@@ -89,8 +87,7 @@ namespace Brigade.Admin.Data.Sqlite.Migrations.App
                 schema: "agents",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
+                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
                     Name = table.Column<string>(type: "TEXT", nullable: true),
                     Type = table.Column<int>(type: "INTEGER", nullable: false),
                     ApiUrl = table.Column<string>(type: "TEXT", nullable: true),
@@ -102,11 +99,26 @@ namespace Brigade.Admin.Data.Sqlite.Migrations.App
                 });
 
             migrationBuilder.CreateTable(
+                name: "Secrets",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    Path = table.Column<string>(type: "TEXT", maxLength: 500, nullable: false),
+                    Description = table.Column<string>(type: "TEXT", nullable: true),
+                    EncryptedValue = table.Column<string>(type: "TEXT", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "TEXT", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Secrets", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Skills",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
+                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
                     Name = table.Column<string>(type: "TEXT", nullable: true),
                     Description = table.Column<string>(type: "TEXT", nullable: true),
                     License = table.Column<string>(type: "TEXT", nullable: true),
@@ -125,8 +137,7 @@ namespace Brigade.Admin.Data.Sqlite.Migrations.App
                 name: "Tools",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
+                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
                     Name = table.Column<string>(type: "TEXT", nullable: true),
                     Description = table.Column<string>(type: "TEXT", nullable: true),
                     ParametersSchema = table.Column<string>(type: "TEXT", nullable: true)
@@ -140,8 +151,7 @@ namespace Brigade.Admin.Data.Sqlite.Migrations.App
                 name: "Workflows",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
+                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
                     Name = table.Column<string>(type: "TEXT", nullable: true),
                     Description = table.Column<string>(type: "TEXT", nullable: true),
                     Content = table.Column<string>(type: "TEXT", nullable: true)
@@ -155,11 +165,10 @@ namespace Brigade.Admin.Data.Sqlite.Migrations.App
                 name: "McpServerHeaders",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
+                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
                     Key = table.Column<string>(type: "TEXT", nullable: true),
                     Value = table.Column<string>(type: "TEXT", nullable: true),
-                    McpServerId = table.Column<int>(type: "INTEGER", nullable: false)
+                    McpServerId = table.Column<Guid>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -177,13 +186,15 @@ namespace Brigade.Admin.Data.Sqlite.Migrations.App
                 name: "Agents",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
+                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
                     Name = table.Column<string>(type: "TEXT", nullable: true),
                     Description = table.Column<string>(type: "TEXT", nullable: true),
                     Instructions = table.Column<string>(type: "TEXT", nullable: true),
                     MaxTokens = table.Column<int>(type: "INTEGER", nullable: true),
-                    ProviderId = table.Column<int>(type: "INTEGER", nullable: false)
+                    ProviderId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    Discriminator = table.Column<string>(type: "TEXT", maxLength: 13, nullable: false),
+                    TemplateName = table.Column<string>(type: "TEXT", nullable: true),
+                    TemplateDescription = table.Column<string>(type: "TEXT", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -202,8 +213,8 @@ namespace Brigade.Admin.Data.Sqlite.Migrations.App
                 schema: "agents",
                 columns: table => new
                 {
-                    ModelsId = table.Column<int>(type: "INTEGER", nullable: false),
-                    ProvidersId = table.Column<int>(type: "INTEGER", nullable: false)
+                    ModelsId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    ProvidersId = table.Column<Guid>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -228,8 +239,8 @@ namespace Brigade.Admin.Data.Sqlite.Migrations.App
                 schema: "agents",
                 columns: table => new
                 {
-                    AgentsId = table.Column<int>(type: "INTEGER", nullable: false),
-                    McpServersId = table.Column<int>(type: "INTEGER", nullable: false)
+                    AgentsId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    McpServersId = table.Column<Guid>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -254,8 +265,8 @@ namespace Brigade.Admin.Data.Sqlite.Migrations.App
                 schema: "agents",
                 columns: table => new
                 {
-                    AgentsId = table.Column<int>(type: "INTEGER", nullable: false),
-                    MiddlewareId = table.Column<int>(type: "INTEGER", nullable: false)
+                    AgentsId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    MiddlewareId = table.Column<Guid>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -279,8 +290,8 @@ namespace Brigade.Admin.Data.Sqlite.Migrations.App
                 schema: "agents",
                 columns: table => new
                 {
-                    AgentsId = table.Column<int>(type: "INTEGER", nullable: false),
-                    ModelsId = table.Column<int>(type: "INTEGER", nullable: false)
+                    AgentsId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    ModelsId = table.Column<Guid>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -304,8 +315,8 @@ namespace Brigade.Admin.Data.Sqlite.Migrations.App
                 schema: "agents",
                 columns: table => new
                 {
-                    AgentsId = table.Column<int>(type: "INTEGER", nullable: false),
-                    SkillsId = table.Column<int>(type: "INTEGER", nullable: false)
+                    AgentsId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    SkillsId = table.Column<Guid>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -329,8 +340,8 @@ namespace Brigade.Admin.Data.Sqlite.Migrations.App
                 schema: "agents",
                 columns: table => new
                 {
-                    AgentsId = table.Column<int>(type: "INTEGER", nullable: false),
-                    ToolsId = table.Column<int>(type: "INTEGER", nullable: false)
+                    AgentsId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    ToolsId = table.Column<Guid>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -353,9 +364,8 @@ namespace Brigade.Admin.Data.Sqlite.Migrations.App
                 name: "Memories",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    AgentId = table.Column<int>(type: "INTEGER", nullable: false),
+                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    AgentId = table.Column<Guid>(type: "TEXT", nullable: false),
                     SearchTime = table.Column<int>(type: "INTEGER", nullable: false),
                     MaxResults = table.Column<int>(type: "INTEGER", nullable: true),
                     FunctionToolName = table.Column<string>(type: "TEXT", nullable: true),
@@ -425,6 +435,12 @@ namespace Brigade.Admin.Data.Sqlite.Migrations.App
                 schema: "agents",
                 table: "ProviderModels",
                 column: "ProvidersId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Secrets_Path",
+                table: "Secrets",
+                column: "Path",
+                unique: true);
         }
 
         /// <inheritdoc />
@@ -459,6 +475,9 @@ namespace Brigade.Admin.Data.Sqlite.Migrations.App
             migrationBuilder.DropTable(
                 name: "ProviderModels",
                 schema: "agents");
+
+            migrationBuilder.DropTable(
+                name: "Secrets");
 
             migrationBuilder.DropTable(
                 name: "Workflows");

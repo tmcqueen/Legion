@@ -1,3 +1,4 @@
+using Brigade.Admin.Data.Models;
 using Brigade.Admin.Data.Models.Providers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
@@ -5,23 +6,25 @@ using Microsoft.Extensions.Caching.Memory;
 namespace Brigade.Admin.Data.Stores;
 
 public class ProviderStore(AppDbContext db, IMemoryCache cache)
-    : CatalogStore<ProviderOptions>(db, cache)
+    : CatalogStore<ProviderOptions>(db, cache, id => (ProviderOptionsId)id)
 {
     public override string AllKey => "Providers:all";
 
     protected override IQueryable<ProviderOptions> BuildAllQuery() =>
         Db.Providers.AsNoTracking().Include(p => p.Models);
 
-    public override async Task<ProviderOptions?> GetAsync(int id, CancellationToken ct = default) =>
+    public override async Task<ProviderOptions?> GetAsync(Guid id, CancellationToken ct = default) =>
         await Db.Providers.AsNoTracking().Include(p => p.Models)
-            .FirstOrDefaultAsync(p => p.Id == id, ct);
+            .FirstOrDefaultAsync(p => p.Id == (ProviderOptionsId)id, ct);
 
-    public async Task AssignModelsAsync(int providerId, IEnumerable<int> modelIds, CancellationToken ct = default)
+    public async Task AssignModelsAsync(Guid providerId, IEnumerable<Guid> modelIds, CancellationToken ct = default)
     {
-        var provider = await Db.Providers.Include(p => p.Models).FirstOrDefaultAsync(p => p.Id == providerId, ct);
+        var typedProviderId = (ProviderOptionsId)providerId;
+        var provider = await Db.Providers.Include(p => p.Models)
+            .FirstOrDefaultAsync(p => p.Id == typedProviderId, ct);
         if (provider is null) return;
-        var idList = modelIds.ToList();
-        var models = await Db.Models.Where(m => idList.Contains(m.Id)).ToListAsync(ct);
+        var typedIds = modelIds.Select(g => (ModelOptionsId)g).ToList();
+        var models = await Db.Models.Where(m => typedIds.Contains(m.Id)).ToListAsync(ct);
         provider.Models.Clear();
         provider.Models.AddRange(models);
         await Db.SaveChangesAsync(ct);
