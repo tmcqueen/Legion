@@ -316,6 +316,114 @@ namespace Legion.Admin.Data.PostgreSQL.Migrations.App
                     b.ToTable("Workflows");
                 });
 
+            modelBuilder.Entity("Legion.Admin.Data.Models.Prompts.AgentPromptAssignment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("AgentId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("DefinitionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Order")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DefinitionId");
+
+                    b.HasIndex("AgentId", "DefinitionId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_agent_prompt_assignments_agent_definition");
+
+                    b.ToTable("AgentPromptAssignments");
+                });
+
+            modelBuilder.Entity("Legion.Admin.Data.Models.Prompts.PromptDefinition", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsDefaultIncluded")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
+                    b.Property<string>("Path")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Path")
+                        .IsUnique()
+                        .HasDatabaseName("ix_prompt_definitions_path");
+
+                    b.ToTable("PromptDefinitions");
+                });
+
+            modelBuilder.Entity("Legion.Admin.Data.Models.Prompts.PromptVersion", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)");
+
+                    b.Property<Guid>("DefinitionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Frontmatter")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DefinitionId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_prompt_versions_definition_published")
+                        .HasFilter("\"Status\" = 'Published'");
+
+                    b.ToTable("PromptVersions");
+                });
+
             modelBuilder.Entity("Legion.Admin.Data.Models.Providers.ModelOptions", b =>
                 {
                     b.Property<Guid>("Id")
@@ -581,6 +689,34 @@ namespace Legion.Admin.Data.PostgreSQL.Migrations.App
                     b.Navigation("Agent");
                 });
 
+            modelBuilder.Entity("Legion.Admin.Data.Models.Prompts.AgentPromptAssignment", b =>
+                {
+                    b.HasOne("Legion.Admin.Data.Models.Agents.AgentOptions", null)
+                        .WithMany()
+                        .HasForeignKey("AgentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Legion.Admin.Data.Models.Prompts.PromptDefinition", "Definition")
+                        .WithMany("Assignments")
+                        .HasForeignKey("DefinitionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Definition");
+                });
+
+            modelBuilder.Entity("Legion.Admin.Data.Models.Prompts.PromptVersion", b =>
+                {
+                    b.HasOne("Legion.Admin.Data.Models.Prompts.PromptDefinition", "Definition")
+                        .WithMany("Versions")
+                        .HasForeignKey("DefinitionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Definition");
+                });
+
             modelBuilder.Entity("ModelOptionsProviderOptions", b =>
                 {
                     b.HasOne("Legion.Admin.Data.Models.Providers.ModelOptions", null)
@@ -604,6 +740,13 @@ namespace Legion.Admin.Data.PostgreSQL.Migrations.App
             modelBuilder.Entity("Legion.Admin.Data.Models.Agents.McpServerOptions", b =>
                 {
                     b.Navigation("Headers");
+                });
+
+            modelBuilder.Entity("Legion.Admin.Data.Models.Prompts.PromptDefinition", b =>
+                {
+                    b.Navigation("Assignments");
+
+                    b.Navigation("Versions");
                 });
 
             modelBuilder.Entity("Legion.Admin.Data.Models.Providers.ProviderOptions", b =>
