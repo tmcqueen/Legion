@@ -1,5 +1,6 @@
 using Legion.Admin.Data.Models;
 using Legion.Admin.Data.Models.Agents;
+using Legion.Admin.Data.Models.Prompts;
 using Legion.Admin.Data.Models.Providers;
 using Microsoft.EntityFrameworkCore;
 
@@ -18,6 +19,9 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<ModelOptions> Models => Set<ModelOptions>();
     public DbSet<MiddlewareOptions> Middlewares => Set<MiddlewareOptions>();
     public DbSet<SecretOptions> Secrets => Set<SecretOptions>();
+    public DbSet<PromptDefinition> PromptDefinitions => Set<PromptDefinition>();
+    public DbSet<PromptVersion> PromptVersions => Set<PromptVersion>();
+    public DbSet<AgentPromptAssignment> AgentPromptAssignments => Set<AgentPromptAssignment>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
