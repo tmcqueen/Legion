@@ -57,14 +57,18 @@
     {
         dirty = true;
         debounceTimer?.Dispose();
-        debounceTimer = new System.Timers.Timer(2000);
-        debounceTimer.Elapsed += async (_, _) =>
+        var timer = new System.Timers.Timer(2000) { AutoReset = false };
+        debounceTimer = timer;
+        timer.Elapsed += async (_, _) =>
         {
-            debounceTimer?.Dispose();
-            await InvokeAsync(SaveNow);
+            timer.Dispose();
+            if (debounceTimer == timer)
+            {
+                try { await InvokeAsync(SaveNow); }
+                catch { /* prevent unobserved exception from event handler */ }
+            }
         };
-        debounceTimer.AutoReset = false;
-        debounceTimer.Start();
+        timer.Start();
     }
 
     private async Task SaveNow()

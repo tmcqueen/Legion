@@ -30,7 +30,7 @@
         </RadzenStack>
         <RadzenTree Data="@rootNodes" @bind-Value="selected" Expand="OnExpand"
                     Style="width: 100%; height: 600px; overflow: auto; border: 1px solid var(--rz-base-300);">
-            <RadzenTreeLevel TextProperty="Label" HasChildren="@(n => ((PromptTreeNode)n).IsFolder)" />
+            <RadzenTreeLevel TextProperty="Label" HasChildren="@(n => ((PromptTreeNode)n).Children.Count > 0)" />
         </RadzenTree>
     </RadzenColumn>
 

@@ -1,7 +1,10 @@
 @using Legion.Admin.Data.Models.Prompts
+@using WebDev.Controllers
+@using WebDev.Services
+@using Microsoft.AspNetCore.Components.Authorization
 @inject DialogService DialogService
-@inject IHttpClientFactory HttpClientFactory
-@inject NavigationManager Nav
+@inject ImportService ImportService
+@inject AuthenticationStateProvider AuthStateProvider
 
 <RadzenStack Orientation="Orientation.Vertical" Gap="0.75rem" Style="min-width: 600px;">
     <RadzenTabs>
@@ -56,11 +59,9 @@
     private string? url;
     private string? pasteContent;
     private string? pasteFilename;
-    private List<ImportPreviewItem> previews = [];
+    private List<EditablePreview> previews = [];
     private string? errorMessage;
     private bool loading;
-
-    private string ApiBase => Nav.BaseUri.TrimEnd('/');
 
     private async Task FetchUrl()
     {
@@ -68,11 +69,9 @@
         loading = true; errorMessage = null;
         try
         {
-            var client = HttpClientFactory.CreateClient("import");
-            var resp = await client.PostAsJsonAsync($"{ApiBase}/api/prompts/import", new { url });
-            if (!resp.IsSuccessStatusCode) { errorMessage = await resp.Content.ReadAsStringAsync(); return; }
-            var preview = await resp.Content.ReadFromJsonAsync<ImportPreviewItem>();
-            previews = preview is not null ? [preview] : [];
+            var (preview, error) = await ImportService.ParsePreviewAsync(url, null, null);
+            if (error is not null) { errorMessage = error; return; }
+            previews = preview is not null ? [EditablePreview.From(preview)] : [];
         }
         catch (Exception ex) { errorMessage = ex.Message; }
         finally { loading = false; }
@@ -81,29 +80,39 @@
     private async Task PreviewPaste()
     {
         if (string.IsNullOrWhiteSpace(pasteContent)) return;
-        var client = HttpClientFactory.CreateClient("import");
-        var resp = await client.PostAsJsonAsync($"{ApiBase}/api/prompts/import",
-            new { markdownContent = pasteContent, filename = pasteFilename ?? "paste.md" });
-        if (!resp.IsSuccessStatusCode) { errorMessage = await resp.Content.ReadAsStringAsync(); return; }
-        var preview = await resp.Content.ReadFromJsonAsync<ImportPreviewItem>();
-        previews = preview is not null ? [preview] : [];
+        var (preview, error) = await ImportService.ParsePreviewAsync(null, pasteContent, pasteFilename ?? "paste.md");
+        if (error is not null) { errorMessage = error; return; }
+        previews = preview is not null ? [EditablePreview.From(preview)] : [];
     }
 
     private async Task Confirm(bool publishImmediately)
     {
-        if (PromptStore is null) return;
-        var client = HttpClientFactory.CreateClient("import");
-        var items = previews.Select(p => new
-        {
-            path = p.SuggestedPath,
-            type = p.Type.ToString(),
-            category = p.Category.ToString(),
-            content = p.Content
-        }).ToList();
-        var resp = await client.PostAsJsonAsync($"{ApiBase}/api/prompts/import/confirm",
-            new { items, publishImmediately });
-        DialogService.Close(resp.IsSuccessStatusCode);
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        var createdBy = $"{user.FindFirst("sub")?.Value}:{user.Identity?.Name}";
+
+        var items = previews.Select(p => new ConfirmImportItem(p.SuggestedPath, p.Type, p.Category, p.Content)).ToList();
+        var results = await ImportService.ConfirmAsync(items, publishImmediately, createdBy);
+        DialogService.Close(results.All(r => r.Success));
     }
 
-    private record ImportPreviewItem(string Filename, string SuggestedPath, PromptType Type, PromptCategory Category, string Content, bool FrontmatterDetected);
+    private sealed class EditablePreview
+    {
+        public string Filename { get; init; } = string.Empty;
+        public string SuggestedPath { get; set; } = string.Empty;
+        public PromptType Type { get; init; }
+        public PromptCategory Category { get; init; }
+        public string Content { get; init; } = string.Empty;
+        public bool FrontmatterDetected { get; init; }
+
+        public static EditablePreview From(ImportPreview p) => new()
+        {
+            Filename = p.Filename,
+            SuggestedPath = p.SuggestedPath,
+            Type = p.Type,
+            Category = p.Category,
+            Content = p.Content,
+            FrontmatterDetected = p.FrontmatterDetected
+        };
+    }
 }

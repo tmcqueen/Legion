@@ -1,4 +1,6 @@
+using System.Text.Json.Serialization;
 using WebDev.Components;
+using WebDev.Services;
 using Legion.Admin.Auth;
 using Microsoft.AspNetCore.HttpOverrides;
 using Radzen;
@@ -31,7 +33,9 @@ builder.Services.AddSqliteAppDbContext(agentDbConnectionString);
 builder.Services.AddAgentStores();
 
 builder.Services.AddHttpContextAccessor();
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(o => o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
+builder.Services.AddScoped<ImportService>();
 builder.Services.AddHttpClient("import")
     .ConfigurePrimaryHttpMessageHandler(() =>
         new SocketsHttpHandler { AllowAutoRedirect = false });
