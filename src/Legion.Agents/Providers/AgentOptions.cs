@@ -12,4 +12,6 @@ public record AgentOptions
     public string? Model { get; init; }
     public List<string>? Tools { get; init; }
     public int? MaxTokens { get; init; }
+    public List<string>? ToolWhitelist { get; init; }
+    public List<string>? ToolBlacklist { get; init; }
 }
