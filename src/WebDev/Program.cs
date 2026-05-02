@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.HttpOverrides;
 using Radzen;
 using Legion.Admin.Data;
 using Legion.Admin.Data.Services;
+using Legion.Admin.Data.Seeds;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -56,6 +57,8 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddRadzenComponents();
 
+builder.Services.AddSingleton<YamlSeedLoader>();
+builder.Services.AddHostedService<AdminDbSeedService>();
 builder.Services.AddHostedService<AuthDbSeedService>();
 
 var app = builder.Build();
