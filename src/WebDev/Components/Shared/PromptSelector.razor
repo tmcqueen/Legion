@@ -1,0 +1,112 @@
+@using Legion.Admin.Data.Models
+@using Legion.Admin.Data.Models.Prompts
+@using Legion.Admin.Data.Stores
+@inject IPromptStore PromptStore
+@inject DialogService DialogService
+
+<RadzenRow Style="height: 500px; overflow: hidden;">
+    <RadzenColumn Size="6" Style="overflow-y: auto; border-right: 1px solid var(--rz-base-300); padding-right: 1rem;">
+        <RadzenTextBox Placeholder="Search…" @oninput="OnSearch" style="width: 100%; margin-bottom: 0.5rem;" />
+        @foreach (var category in categories)
+        {
+            var catDefs = FilteredByCategory(category).ToList();
+            if (!catDefs.Any()) continue;
+            <RadzenText TextStyle="TextStyle.Subtitle2">@category</RadzenText>
+            @foreach (var def in catDefs)
+            {
+                <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem">
+                    <RadzenCheckBox Value="@IsSelected(def.Id)" TValue="bool"
+                                    Change="@(v => ToggleSelection(def.Id, v))" />
+                    <RadzenText Style="@(def.IsDefaultIncluded ? "font-weight: bold;" : "")">
+                        @def.Path @(def.IsDefaultIncluded ? "★" : "")
+                    </RadzenText>
+                </RadzenStack>
+            }
+        }
+    </RadzenColumn>
+    <RadzenColumn Size="6" Style="overflow-y: auto; padding-left: 1rem;">
+        <RadzenText TextStyle="TextStyle.Subtitle2">Preview</RadzenText>
+        <pre style="font-size: 0.75rem; white-space: pre-wrap;">@previewText</pre>
+    </RadzenColumn>
+</RadzenRow>
+
+<RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" class="rz-mt-3">
+    <RadzenButton Text="Reset to Defaults" ButtonStyle="ButtonStyle.Light" Click="ResetToDefaults" />
+    <RadzenButton Text="Select All" ButtonStyle="ButtonStyle.Light" Click="SelectAll" />
+    <RadzenButton Text="Deselect All" ButtonStyle="ButtonStyle.Light" Click="DeselectAll" />
+    <RadzenButton Text="Apply" ButtonStyle="ButtonStyle.Primary" Click="Apply" />
+</RadzenStack>
+
+@code {
+    [Parameter] public AgentOptionsId AgentId { get; set; }
+
+    private List<PromptDefinition> allDefinitions = [];
+    private HashSet<PromptDefinitionId> selected = [];
+    private Dictionary<PromptDefinitionId, int> orderMap = new();
+    private string searchTerm = string.Empty;
+    private string previewText = string.Empty;
+
+    private static readonly PromptCategory[] categories =
+        [PromptCategory.Foundation, PromptCategory.Constraints, PromptCategory.TaskSpecific, PromptCategory.Overrides];
+
+    protected override async Task OnInitializedAsync()
+    {
+        allDefinitions = await PromptStore.SearchDefinitionsAsync(string.Empty);
+        var existing = await PromptStore.GetAgentAssignmentsAsync(AgentId);
+        selected = existing.Select(a => a.DefinitionId).ToHashSet();
+        orderMap = existing.ToDictionary(a => a.DefinitionId, a => a.Order);
+        UpdatePreview();
+    }
+
+    private IEnumerable<PromptDefinition> FilteredByCategory(PromptCategory category) =>
+        allDefinitions
+            .Where(d => d.Category == category &&
+                        (string.IsNullOrEmpty(searchTerm) || d.Path.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)));
+
+    private bool IsSelected(PromptDefinitionId id) => selected.Contains(id);
+
+    private void ToggleSelection(PromptDefinitionId id, bool value)
+    {
+        if (value) { selected.Add(id); orderMap.TryAdd(id, selected.Count); }
+        else { selected.Remove(id); orderMap.Remove(id); }
+        UpdatePreview();
+    }
+
+    private void OnSearch(ChangeEventArgs e) => searchTerm = e.Value?.ToString() ?? string.Empty;
+
+    private void ResetToDefaults()
+    {
+        selected = allDefinitions.Where(d => d.IsDefaultIncluded).Select(d => d.Id).ToHashSet();
+        orderMap = selected.Select((id, i) => (id, i)).ToDictionary(x => x.id, x => x.i);
+        UpdatePreview();
+    }
+
+    private void SelectAll()
+    {
+        selected = allDefinitions.Select(d => d.Id).ToHashSet();
+        orderMap = selected.Select((id, i) => (id, i)).ToDictionary(x => x.id, x => x.i);
+        UpdatePreview();
+    }
+
+    private void DeselectAll() { selected.Clear(); orderMap.Clear(); UpdatePreview(); }
+
+    private void UpdatePreview()
+    {
+        var selectedDefs = allDefinitions
+            .Where(d => selected.Contains(d.Id))
+            .OrderBy(d => d.Category)
+            .ThenBy(d => orderMap.TryGetValue(d.Id, out var o) ? o : 0);
+
+        previewText = string.Join("\n\n", selectedDefs.Select(d =>
+            $"<!-- prompt: {d.Path} -->\n[content of {d.Path}]"));
+    }
+
+    private async Task Apply()
+    {
+        var assignments = selected
+            .Select(id => (id, orderMap.TryGetValue(id, out var o) ? o : 0))
+            .ToList();
+        await PromptStore.SetAgentAssignmentsAsync(AgentId, assignments);
+        DialogService.Close(true);
+    }
+}
