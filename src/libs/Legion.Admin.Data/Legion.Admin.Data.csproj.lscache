@@ -82,11 +82,14 @@ obj/Debug/net10.0/
  .NETCoreApp,Version=v10.0.AssemblyAttributes.cs
  Legion.Admin.Data.AssemblyInfo.cs
  Legion.Admin.Data.GlobalUsings.g.cs
+Seeds/Dtos/
+ OidcApplicationDto.cs
+ OidcScopeDto.cs
+ SeedAgentDto.cs
+ SeedUserDto.cs
 Seeds/
- SeedData.Agents.cs
- SeedData.Application.cs
- SeedData.AppUsers.cs
- SeedData.Scope.cs
+ SeedPayload.cs
+ YamlSeedLoader.cs
 Services/
  AdminDbSeedService.cs
  AuthDbSeedService.cs
@@ -464,6 +467,7 @@ Stores/
  polly.ratelimiting/8.4.2/lib/net8.0/Polly.RateLimiting.dll
  polly/7.2.4/lib/netstandard2.0/Polly.dll
  system.identitymodel.tokens.jwt/8.0.1/lib/net9.0/System.IdentityModel.Tokens.Jwt.dll
+ yamldotnet/16.3.0/lib/net8.0/YamlDotNet.dll
 
 [analyzerReferences]
 <DOTNET>/packs/Microsoft.AspNetCore.App.Ref/10.0.7/analyzers/dotnet/cs/

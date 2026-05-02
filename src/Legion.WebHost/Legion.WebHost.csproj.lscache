@@ -494,6 +494,7 @@ Services/
  system.identitymodel.tokens.jwt/8.0.1/lib/net9.0/System.IdentityModel.Tokens.Jwt.dll
  weasel.core/8.14.1/lib/net10.0/Weasel.Core.dll
  weasel.postgresql/8.14.1/lib/net10.0/Weasel.Postgresql.dll
+ yamldotnet/16.3.0/lib/net8.0/YamlDotNet.dll
 
 [analyzerReferences]
 <DOTNET>/packs/Microsoft.AspNetCore.App.Ref/10.0.7/analyzers/dotnet/cs/

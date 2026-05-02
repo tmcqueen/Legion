@@ -454,6 +454,7 @@ Stores/PostgreSqlSecretsStore.cs
  system.composition.typedparts/9.0.0/lib/net9.0/System.Composition.TypedParts.dll
  system.identitymodel.tokens.jwt/8.0.1/lib/net9.0/System.IdentityModel.Tokens.Jwt.dll
  system.security.cryptography.pkcs/10.0.7/lib/net10.0/System.Security.Cryptography.Pkcs.dll
+ yamldotnet/16.3.0/lib/net8.0/YamlDotNet.dll
 
 [analyzerReferences]
 <DOTNET>/packs/Microsoft.AspNetCore.App.Ref/10.0.7/analyzers/dotnet/cs/

@@ -448,6 +448,7 @@ Tools/
  system.memory.data/10.0.3/lib/net10.0/System.Memory.Data.dll
  system.numerics.tensors/10.0.6/lib/net10.0/System.Numerics.Tensors.dll
  system.security.cryptography.pkcs/10.0.7/lib/net10.0/System.Security.Cryptography.Pkcs.dll
+ yamldotnet/16.3.0/lib/net8.0/YamlDotNet.dll
 
 [analyzerReferences]
 <DOTNET>/packs/Microsoft.AspNetCore.App.Ref/10.0.7/analyzers/dotnet/cs/
