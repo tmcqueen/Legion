@@ -20,4 +20,9 @@
   <ItemGroup>
     <ProjectReference Include="..\libs\Legion.Admin.Data\Legion.Admin.Data.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>Legion.Admin.Data.Tests</_Parameter1>
+    </AssemblyAttribute>
+  </ItemGroup>
 </Project>

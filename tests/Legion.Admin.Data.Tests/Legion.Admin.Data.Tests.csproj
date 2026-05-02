@@ -17,5 +17,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\libs\Legion.Admin.Data\Legion.Admin.Data.csproj" />
+    <ProjectReference Include="..\..\src\Legion.Agents\Legion.Agents.csproj" />
   </ItemGroup>
 </Project>
