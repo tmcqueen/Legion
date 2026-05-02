@@ -87,3 +87,27 @@ public readonly record struct SecretOptionsId(Guid Value)
     public static implicit operator SecretOptionsId(Guid value) => new(value);
     public override string ToString() => Value.ToString();
 }
+
+public readonly record struct PromptDefinitionId(Guid Value)
+{
+    public static PromptDefinitionId New() => new(Guid.CreateVersion7());
+    public static implicit operator Guid(PromptDefinitionId id) => id.Value;
+    public static implicit operator PromptDefinitionId(Guid value) => new(value);
+    public override string ToString() => Value.ToString();
+}
+
+public readonly record struct PromptVersionId(Guid Value)
+{
+    public static PromptVersionId New() => new(Guid.CreateVersion7());
+    public static implicit operator Guid(PromptVersionId id) => id.Value;
+    public static implicit operator PromptVersionId(Guid value) => new(value);
+    public override string ToString() => Value.ToString();
+}
+
+public readonly record struct AgentPromptAssignmentId(Guid Value)
+{
+    public static AgentPromptAssignmentId New() => new(Guid.CreateVersion7());
+    public static implicit operator Guid(AgentPromptAssignmentId id) => id.Value;
+    public static implicit operator AgentPromptAssignmentId(Guid value) => new(value);
+    public override string ToString() => Value.ToString();
+}
