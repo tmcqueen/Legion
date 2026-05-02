@@ -129,8 +129,7 @@
 
     private async Task OpenImport()
     {
-        var result = await DialogService.OpenAsync<ImportPromptDialog>("Import Prompts",
-            new Dictionary<string, object?> { ["PromptStore"] = PromptStore });
+        var result = await DialogService.OpenAsync<ImportPromptDialog>("Import Prompts");
         if (result is true) await LoadAsync();
     }
 
