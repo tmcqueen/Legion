@@ -25,6 +25,7 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" />
     <PackageReference Include="OpenIddict.EntityFrameworkCore" />
+    <PackageReference Include="YamlDotNet" />
   </ItemGroup>
 
 </Project>
