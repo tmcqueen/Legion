@@ -1,4 +1,5 @@
 using Legion.Admin.Data.Models;
+using Legion.Admin.Data.Models.Agents;
 using Legion.Admin.Data.Models.Prompts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -24,5 +25,10 @@ public class AgentPromptAssignmentConfiguration : IEntityTypeConfiguration<Agent
         builder.HasIndex(a => new { a.AgentId, a.DefinitionId })
             .IsUnique()
             .HasDatabaseName("ix_agent_prompt_assignments_agent_definition");
+
+        builder.HasOne<AgentOptions>()
+            .WithMany()
+            .HasForeignKey(a => a.AgentId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }
