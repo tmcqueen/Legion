@@ -26,7 +26,7 @@ public class PromptStore(AppDbContext db) : IPromptStore
     public async Task<List<PromptVersion>> GetAgentPromptsAsync(AgentOptionsId agentId, CancellationToken ct = default)
     {
         var assignments = await db.AgentPromptAssignments.AsNoTracking()
-            .Where(a => a.AgentId == agentId)
+            .Where(a => a.AgentId == agentId && a.Definition!.DeletedAt == null)
             .Include(a => a.Definition)
             .OrderBy(a => a.Definition!.Category)
             .ThenBy(a => a.Order)
@@ -77,7 +77,8 @@ public class PromptStore(AppDbContext db) : IPromptStore
             Path = path,
             Type = type,
             Category = category,
-            IsDefaultIncluded = isDefaultIncluded
+            IsDefaultIncluded = isDefaultIncluded,
+            CreatedBy = createdBy
         };
         db.PromptDefinitions.Add(definition);
         await db.SaveChangesAsync(ct);
@@ -92,7 +93,7 @@ public class PromptStore(AppDbContext db) : IPromptStore
             throw new ArgumentException("Content cannot be empty.", nameof(content));
 
         var definition = await db.PromptDefinitions.FindAsync([definitionId], ct)
-            ?? throw new InvalidOperationException($"Definition {definitionId} not found.");
+            ?? throw new KeyNotFoundException($"Definition {definitionId} not found.");
 
         if (frontmatter is not null && definition.Type != PromptType.Prompt)
             ValidateYaml(frontmatter);
@@ -120,11 +121,19 @@ public class PromptStore(AppDbContext db) : IPromptStore
     public async Task UpdateDraftAsync(
         PromptVersionId draftId, string content, string? frontmatter, CancellationToken ct = default)
     {
-        var draft = await db.PromptVersions.FindAsync([draftId], ct);
+        var draft = await db.PromptVersions
+            .Include(v => v.Definition)
+            .FirstOrDefaultAsync(v => v.Id == draftId, ct);
         if (draft is null)
             throw new KeyNotFoundException($"Draft {draftId} not found.");
         if (draft.Status != PromptStatus.Draft)
             throw new InvalidOperationException($"Version {draftId} is not a Draft (status: {draft.Status}).");
+
+        if (string.IsNullOrWhiteSpace(content))
+            throw new ArgumentException("Content cannot be empty.", nameof(content));
+
+        if (frontmatter is not null && draft.Definition is not null && draft.Definition.Type != PromptType.Prompt)
+            ValidateYaml(frontmatter);
 
         draft.Content = content;
         draft.Frontmatter = frontmatter;
@@ -134,10 +143,10 @@ public class PromptStore(AppDbContext db) : IPromptStore
     public async Task PublishDraftAsync(PromptVersionId draftId, CancellationToken ct = default)
     {
         await using var tx = await db.Database.BeginTransactionAsync(
-            System.Data.IsolationLevel.RepeatableRead, ct);
+            System.Data.IsolationLevel.Serializable, ct);
 
         var draft = await db.PromptVersions.FindAsync([draftId], ct)
-            ?? throw new InvalidOperationException($"Draft {draftId} not found.");
+            ?? throw new KeyNotFoundException($"Draft {draftId} not found.");
         if (draft.Status != PromptStatus.Draft)
             throw new InvalidOperationException($"Version {draftId} is not a Draft.");
 
@@ -168,10 +177,10 @@ public class PromptStore(AppDbContext db) : IPromptStore
     public async Task RepublishArchivedAsync(PromptVersionId archivedVersionId, CancellationToken ct = default)
     {
         await using var tx = await db.Database.BeginTransactionAsync(
-            System.Data.IsolationLevel.RepeatableRead, ct);
+            System.Data.IsolationLevel.Serializable, ct);
 
         var archived = await db.PromptVersions.FindAsync([archivedVersionId], ct)
-            ?? throw new InvalidOperationException($"Version {archivedVersionId} not found.");
+            ?? throw new KeyNotFoundException($"Version {archivedVersionId} not found.");
         if (archived.Status != PromptStatus.Archived)
             throw new InvalidOperationException($"Version {archivedVersionId} is not Archived.");
 
@@ -190,7 +199,7 @@ public class PromptStore(AppDbContext db) : IPromptStore
     public async Task DeleteDefinitionAsync(PromptDefinitionId definitionId, CancellationToken ct = default)
     {
         var definition = await db.PromptDefinitions.FindAsync([definitionId], ct)
-            ?? throw new InvalidOperationException($"Definition {definitionId} not found.");
+            ?? throw new KeyNotFoundException($"Definition {definitionId} not found.");
         definition.DeletedAt = DateTime.UtcNow;
         await db.SaveChangesAsync(ct);
     }

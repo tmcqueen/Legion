@@ -29,6 +29,10 @@ public class PromptDefinitionConfiguration : IEntityTypeConfiguration<PromptDefi
         builder.Property(d => d.IsDefaultIncluded)
             .HasDefaultValue(false);
 
+        builder.Property(d => d.CreatedBy)
+            .HasMaxLength(512)
+            .IsRequired();
+
         builder.HasIndex(d => d.Path)
             .IsUnique()
             .HasDatabaseName("ix_prompt_definitions_path");

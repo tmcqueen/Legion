@@ -8,6 +8,7 @@ public record PromptDefinition
     public PromptCategory Category { get; set; }
     public bool IsDefaultIncluded { get; set; }
     public DateTime CreatedAt { get; init; } = DateTime.UtcNow;
+    public string CreatedBy { get; init; } = string.Empty;
     public DateTime? DeletedAt { get; set; }
 
     public ICollection<PromptVersion> Versions { get; init; } = [];
