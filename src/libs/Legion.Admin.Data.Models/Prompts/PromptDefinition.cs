@@ -1,6 +1,6 @@
 namespace Legion.Admin.Data.Models.Prompts;
 
-public class PromptDefinition
+public record PromptDefinition
 {
     public PromptDefinitionId Id { get; init; } = PromptDefinitionId.New();
     public string Path { get; set; } = string.Empty;

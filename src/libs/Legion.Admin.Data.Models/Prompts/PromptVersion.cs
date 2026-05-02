@@ -1,6 +1,6 @@
 namespace Legion.Admin.Data.Models.Prompts;
 
-public class PromptVersion
+public record PromptVersion
 {
     public PromptVersionId Id { get; init; } = PromptVersionId.New();
     public PromptDefinitionId DefinitionId { get; init; }
