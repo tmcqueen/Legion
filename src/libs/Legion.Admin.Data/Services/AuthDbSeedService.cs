@@ -22,11 +22,6 @@ public class AuthDbSeedService(
     public async Task StartAsync(CancellationToken cancellationToken)
     {
         if (env.EnvironmentName != "Development") return;
-        if (configuration["Seeding:Source"] == "Legacy")
-        {
-            await RunLegacyAsync(cancellationToken);
-            return;
-        }
 
         var seedPath = ResolveSeedPath();
         var payload = loader.LoadAll(seedPath);
@@ -55,28 +50,6 @@ public class AuthDbSeedService(
         return Path.IsPathRooted(configured)
             ? configured
             : Path.Combine(env.ContentRootPath, configured);
-    }
-
-    private async Task RunLegacyAsync(CancellationToken cancellationToken)
-    {
-        using var scope = serviceProvider.CreateScope();
-        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
-        var appManager = scope.ServiceProvider.GetRequiredService<IOpenIddictApplicationManager>();
-        var scopeManager = scope.ServiceProvider.GetRequiredService<IOpenIddictScopeManager>();
-
-        var authority = configuration["OpenIddict:Authority"]
-            ?? throw new InvalidOperationException("OpenIddict:Authority is required in configuration.");
-
-        await SeedUsersAsync(SeedData.GetDefaultAppUsers()
-            .Select(u => new SeedUserDto
-            {
-                UserName = u.UserName ?? "",
-                Email = u.Email ?? "",
-                EmailConfirmed = u.EmailConfirmed,
-                Password = u.Password
-            }).ToList(), userManager);
-        await SeedApplicationsAsync(SeedData.GetDefaultApplications(authority), appManager, cancellationToken);
-        await SeedScopesAsync(SeedData.GetDefaultAppScopes(), scopeManager, cancellationToken);
     }
 
     private async Task SeedUsersAsync(List<SeedUserDto> users, UserManager<ApplicationUser> userManager)

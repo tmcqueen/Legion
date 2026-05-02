@@ -19,7 +19,6 @@ public class AdminDbSeedService(
     public async Task StartAsync(CancellationToken cancellationToken)
     {
         if (env.EnvironmentName != "Development") return;
-        if (configuration["Seeding:Source"] == "Legacy") return;
 
         var seedPath = ResolveSeedPath();
         var payload = loader.LoadAll(seedPath);
