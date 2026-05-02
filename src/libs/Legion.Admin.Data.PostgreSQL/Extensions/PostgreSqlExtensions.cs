@@ -11,6 +11,7 @@ public static class PostgreSqlExtensions
     public static IServiceCollection AddPostgreSqlAppDbContext(this IServiceCollection services, string connectionString)
     {
         services.AddScoped<ISecretsStore, PostgreSqlSecretsStore>();
+        services.AddScoped<IPromptStore, PromptStore>();
         return services.AddDbContext<AppDbContext>(options =>
             options.UseNpgsql(connectionString, o => o.MigrationsAssembly("Legion.Admin.Data.PostgreSQL")));
     }
