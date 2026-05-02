@@ -1,0 +1,109 @@
+@using Legion.Admin.Data.Models.Prompts
+@inject DialogService DialogService
+@inject IHttpClientFactory HttpClientFactory
+@inject NavigationManager Nav
+
+<RadzenStack Orientation="Orientation.Vertical" Gap="0.75rem" Style="min-width: 600px;">
+    <RadzenTabs>
+        <Tabs>
+            <RadzenTabsItem Text="Import from URL">
+                <RadzenFormField Text="https:// URL">
+                    <RadzenTextBox @bind-Value="url" Placeholder="https://raw.githubusercontent.com/…" style="width: 100%;" />
+                </RadzenFormField>
+                <RadzenButton Text="Fetch & Preview" Icon="download" Click="FetchUrl" IsBusy="@loading" />
+            </RadzenTabsItem>
+            <RadzenTabsItem Text="Paste Markdown">
+                <RadzenFormField Text="Filename (optional)">
+                    <RadzenTextBox @bind-Value="pasteFilename" Placeholder="skill-my-tool.md" style="width: 100%;" />
+                </RadzenFormField>
+                <RadzenFormField Text="Markdown content">
+                    <RadzenTextArea @bind-Value="pasteContent" Rows="10" style="width: 100%; font-family: monospace;" />
+                </RadzenFormField>
+                <RadzenButton Text="Preview" Icon="visibility" Click="PreviewPaste" />
+            </RadzenTabsItem>
+        </Tabs>
+    </RadzenTabs>
+
+    @if (errorMessage is not null)
+    {
+        <RadzenAlert AlertStyle="AlertStyle.Danger">@errorMessage</RadzenAlert>
+    }
+
+    @if (previews.Count > 0)
+    {
+        <RadzenText TextStyle="TextStyle.Subtitle2">Preview</RadzenText>
+        @foreach (var p in previews)
+        {
+            <RadzenCard Style="margin-bottom: 0.5rem;">
+                <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" AlignItems="AlignItems.Center">
+                    <RadzenTextBox @bind-Value="p.SuggestedPath" style="flex: 1;" />
+                    <RadzenBadge Text="@p.Type.ToString()" />
+                    <RadzenBadge Text="@p.Category.ToString()" BadgeStyle="BadgeStyle.Secondary" />
+                </RadzenStack>
+            </RadzenCard>
+        }
+
+        <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem">
+            <RadzenButton Text="Create as Draft" Click="@(() => Confirm(false))" />
+            <RadzenButton Text="Create and Publish" ButtonStyle="ButtonStyle.Success" Click="@(() => Confirm(true))" />
+        </RadzenStack>
+    }
+</RadzenStack>
+
+@code {
+    [Parameter] public IPromptStore? PromptStore { get; set; }
+
+    private string? url;
+    private string? pasteContent;
+    private string? pasteFilename;
+    private List<ImportPreviewItem> previews = [];
+    private string? errorMessage;
+    private bool loading;
+
+    private string ApiBase => Nav.BaseUri.TrimEnd('/');
+
+    private async Task FetchUrl()
+    {
+        if (string.IsNullOrWhiteSpace(url)) return;
+        loading = true; errorMessage = null;
+        try
+        {
+            var client = HttpClientFactory.CreateClient("import");
+            var resp = await client.PostAsJsonAsync($"{ApiBase}/api/prompts/import", new { url });
+            if (!resp.IsSuccessStatusCode) { errorMessage = await resp.Content.ReadAsStringAsync(); return; }
+            var preview = await resp.Content.ReadFromJsonAsync<ImportPreviewItem>();
+            previews = preview is not null ? [preview] : [];
+        }
+        catch (Exception ex) { errorMessage = ex.Message; }
+        finally { loading = false; }
+    }
+
+    private async Task PreviewPaste()
+    {
+        if (string.IsNullOrWhiteSpace(pasteContent)) return;
+        var client = HttpClientFactory.CreateClient("import");
+        var resp = await client.PostAsJsonAsync($"{ApiBase}/api/prompts/import",
+            new { markdownContent = pasteContent, filename = pasteFilename ?? "paste.md" });
+        if (!resp.IsSuccessStatusCode) { errorMessage = await resp.Content.ReadAsStringAsync(); return; }
+        var preview = await resp.Content.ReadFromJsonAsync<ImportPreviewItem>();
+        previews = preview is not null ? [preview] : [];
+    }
+
+    private async Task Confirm(bool publishImmediately)
+    {
+        if (PromptStore is null) return;
+        var client = HttpClientFactory.CreateClient("import");
+        var items = previews.Select(p => new
+        {
+            path = p.SuggestedPath,
+            type = p.Type.ToString(),
+            category = p.Category.ToString(),
+            content = p.Content
+        }).ToList();
+        var resp = await client.PostAsJsonAsync($"{ApiBase}/api/prompts/import/confirm",
+            new { items, publishImmediately });
+        DialogService.Close(resp.IsSuccessStatusCode);
+    }
+
+    private record ImportPreviewItem(string Filename, string SuggestedPath, PromptType Type, PromptCategory Category, string Content, bool FrontmatterDetected);
+}

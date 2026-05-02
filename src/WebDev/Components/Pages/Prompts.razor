@@ -1,0 +1,145 @@
+@page "/admin/prompts"
+@using Microsoft.AspNetCore.Authorization
+@using Legion.Admin.Data.Models.Prompts
+@using Legion.Admin.Data.Stores
+@layout Legion.Admin.UI.Layouts.MainLayout
+@rendermode InteractiveServer
+@attribute [Authorize(Roles = "admin")]
+@inject IPromptStore PromptStore
+@inject NotificationService NotificationService
+@inject DialogService DialogService
+
+<PageTitle>Prompt Library</PageTitle>
+<RadzenText TextStyle="TextStyle.H4" TagName="TagName.H1" class="rz-mb-4">Prompt Library</RadzenText>
+
+<RadzenRow>
+    <RadzenColumn Size="4">
+        <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" class="rz-mb-2">
+            <RadzenTextBox Placeholder="Search…" @oninput="OnSearch" style="flex: 1;" />
+            <RadzenButton Text="Import" Icon="upload" ButtonStyle="ButtonStyle.Light" Click="OpenImport" />
+        </RadzenStack>
+        <RadzenStack Orientation="Orientation.Horizontal" Gap="0.25rem" class="rz-mb-2">
+            @foreach (var f in new[] { "All", "Prompt", "Skill", "ToolDescription" })
+            {
+                <RadzenButton Text="@f" Size="ButtonSize.Small"
+                              ButtonStyle="@(typeFilter == f ? ButtonStyle.Primary : ButtonStyle.Light)"
+                              Click="@(() => SetTypeFilter(f))" />
+            }
+            <RadzenCheckBox @bind-Value="showDeleted" TValue="bool" Change="@(async _ => await LoadAsync())" />
+            <RadzenLabel Text="Archived" />
+        </RadzenStack>
+        <RadzenTree Data="@rootNodes" @bind-Value="selected" Expand="OnExpand"
+                    Style="width: 100%; height: 600px; overflow: auto; border: 1px solid var(--rz-base-300);">
+            <RadzenTreeLevel TextProperty="Label" HasChildren="@(n => ((PromptTreeNode)n).IsFolder)" />
+        </RadzenTree>
+    </RadzenColumn>
+
+    <RadzenColumn Size="8">
+        @if (selected is PromptTreeNode { IsFolder: false } leaf && leaf.Definition is not null)
+        {
+            <PromptDetailPanel
+                Definition="leaf.Definition"
+                PromptStore="PromptStore"
+                OnChanged="LoadAsync"
+                NotificationService="NotificationService"
+                DialogService="DialogService" />
+        }
+        else
+        {
+            <RadzenCard>
+                <RadzenText>Select a prompt from the tree to view or edit.</RadzenText>
+            </RadzenCard>
+        }
+    </RadzenColumn>
+</RadzenRow>
+
+@code {
+    private List<PromptDefinition> allDefinitions = [];
+    private List<PromptTreeNode> rootNodes = [];
+    private object? selected;
+    private string searchTerm = string.Empty;
+    private string typeFilter = "All";
+    private bool showDeleted;
+
+    protected override async Task OnInitializedAsync() => await LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        PromptType? type = typeFilter == "All" ? null : Enum.Parse<PromptType>(typeFilter);
+        allDefinitions = await PromptStore.SearchDefinitionsAsync(searchTerm, type, showDeleted);
+        rootNodes = BuildTree(allDefinitions);
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private static List<PromptTreeNode> BuildTree(IEnumerable<PromptDefinition> defs)
+    {
+        var nodesByPath = new Dictionary<string, PromptTreeNode>(StringComparer.OrdinalIgnoreCase);
+        var rootNodes = new List<PromptTreeNode>();
+
+        foreach (var def in defs.OrderBy(d => d.Path))
+        {
+            var parts = def.Path.Split('/', StringSplitOptions.RemoveEmptyEntries);
+            for (int i = 0; i < parts.Length; i++)
+            {
+                var fullPath = "/" + string.Join("/", parts[..(i + 1)]);
+                if (nodesByPath.ContainsKey(fullPath)) continue;
+
+                var node = new PromptTreeNode
+                {
+                    Label = parts[i],
+                    FullPath = fullPath,
+                    IsFolder = i < parts.Length - 1,
+                    Definition = i == parts.Length - 1 ? def : null,
+                    Children = []
+                };
+                nodesByPath[fullPath] = node;
+
+                if (i == 0)
+                    rootNodes.Add(node);
+                else
+                {
+                    var parentPath = "/" + string.Join("/", parts[..i]);
+                    if (nodesByPath.TryGetValue(parentPath, out var parent))
+                        parent.Children.Add(node);
+                }
+            }
+        }
+
+        return rootNodes.OrderBy(n => n.Label).ToList();
+    }
+
+    private Task OnExpand(TreeExpandEventArgs args)
+    {
+        if (args.Value is PromptTreeNode node) args.Children.Data = node.Children;
+        return Task.CompletedTask;
+    }
+
+    private void OnSearch(ChangeEventArgs e)
+    {
+        searchTerm = e.Value?.ToString() ?? string.Empty;
+        rootNodes = BuildTree(allDefinitions.Where(d =>
+            d.Path.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)));
+    }
+
+    private async Task SetTypeFilter(string filter)
+    {
+        typeFilter = filter;
+        await LoadAsync();
+    }
+
+    private async Task OpenImport()
+    {
+        var result = await DialogService.OpenAsync<ImportPromptDialog>("Import Prompts",
+            new Dictionary<string, object?> { ["PromptStore"] = PromptStore });
+        if (result is true) await LoadAsync();
+    }
+
+    private sealed class PromptTreeNode
+    {
+        public string Label { get; init; } = string.Empty;
+        public string FullPath { get; init; } = string.Empty;
+        public bool IsFolder { get; init; }
+        public PromptDefinition? Definition { get; init; }
+        public List<PromptTreeNode> Children { get; init; } = [];
+    }
+}

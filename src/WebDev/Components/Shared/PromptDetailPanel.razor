@@ -1,0 +1,172 @@
+@using Legion.Admin.Data.Models.Prompts
+@using Legion.Admin.Data.Stores
+
+@if (Definition is not null)
+{
+    <RadzenCard>
+        <RadzenStack Orientation="Orientation.Vertical" Gap="0.5rem">
+            <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" AlignItems="AlignItems.Center">
+                <RadzenText TextStyle="TextStyle.H6">@Definition.Path</RadzenText>
+                <RadzenBadge BadgeStyle="BadgeStyle.Info" Text="@Definition.Type.ToString()" />
+                <RadzenBadge BadgeStyle="BadgeStyle.Secondary" Text="@Definition.Category.ToString()" />
+                @if (publishedVersion is not null)
+                {
+                    <RadzenBadge BadgeStyle="BadgeStyle.Success" Text="Published" />
+                }
+                else if (draftVersion is not null)
+                {
+                    <RadzenBadge BadgeStyle="BadgeStyle.Warning" Text="Draft" />
+                }
+            </RadzenStack>
+
+            <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem">
+                <RadzenButton Text="New Version" Icon="add" Size="ButtonSize.Small" Click="NewVersion" />
+                <RadzenButton Text="Edit Draft" Icon="edit" Size="ButtonSize.Small"
+                              Disabled="@(draftVersion is null)" Click="EditDraft" />
+                <RadzenButton Text="View History" Icon="history" Size="ButtonSize.Small"
+                              ButtonStyle="ButtonStyle.Light" Click="ViewHistory" />
+                <RadzenButton Text="Delete" Icon="delete" Size="ButtonSize.Small"
+                              ButtonStyle="ButtonStyle.Danger" Click="DeleteDefinition" />
+            </RadzenStack>
+
+            @if (editingDraft && draftVersion is not null)
+            {
+                <PromptEditor
+                    InitialContent="@draftVersion.Content"
+                    InitialFrontmatter="@draftVersion.Frontmatter"
+                    ShowFrontmatter="@(Definition.Type != PromptType.Prompt)"
+                    OnSave="SaveDraft"
+                    OnPublish="PublishDraft"
+                    OnDiscard="DiscardDraft" />
+            }
+            else if (publishedVersion is not null)
+            {
+                @if (!string.IsNullOrEmpty(publishedVersion.Frontmatter))
+                {
+                    <RadzenFormField Text="Frontmatter">
+                        <pre style="font-family: monospace; font-size: 0.8rem; white-space: pre-wrap;">@publishedVersion.Frontmatter</pre>
+                    </RadzenFormField>
+                }
+                <RadzenFormField Text="Content">
+                    <pre style="font-family: monospace; font-size: 0.8rem; white-space: pre-wrap;">@publishedVersion.Content</pre>
+                </RadzenFormField>
+            }
+            else
+            {
+                <RadzenText>No published version. Create a draft to get started.</RadzenText>
+            }
+        </RadzenStack>
+    </RadzenCard>
+}
+
+@code {
+    [Parameter] public PromptDefinition? Definition { get; set; }
+    [Parameter] public IPromptStore? PromptStore { get; set; }
+    [Parameter] public EventCallback OnChanged { get; set; }
+    [Parameter] public NotificationService? NotificationService { get; set; }
+    [Parameter] public DialogService? DialogService { get; set; }
+
+    private PromptVersion? publishedVersion;
+    private PromptVersion? draftVersion;
+    private bool editingDraft;
+
+    protected override async Task OnParametersSetAsync() => await LoadVersionsAsync();
+
+    private async Task LoadVersionsAsync()
+    {
+        if (Definition is null || PromptStore is null) return;
+        var history = await PromptStore.GetPromptHistoryAsync(Definition.Id);
+        publishedVersion = history.FirstOrDefault(v => v.Status == PromptStatus.Published);
+        draftVersion = history.FirstOrDefault(v => v.Status == PromptStatus.Draft);
+        editingDraft = false;
+    }
+
+    private void EditDraft() => editingDraft = true;
+
+    private async Task NewVersion()
+    {
+        if (PromptStore is null || Definition is null) return;
+        await PromptStore.CreateDraftAsync(
+            Definition.Id,
+            publishedVersion?.Content ?? string.Empty,
+            publishedVersion?.Frontmatter,
+            "ui:Admin",
+            null);
+        await LoadVersionsAsync();
+        editingDraft = true;
+        NotificationService?.Notify(NotificationSeverity.Info, "Draft created");
+    }
+
+    private async Task SaveDraft((string content, string? frontmatter) args)
+    {
+        if (PromptStore is null || draftVersion is null) return;
+        await PromptStore.UpdateDraftAsync(draftVersion.Id, args.content, args.frontmatter);
+        await LoadVersionsAsync();
+        editingDraft = true;
+    }
+
+    private async Task PublishDraft()
+    {
+        if (PromptStore is null || draftVersion is null) return;
+        await PromptStore.PublishDraftAsync(draftVersion.Id);
+        await LoadVersionsAsync();
+        NotificationService?.Notify(NotificationSeverity.Success, "Published");
+        await OnChanged.InvokeAsync();
+    }
+
+    private async Task DiscardDraft()
+    {
+        if (PromptStore is null || draftVersion is null) return;
+        if (DialogService is not null)
+        {
+            var ok = await DialogService.Confirm("Discard draft?", "Confirm");
+            if (ok != true) return;
+        }
+        await PromptStore.DiscardDraftAsync(draftVersion.Id);
+        await LoadVersionsAsync();
+        NotificationService?.Notify(NotificationSeverity.Info, "Draft discarded");
+    }
+
+    private async Task ViewHistory()
+    {
+        if (PromptStore is null || Definition is null || DialogService is null) return;
+        var history = await PromptStore.GetPromptHistoryAsync(Definition.Id);
+        await DialogService.OpenAsync("Version History", ds => BuildHistoryGrid(ds, history));
+    }
+
+    private RenderFragment BuildHistoryGrid(DialogService ds, List<PromptVersion> history) =>
+        @<RadzenDataGrid Data="history" TItem="PromptVersion">
+            <Columns>
+                <RadzenDataGridColumn TItem="PromptVersion" Property="Status" Title="Status" />
+                <RadzenDataGridColumn TItem="PromptVersion" Property="CreatedAt" Title="Created" />
+                <RadzenDataGridColumn TItem="PromptVersion" Property="CreatedBy" Title="By" />
+                <RadzenDataGridColumn TItem="PromptVersion" Title="Actions">
+                    <Template Context="v">
+                        @if (v.Status == PromptStatus.Archived)
+                        {
+                            <RadzenButton Text="Republish" Size="ButtonSize.Small"
+                                          Click="@(async () => {
+                                              await PromptStore!.RepublishArchivedAsync(v.Id);
+                                              ds.Close();
+                                              await LoadVersionsAsync();
+                                              await OnChanged.InvokeAsync();
+                                          })" />
+                        }
+                    </Template>
+                </RadzenDataGridColumn>
+            </Columns>
+        </RadzenDataGrid>;
+
+    private async Task DeleteDefinition()
+    {
+        if (PromptStore is null || Definition is null) return;
+        if (DialogService is not null)
+        {
+            var ok = await DialogService.Confirm($"Delete '{Definition.Path}'?", "Confirm Delete");
+            if (ok != true) return;
+        }
+        await PromptStore.DeleteDefinitionAsync(Definition.Id);
+        NotificationService?.Notify(NotificationSeverity.Warning, "Deleted");
+        await OnChanged.InvokeAsync();
+    }
+}
