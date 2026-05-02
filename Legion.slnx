@@ -29,5 +29,6 @@
   <Folder Name="/Tests/">
     <!-- <Project Path="tests/test-agent/test-agent.csproj" /> -->
     <Project Path="tests/Legion.Secrets.Tests/Legion.Secrets.Tests.csproj" />
+    <Project Path="tests/Legion.Admin.Data.Tests/Legion.Admin.Data.Tests.csproj" />
   </Folder>
 </Solution>
