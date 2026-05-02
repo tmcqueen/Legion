@@ -1,0 +1,87 @@
+@using Legion.Admin.Data.Models.Prompts
+@implements IDisposable
+
+<RadzenStack Orientation="Orientation.Vertical" Gap="0.75rem">
+    @if (ShowFrontmatter)
+    {
+        <RadzenFormField Text="Frontmatter (YAML)">
+            <RadzenTextArea @bind-Value="frontmatter" Rows="5" Style="font-family: monospace; width: 100%;"
+                            @oninput="OnContentChanged" Placeholder="name: My Skill&#10;description: ...&#10;tags: [tag1, tag2]" />
+        </RadzenFormField>
+    }
+    <RadzenFormField Text="Content (Markdown)">
+        <RadzenTextArea @bind-Value="content" Rows="20" Style="font-family: monospace; width: 100%;"
+                        @oninput="OnContentChanged" Placeholder="# Your prompt content here..." />
+    </RadzenFormField>
+    <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem">
+        <RadzenButton Text="Save Draft" Icon="save" Click="SaveNow" IsBusy="@saving" />
+        @if (OnPublish.HasDelegate)
+        {
+            <RadzenButton Text="Publish" Icon="publish" ButtonStyle="ButtonStyle.Success"
+                          Click="PublishNow" />
+        }
+        @if (OnDiscard.HasDelegate)
+        {
+            <RadzenButton Text="Discard Draft" Icon="delete_outline" ButtonStyle="ButtonStyle.Danger"
+                          Click="DiscardNow" />
+        }
+        @if (statusMessage is not null)
+        {
+            <RadzenText TextStyle="TextStyle.Caption">@statusMessage</RadzenText>
+        }
+    </RadzenStack>
+</RadzenStack>
+
+@code {
+    [Parameter] public string? InitialContent { get; set; }
+    [Parameter] public string? InitialFrontmatter { get; set; }
+    [Parameter] public bool ShowFrontmatter { get; set; }
+    [Parameter] public EventCallback<(string content, string? frontmatter)> OnSave { get; set; }
+    [Parameter] public EventCallback OnPublish { get; set; }
+    [Parameter] public EventCallback OnDiscard { get; set; }
+
+    private string content = string.Empty;
+    private string? frontmatter;
+    private bool saving;
+    private string? statusMessage;
+    private System.Timers.Timer? debounceTimer;
+    private bool dirty;
+
+    protected override void OnParametersSet()
+    {
+        content = InitialContent ?? string.Empty;
+        frontmatter = InitialFrontmatter;
+    }
+
+    private void OnContentChanged(ChangeEventArgs _)
+    {
+        dirty = true;
+        debounceTimer?.Dispose();
+        debounceTimer = new System.Timers.Timer(2000);
+        debounceTimer.Elapsed += async (_, _) =>
+        {
+            debounceTimer?.Dispose();
+            await InvokeAsync(SaveNow);
+        };
+        debounceTimer.AutoReset = false;
+        debounceTimer.Start();
+    }
+
+    private async Task SaveNow()
+    {
+        if (!dirty) return;
+        saving = true;
+        statusMessage = null;
+        StateHasChanged();
+        await OnSave.InvokeAsync((content, frontmatter));
+        dirty = false;
+        saving = false;
+        statusMessage = $"Saved {DateTime.Now:HH:mm:ss}";
+        StateHasChanged();
+    }
+
+    private async Task PublishNow() => await OnPublish.InvokeAsync();
+    private async Task DiscardNow() => await OnDiscard.InvokeAsync();
+
+    public void Dispose() => debounceTimer?.Dispose();
+}
