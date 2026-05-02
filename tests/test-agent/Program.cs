@@ -9,10 +9,9 @@ public class Program
     {
 
 
-        var providerFactory = new AgentFactory();
         var agentOptions = new AgentOptions
         {
-            Provider = ProvidersEnum.MiniMax,
+            Provider = "MiniMax",
             Model = "MiniMax-M2.1",
             ApiKey = "sk-cp-I6gKJSkTkVVeISMXvrD98ZkCiXA9il-PZ6OJBpAtBooenOFgkTTp_n2X7ig3LXmaz4iB-Pc7WK6rYQ8j2s7PVkMUYR9LpboOXOYTTHhBo-uVrYFerwJtAYE",
             Tools = [
@@ -22,7 +21,7 @@ public class Program
             ]
         };
 
-        var agent = providerFactory.CreateAgent(agentOptions);
+        var agent = new MiniMaxProvider().CreateAgent(agentOptions);
 
         // var response = await agent.GetResponseAsync([
         //     new ChatMessage(
