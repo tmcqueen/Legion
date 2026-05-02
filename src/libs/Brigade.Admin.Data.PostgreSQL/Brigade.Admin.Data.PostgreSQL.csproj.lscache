@@ -58,14 +58,12 @@ AppDbDesignTimeFactory.cs
 AuthDbContextDesignTimeFactory.cs
 Extensions/PostgreSqlExtensions.cs
 Migrations/App/
- 20260427121325_InitialCreate.cs
- 20260427121325_InitialCreate.Designer.cs
- 20260428101441_AddSecrets.cs
- 20260428101441_AddSecrets.Designer.cs
+ 20260501110547_InitialCreate.cs
+ 20260501110547_InitialCreate.Designer.cs
  AppDbContextModelSnapshot.cs
 Migrations/Auth/
- 20260427121331_InitialCreate.cs
- 20260427121331_InitialCreate.Designer.cs
+ 20260501110553_InitialCreate.cs
+ 20260501110553_InitialCreate.Designer.cs
  AuthDbContextModelSnapshot.cs
 obj/Debug/net10.0/
  .NETCoreApp,Version=v10.0.AssemblyAttributes.cs
@@ -485,6 +483,8 @@ Stores/PostgreSqlSecretsStore.cs
   Microsoft.Gen.Metrics.dll
 
 [analyzerConfigFiles]
-../../../.editorconfig
+../../../
+ ../../.editorconfig
+ .editorconfig
 <DOTNET>/sdk/10.0.203/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevel_10_default.globalconfig
 obj/Debug/net10.0/Brigade.Admin.Data.PostgreSQL.GeneratedMSBuildEditorConfig.editorconfig

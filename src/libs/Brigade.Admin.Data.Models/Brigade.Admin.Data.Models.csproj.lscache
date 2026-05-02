@@ -66,6 +66,7 @@ Agents/
  ToolOptions.cs
  WorkflowOptions.cs
 Auth/ApplicationUser.cs
+Ids.cs
 obj/Debug/net10.0/
  .NETCoreApp,Version=v10.0.AssemblyAttributes.cs
  Brigade.Admin.Data.Models.AssemblyInfo.cs
@@ -283,6 +284,8 @@ SecretOptions.cs
  microsoft.extensions.options/10.0.7/analyzers/dotnet/roslyn4.4/cs/Microsoft.Extensions.Options.SourceGeneration.dll
 
 [analyzerConfigFiles]
-../../../.editorconfig
+../../../
+ ../../.editorconfig
+ .editorconfig
 <DOTNET>/sdk/10.0.203/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevel_10_default.globalconfig
 obj/Debug/net10.0/Brigade.Admin.Data.Models.GeneratedMSBuildEditorConfig.editorconfig

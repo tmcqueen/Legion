@@ -59,9 +59,16 @@ Auth/AuthDbContext.cs
 Configurations/
  AgentOptionsConfiguration.cs
  AgentTemplatesConfiguration.cs
+ McpServerHeadersConfiguration.cs
  McpServerOptionsConfiguration.cs
+ MemoryOptionsConfiguration.cs
+ MiddlewareOptionsConfiguration.cs
+ ModelOptionsConfiguration.cs
  ProviderOptionsConfiguration.cs
  SecretOptionsConfiguration.cs
+ SkillOptionsConfiguration.cs
+ ToolOptionsConfiguration.cs
+ WorkflowOptionsConfiguration.cs
 Extensions/
  AddAuthenticationExtensions.cs
  AddAuthorizationExtensions.cs
@@ -483,6 +490,8 @@ Stores/
   Microsoft.Gen.Metrics.dll
 
 [analyzerConfigFiles]
-../../../.editorconfig
+../../../
+ ../../.editorconfig
+ .editorconfig
 <DOTNET>/sdk/10.0.203/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevel_10_default.globalconfig
 obj/Debug/net10.0/Brigade.Admin.Data.GeneratedMSBuildEditorConfig.editorconfig
