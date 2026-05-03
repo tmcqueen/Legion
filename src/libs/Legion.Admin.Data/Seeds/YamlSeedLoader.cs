@@ -74,11 +74,15 @@ public class YamlSeedLoader(IConfiguration configuration, ILogger<YamlSeedLoader
     }
 
     private string Interpolate(string yaml) =>
-        Regex.Replace(yaml, @"\$\{([^}]+)\}", match =>
+        Regex.Replace(yaml, @"""?\$\{([^}]+)\}""?", match =>
         {
             var resolved = configuration[match.Groups[1].Value];
             // Preserve original placeholder if unresolved — caught later by GuardSensitiveFields.
-            return resolved ?? match.Value;
+            if (resolved is null) return match.Value;
+            // Emit a YAML double-quoted scalar so values containing ':', '#', '\n', quotes,
+            // etc. don't break document structure. Backslash and double-quote must be escaped.
+            var escaped = resolved.Replace("\\", "\\\\").Replace("\"", "\\\"");
+            return $"\"{escaped}\"";
         });
 
     private void GuardSensitiveFields(string fileName, ISeedEntity dto)
