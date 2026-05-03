@@ -1,4 +1,6 @@
-oidc-scopes:
-  - name: legion-api
+# src/WebDev/seed/oidc-scopes.yml
+entities:
+  - seedType: oidc-scope
+    name: legion-api
     resources:
       - legion-webhost

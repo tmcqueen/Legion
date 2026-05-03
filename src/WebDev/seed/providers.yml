@@ -1,0 +1,7 @@
+# src/WebDev/seed/providers.yml
+entities:
+  - seedType: provider
+    name: Anthropic
+    type: Anthropic
+    apiUrl: https://api.anthropic.com
+    apiTokenSecretPath: providers/anthropic/api-token

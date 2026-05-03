@@ -1,3 +1,6 @@
-agents:
-  - name: Default Agent
+# src/WebDev/seed/agents.yml
+entities:
+  - seedType: agent
+    name: Default Agent
     description: The default Legion agent
+    providerName: Anthropic

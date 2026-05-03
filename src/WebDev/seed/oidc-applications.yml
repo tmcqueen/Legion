@@ -1,5 +1,7 @@
-oidc-applications:
-  - clientId: legion-bff-client-id
+# src/WebDev/seed/oidc-applications.yml
+entities:
+  - seedType: oidc-application
+    clientId: legion-bff-client-id
     clientSecret: "${Seeding:BffClientSecret}"
     clientType: confidential
     consentType: implicit
@@ -18,7 +20,8 @@ oidc-applications:
       - scp:profile
       - scp:legion-api
 
-  - clientId: legion-api-client-id
+  - seedType: oidc-application
+    clientId: legion-api-client-id
     clientSecret: "${Seeding:ApiClientSecret}"
     clientType: confidential
     displayName: Legion API Test Client

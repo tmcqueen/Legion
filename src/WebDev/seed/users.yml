@@ -1,5 +1,7 @@
-users:
-  - userName: admin
+# src/WebDev/seed/users.yml
+entities:
+  - seedType: user
+    userName: admin
     email: admin@legion.local
     emailConfirmed: true
     password: "${Seeding:AdminPassword}"
