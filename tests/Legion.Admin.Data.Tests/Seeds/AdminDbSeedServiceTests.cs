@@ -1,6 +1,7 @@
 using Legion.Admin.Data.Models;
 using Legion.Admin.Data.Seeds;
 using Legion.Admin.Data.Services;
+using Legion.Admin.Data.Stores;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -22,11 +23,48 @@ public class AdminDbSeedServiceTests
         public Microsoft.Extensions.FileProviders.IFileProvider WebRootFileProvider { get; set; } = null!;
     }
 
+    // Plain-storage ISecretsStore for tests — uses the AppDbContext directly with no
+    // backend-specific encryption, mirroring SqliteSecretsStore's behavior closely enough
+    // to exercise the seed flow against EF Core InMemory.
+    private sealed class FakeSecretsStore(AppDbContext db) : ISecretsStore
+    {
+        public async Task<List<SecretOptions>> GetAllAsync(CancellationToken ct = default) =>
+            await db.Secrets.AsNoTracking().OrderBy(s => s.Path).ToListAsync(ct);
+
+        public async Task<SecretOptions?> FindByPathAsync(string path, CancellationToken ct = default) =>
+            await db.Secrets.AsNoTracking().FirstOrDefaultAsync(s => s.Path == path, ct);
+
+        public Task<List<SecretOptions>> GetChildrenAsync(string parentPath, CancellationToken ct = default) =>
+            Task.FromResult(new List<SecretOptions>());
+
+        public async Task<SecretOptions> CreateAsync(string path, string? description, string plaintext, CancellationToken ct = default)
+        {
+            var secret = new SecretOptions
+            {
+                Id = SecretOptionsId.New(),
+                Path = path,
+                Description = description,
+                EncryptedValue = plaintext,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+            db.Secrets.Add(secret);
+            await db.SaveChangesAsync(ct);
+            return secret;
+        }
+
+        public Task UpdateValueAsync(Guid id, string plaintext, CancellationToken ct = default) => Task.CompletedTask;
+        public Task UpdateDescriptionAsync(Guid id, string? description, CancellationToken ct = default) => Task.CompletedTask;
+        public Task<string?> DecryptAsync(Guid id, CancellationToken ct = default) => Task.FromResult<string?>(null);
+        public Task DeleteAsync(Guid id, CancellationToken ct = default) => Task.CompletedTask;
+    }
+
     private static (IServiceProvider sp, AppDbContext db, FakeEnv env) Build(string seedDir)
     {
         var dbName = $"test_{Guid.NewGuid():N}";
         var services = new ServiceCollection();
         services.AddDbContext<AppDbContext>(o => o.UseInMemoryDatabase(dbName));
+        services.AddScoped<ISecretsStore, FakeSecretsStore>();
         var sp = services.BuildServiceProvider();
         var scope = sp.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();

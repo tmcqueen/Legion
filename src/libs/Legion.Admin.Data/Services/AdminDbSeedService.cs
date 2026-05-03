@@ -2,6 +2,7 @@ using Legion.Admin.Data.Models;
 using Legion.Admin.Data.Models.Agents;
 using Legion.Admin.Data.Models.Providers;
 using Legion.Admin.Data.Seeds;
+using Legion.Admin.Data.Stores;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -27,9 +28,10 @@ public class AdminDbSeedService(
 
         using var scope = serviceProvider.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var secretsStore = scope.ServiceProvider.GetRequiredService<ISecretsStore>();
 
-        await SeedSecretsAsync(db, payload, cancellationToken);
-        await SeedProvidersAsync(db, payload, cancellationToken);
+        await SeedSecretsAsync(secretsStore, payload, cancellationToken);
+        await SeedProvidersAsync(db, secretsStore, payload, cancellationToken);
         await SeedAgentsAsync(db, payload, cancellationToken);
 
         await db.SaveChangesAsync(cancellationToken);
@@ -37,31 +39,23 @@ public class AdminDbSeedService(
 
     public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
 
-    private async Task SeedSecretsAsync(AppDbContext db, SeedPayload payload, CancellationToken ct)
+    private async Task SeedSecretsAsync(ISecretsStore secretsStore, SeedPayload payload, CancellationToken ct)
     {
-        var existing = await db.Secrets.AsNoTracking()
-            .Select(s => s.Path).ToListAsync(ct);
-        var existingSet = existing.ToHashSet(StringComparer.Ordinal);
-
         foreach (var secret in payload.Secrets)
         {
-            if (existingSet.Contains(secret.Path)) continue;
-            var copy = secret with
-            {
-                Id = secret.Id == default ? SecretOptionsId.New() : secret.Id,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow,
-            };
-            db.Secrets.Add(copy);
+            // The YAML field `encryptedValue` is now semantically the plaintext to encrypt:
+            // route through ISecretsStore so the configured encryption is actually applied.
+            var existing = await secretsStore.FindByPathAsync(secret.Path, ct);
+            if (existing is not null) continue;
+            await secretsStore.CreateAsync(secret.Path, secret.Description, secret.EncryptedValue, ct);
         }
-        await db.SaveChangesAsync(ct);
     }
 
-    private async Task SeedProvidersAsync(AppDbContext db, SeedPayload payload, CancellationToken ct)
+    private async Task SeedProvidersAsync(AppDbContext db, ISecretsStore secretsStore, SeedPayload payload, CancellationToken ct)
     {
         // Resolve secret paths against persisted Secrets (single authoritative source).
-        var secretsByPath = await db.Secrets.AsNoTracking()
-            .ToDictionaryAsync(s => s.Path, s => s.Id, ct);
+        var allSecrets = await secretsStore.GetAllAsync(ct);
+        var secretsByPath = allSecrets.ToDictionary(s => s.Path, s => s.Id);
 
         foreach (var provider in payload.Providers)
         {
