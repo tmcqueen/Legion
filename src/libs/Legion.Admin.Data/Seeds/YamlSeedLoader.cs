@@ -1,5 +1,8 @@
 using System.Reflection;
 using System.Text.RegularExpressions;
+using Legion.Admin.Data.Models;
+using Legion.Admin.Data.Models.Agents;
+using Legion.Admin.Data.Models.Providers;
 using Legion.Admin.Data.Seeds.Dtos;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -11,7 +14,7 @@ namespace Legion.Admin.Data.Seeds;
 
 public class YamlSeedLoader(IConfiguration configuration, ILogger<YamlSeedLoader> logger)
 {
-    private static readonly string[] SensitiveFields = ["password", "clientSecret"];
+    private static readonly string[] SensitiveFields = ["password", "clientSecret", "encryptedValue"];
 
     private static readonly string[] KnownPermissionPrefixes =
         ["ept:", "gt:", "rt:", "scp:"];
@@ -37,9 +40,15 @@ public class YamlSeedLoader(IConfiguration configuration, ILogger<YamlSeedLoader
             try
             {
                 var yaml = File.ReadAllText(file);
-                var document = Deserialize(yaml);
-                InterpolateGraph(document);
-                Merge(payload, document, file);
+                var interpolated = Interpolate(yaml);
+                var doc = DeserializeDocument(interpolated);
+                if (doc?.Entities is null) continue;
+
+                foreach (var entity in doc.Entities)
+                {
+                    GuardSensitiveFields(file, entity);
+                    Dispatch(payload, entity, file);
+                }
             }
             catch (YamlException ex)
             {
@@ -51,56 +60,28 @@ public class YamlSeedLoader(IConfiguration configuration, ILogger<YamlSeedLoader
         return payload;
     }
 
-    private static Dictionary<string, object> Deserialize(string yaml)
+    private static SeedDocument? DeserializeDocument(string yaml)
     {
         var deserializer = new DeserializerBuilder()
             .WithNamingConvention(CamelCaseNamingConvention.Instance)
             .IgnoreUnmatchedProperties()
+            .WithTypeDiscriminatingNodeDeserializer(o =>
+            {
+                o.AddKeyValueTypeDiscriminator<ISeedEntity>("seedType", SeedEntityRegistry.Map);
+            })
             .Build();
-        return deserializer.Deserialize<Dictionary<string, object>>(yaml) ?? [];
+        return deserializer.Deserialize<SeedDocument>(yaml);
     }
 
-    private void InterpolateGraph(object? node)
-    {
-        switch (node)
+    private string Interpolate(string yaml) =>
+        Regex.Replace(yaml, @"\$\{([^}]+)\}", match =>
         {
-            // YamlDotNet returns Dictionary<string, object> for the root document
-            // and Dictionary<object, object> for nested mappings — handle both
-            case Dictionary<string, object> rootDict:
-                foreach (var key in rootDict.Keys.ToList())
-                {
-                    if (rootDict[key] is string s)
-                        rootDict[key] = Interpolate(s);
-                    else
-                        InterpolateGraph(rootDict[key]);
-                }
-                break;
-            case Dictionary<object, object> nestedDict:
-                foreach (var key in nestedDict.Keys.ToList())
-                {
-                    if (nestedDict[key] is string s)
-                        nestedDict[key] = Interpolate(s);
-                    else
-                        InterpolateGraph(nestedDict[key]);
-                }
-                break;
-            case List<object> list:
-                for (var i = 0; i < list.Count; i++)
-                {
-                    if (list[i] is string s)
-                        list[i] = Interpolate(s);
-                    else
-                        InterpolateGraph(list[i]);
-                }
-                break;
-        }
-    }
+            var resolved = configuration[match.Groups[1].Value];
+            // Preserve original placeholder if unresolved — caught later by GuardSensitiveFields.
+            return resolved ?? match.Value;
+        });
 
-    private string Interpolate(string value) =>
-        Regex.Replace(value, @"\$\{([^}]+)\}", match =>
-            configuration[match.Groups[1].Value] ?? match.Value);
-
-    private void GuardSensitiveFields(string fileName, object dto)
+    private void GuardSensitiveFields(string fileName, ISeedEntity dto)
     {
         foreach (var field in SensitiveFields)
         {
@@ -111,92 +92,62 @@ public class YamlSeedLoader(IConfiguration configuration, ILogger<YamlSeedLoader
 
             if (value.StartsWith("${"))
                 throw new InvalidOperationException(
-                    $"Seed file '{fileName}': '{field}' contains an unresolved placeholder '{value}'. " +
+                    $"Seed file '{Path.GetFileName(fileName)}': '{field}' contains an unresolved placeholder '{value}'. " +
                     $"Set the config key via User Secrets or environment variables.");
         }
     }
 
-    private void Merge(SeedPayload payload, Dictionary<string, object> document, string file)
+    private void Dispatch(SeedPayload payload, ISeedEntity entity, string file)
     {
-        var deserializer = new DeserializerBuilder()
-            .WithNamingConvention(CamelCaseNamingConvention.Instance)
-            .IgnoreUnmatchedProperties()
-            .Build();
-
-        foreach (var (key, value) in document)
+        switch (entity)
         {
-            switch (key)
-            {
-                case "agents":
-                    MergeList<SeedAgentDto>(payload.Agents, value, deserializer, file, key,
-                        dto => dto.Name, "name");
-                    break;
-                case "users":
-                    var users = DeserializeList<SeedUserDto>(value, deserializer);
-                    foreach (var dto in users)
-                    {
-                        GuardSensitiveFields(file, dto);
-                        if (payload.Users.Any(u => u.UserName == dto.UserName))
-                        {
-                            logger.LogWarning("Duplicate user '{UserName}' in '{File}' — skipping",
-                                dto.UserName, Path.GetFileName(file));
-                            continue;
-                        }
-                        payload.Users.Add(dto);
-                    }
-                    break;
-                case "oidc-applications":
-                    var apps = DeserializeList<OidcApplicationDto>(value, deserializer);
-                    foreach (var dto in apps)
-                    {
-                        GuardSensitiveFields(file, dto);
-                        ValidatePermissions(dto.Permissions, file);
-                        if (payload.OidcApplications.Any(a => a.ClientId == dto.ClientId))
-                        {
-                            logger.LogWarning("Duplicate clientId '{ClientId}' in '{File}' — skipping",
-                                dto.ClientId, Path.GetFileName(file));
-                            continue;
-                        }
-                        payload.OidcApplications.Add(dto);
-                    }
-                    break;
-                case "oidc-scopes":
-                    MergeList<OidcScopeDto>(payload.OidcScopes, value, deserializer, file, key,
-                        dto => dto.Name, "name");
-                    break;
-                default:
-                    logger.LogWarning("Unknown seed key '{Key}' in '{File}' — skipping",
-                        key, Path.GetFileName(file));
-                    break;
-            }
+            case SecretOptions s:
+                if (payload.Secrets.Any(x => x.Path == s.Path))
+                    LogDuplicate("secret", s.Path, file);
+                else
+                    payload.Secrets.Add(s);
+                break;
+            case ProviderOptions p:
+                if (payload.Providers.Any(x => x.Name == p.Name))
+                    LogDuplicate("provider", p.Name ?? "(null)", file);
+                else
+                    payload.Providers.Add(p);
+                break;
+            case AgentOptions a:
+                if (payload.Agents.Any(x => x.Name == a.Name))
+                    LogDuplicate("agent", a.Name ?? "(null)", file);
+                else
+                    payload.Agents.Add(a);
+                break;
+            case SeedUserDto u:
+                if (payload.Users.Any(x => x.UserName == u.UserName))
+                    LogDuplicate("user", u.UserName, file);
+                else
+                    payload.Users.Add(u);
+                break;
+            case OidcApplicationDto app:
+                ValidatePermissions(app.Permissions, file);
+                if (payload.OidcApplications.Any(x => x.ClientId == app.ClientId))
+                    LogDuplicate("oidc-application", app.ClientId, file);
+                else
+                    payload.OidcApplications.Add(app);
+                break;
+            case OidcScopeDto sc:
+                if (payload.OidcScopes.Any(x => x.Name == sc.Name))
+                    LogDuplicate("oidc-scope", sc.Name, file);
+                else
+                    payload.OidcScopes.Add(sc);
+                break;
+            default:
+                logger.LogWarning("Unhandled seed entity type {Type} in '{File}'",
+                    entity.GetType().Name, Path.GetFileName(file));
+                break;
         }
     }
 
-    private void MergeList<T>(List<T> target, object rawValue, IDeserializer deserializer,
-        string file, string key, Func<T, string> getKey, string keyName)
-    {
-        var items = DeserializeList<T>(rawValue, deserializer);
-        foreach (var item in items)
-        {
-            var itemKey = getKey(item);
-            if (target.Any(existing => getKey(existing) == itemKey))
-            {
-                logger.LogWarning("Duplicate {KeyName} '{Key}' in '{File}' — skipping",
-                    keyName, itemKey, Path.GetFileName(file));
-                continue;
-            }
-            target.Add(item);
-        }
-    }
-
-    private static List<T> DeserializeList<T>(object rawValue, IDeserializer deserializer)
-    {
-        var serializer = new SerializerBuilder()
-            .WithNamingConvention(CamelCaseNamingConvention.Instance)
-            .Build();
-        var yaml = serializer.Serialize(rawValue);
-        return deserializer.Deserialize<List<T>>(yaml) ?? [];
-    }
+    private void LogDuplicate(string kind, string key, string file) =>
+        logger.LogWarning("Duplicate {Kind} '{Key}' in '{File}' — skipping",
+            kind, key, Path.GetFileName(file));
 
     private void ValidatePermissions(List<string> permissions, string file)
     {
@@ -207,5 +158,10 @@ public class YamlSeedLoader(IConfiguration configuration, ILogger<YamlSeedLoader
                     "Unrecognised permission prefix in '{File}': '{Permission}'",
                     Path.GetFileName(file), permission);
         }
+    }
+
+    private sealed class SeedDocument
+    {
+        public List<ISeedEntity> Entities { get; set; } = [];
     }
 }

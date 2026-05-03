@@ -8,7 +8,7 @@ namespace Legion.Admin.Data.Seeds;
 public static class SeedEntityRegistry
 {
     // YAML `seedType` value -> CLR type. Adding a new seedable type means adding one line here.
-    public static readonly IReadOnlyDictionary<string, Type> Map = new Dictionary<string, Type>
+    public static readonly Dictionary<string, Type> Map = new()
     {
         ["secret"] = typeof(SecretOptions),
         ["provider"] = typeof(ProviderOptions),
