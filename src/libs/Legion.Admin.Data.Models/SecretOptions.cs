@@ -1,6 +1,8 @@
+using Legion.Admin.Data.Seeds;
+
 namespace Legion.Admin.Data.Models;
 
-public record SecretOptions
+public record SecretOptions : ISeedEntity
 {
     public SecretOptionsId Id { get; init; }
     public string Path { get; set; } = string.Empty;

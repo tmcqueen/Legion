@@ -2,7 +2,7 @@ using OpenIddict.Abstractions;
 
 namespace Legion.Admin.Data.Seeds.Dtos;
 
-public record OidcScopeDto
+public record OidcScopeDto : ISeedEntity
 {
     public string Name { get; init; } = "";
     public List<string> Resources { get; init; } = [];

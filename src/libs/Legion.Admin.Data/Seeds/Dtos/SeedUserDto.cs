@@ -1,6 +1,6 @@
 namespace Legion.Admin.Data.Seeds.Dtos;
 
-public record SeedUserDto
+public record SeedUserDto : ISeedEntity
 {
     public string UserName { get; init; } = "";
     public string Email { get; init; } = "";

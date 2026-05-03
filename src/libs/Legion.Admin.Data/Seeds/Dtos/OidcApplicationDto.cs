@@ -2,7 +2,7 @@ using OpenIddict.Abstractions;
 
 namespace Legion.Admin.Data.Seeds.Dtos;
 
-public record OidcApplicationDto
+public record OidcApplicationDto : ISeedEntity
 {
     public string ClientId { get; init; } = "";
     public string ClientSecret { get; init; } = "";

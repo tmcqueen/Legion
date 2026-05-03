@@ -4,6 +4,7 @@
 @attribute [Authorize]
 @inject ProviderStore ProviderStore
 @inject ModelStore ModelStore
+@inject ISecretsStore SecretsStore
 @inject NavigationManager Nav
 
 <PageTitle>Create Provider</PageTitle>
@@ -34,11 +35,14 @@
             </RadzenRow>
             <RadzenRow>
                 <RadzenColumn Size="4" SizeMD="4" class="rz-text-align-start rz-text-align-md-end">
-                    <RadzenLabel Text="API Token" />
+                    <RadzenLabel Text="API Token Secret" />
                 </RadzenColumn>
                 <RadzenColumn Size="8" SizeMD="8" Style="display: block; width: 100%;">
-                    <RadzenPassword Name="ApiToken" @bind-Value="form.ApiToken" style="width: 100%;" />
-                    <RadzenDataAnnotationValidator Component="ApiToken" Style="position: absolute" />
+                    <RadzenDropDown Name="ApiTokenSecret" @bind-Value="form.ApiTokenSecretId"
+                                    Data="allSecrets" TextProperty="Path" ValueProperty="Id"
+                                    AllowClear="true" Placeholder="(none — no API token)"
+                                    style="width: 100%;" />
+                    <RadzenDataAnnotationValidator Component="ApiTokenSecret" Style="position: absolute" />
                 </RadzenColumn>
             </RadzenRow>
             <RadzenRow>
@@ -65,11 +69,13 @@
 @code {
     private readonly FormModel form = new();
     private List<ModelOptions> allModels = [];
+    private List<SecretOptions> allSecrets = [];
     private IEnumerable<ModelOptionsId> selectedModelIds = [];
 
     protected override async Task OnInitializedAsync()
     {
         allModels = await ModelStore.GetAllAsync();
+        allSecrets = await SecretsStore.GetAllAsync();
     }
 
     private async Task HandleSubmit()
@@ -79,7 +85,7 @@
             Id = ProviderOptionsId.New(),
             Name = form.Name,
             ApiUrl = form.ApiUrl,
-            ApiToken = form.ApiToken,
+            ApiTokenSecretId = form.ApiTokenSecretId,
         };
         var saved = await ProviderStore.AddAsync(provider);
         if (selectedModelIds.Any())
@@ -91,6 +97,6 @@
     {
         public string? Name { get; set; }
         public string? ApiUrl { get; set; }
-        public string? ApiToken { get; set; }
+        public SecretOptionsId? ApiTokenSecretId { get; set; }
     }
 }

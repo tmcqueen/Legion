@@ -11,10 +11,14 @@ public class ProviderStore(AppDbContext db, IMemoryCache cache)
     public override string AllKey => "Providers:all";
 
     protected override IQueryable<ProviderOptions> BuildAllQuery() =>
-        Db.Providers.AsNoTracking().Include(p => p.Models);
+        Db.Providers.AsNoTracking()
+            .Include(p => p.Models)
+            .Include(p => p.ApiTokenSecret);
 
     public override async Task<ProviderOptions?> GetAsync(Guid id, CancellationToken ct = default) =>
-        await Db.Providers.AsNoTracking().Include(p => p.Models)
+        await Db.Providers.AsNoTracking()
+            .Include(p => p.Models)
+            .Include(p => p.ApiTokenSecret)
             .FirstOrDefaultAsync(p => p.Id == (ProviderOptionsId)id, ct);
 
     public async Task AssignModelsAsync(Guid providerId, IEnumerable<Guid> modelIds, CancellationToken ct = default)

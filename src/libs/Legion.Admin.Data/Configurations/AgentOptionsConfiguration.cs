@@ -16,6 +16,8 @@ public class AgentOptionsConfiguration : IEntityTypeConfiguration<AgentOptions>
         builder.Property(a => a.ProviderId)
             .HasConversion(id => id.Value, value => new ProviderOptionsId(value));
 
+        builder.Ignore(a => a.ProviderName);
+
         builder.HasMany(a => a.McpServers)
             .WithMany(m => m.Agents)
             .UsingEntity(t => t.ToTable("AgentMcpServers", schema: Schema));

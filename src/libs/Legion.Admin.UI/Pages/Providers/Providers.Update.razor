@@ -4,6 +4,7 @@
 @attribute [Authorize]
 @inject ProviderStore ProviderStore
 @inject ModelStore ModelStore
+@inject ISecretsStore SecretsStore
 @inject NavigationManager Nav
 
 <PageTitle>Edit Provider</PageTitle>
@@ -34,27 +35,14 @@
             </RadzenRow>
             <RadzenRow>
                 <RadzenColumn Size="4" SizeMD="4" class="rz-text-align-start rz-text-align-md-end">
-                    <RadzenLabel Text="API Token" />
+                    <RadzenLabel Text="API Token Secret" />
                 </RadzenColumn>
                 <RadzenColumn Size="8" SizeMD="8" Style="display: block; width: 100%;">
-                    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem" class="rz-mb-1">
-                        <RadzenToggleButton Text="@(apiTokenSecretMode ? "Secret" : "Raw")"
-                                            Icon="@(apiTokenSecretMode ? "lock" : "lock_open")"
-                                            Value="@apiTokenSecretMode"
-                                            Change="@(v => { apiTokenSecretMode = v; form.ApiToken = null; })"
-                                            ButtonStyle="ButtonStyle.Light" Size="ButtonSize.Small" />
-                    </RadzenStack>
-                    @if (apiTokenSecretMode)
-                    {
-                        <RadzenTextBox Name="ApiToken" @bind-Value="form.ApiToken"
-                                       Placeholder="secret://openai/api_key"
-                                       style="width: 100%;" />
-                    }
-                    else
-                    {
-                        <RadzenPassword Name="ApiToken" @bind-Value="form.ApiToken" style="width: 100%;" />
-                    }
-                    <RadzenDataAnnotationValidator Component="ApiToken" Style="position: absolute" />
+                    <RadzenDropDown Name="ApiTokenSecret" @bind-Value="form.ApiTokenSecretId"
+                                    Data="allSecrets" TextProperty="Path" ValueProperty="Id"
+                                    AllowClear="true" Placeholder="(none — no API token)"
+                                    style="width: 100%;" />
+                    <RadzenDataAnnotationValidator Component="ApiTokenSecret" Style="position: absolute" />
                 </RadzenColumn>
             </RadzenRow>
             <RadzenRow>
@@ -82,8 +70,8 @@
     [Parameter] public Guid Id { get; set; }
 
     private readonly FormModel form = new();
-    private bool apiTokenSecretMode;
     private List<ModelOptions> allModels = [];
+    private List<SecretOptions> allSecrets = [];
     private IEnumerable<ModelOptionsId> selectedModelIds = [];
 
     protected override async Task OnInitializedAsync()
@@ -93,11 +81,11 @@
 
         form.Name = provider.Name;
         form.ApiUrl = provider.ApiUrl;
-        form.ApiToken = provider.ApiToken;
-        apiTokenSecretMode = provider.ApiToken?.StartsWith("secret://") == true;
+        form.ApiTokenSecretId = provider.ApiTokenSecretId;
         selectedModelIds = provider.Models.Select(m => m.Id).ToList();
 
         allModels = await ModelStore.GetAllAsync();
+        allSecrets = await SecretsStore.GetAllAsync();
     }
 
     private async Task HandleSubmit()
@@ -107,7 +95,7 @@
             Id = Id,
             Name = form.Name,
             ApiUrl = form.ApiUrl,
-            ApiToken = form.ApiToken,
+            ApiTokenSecretId = form.ApiTokenSecretId,
         };
         await ProviderStore.UpdateAsync(provider);
         await ProviderStore.AssignModelsAsync(Id, selectedModelIds.Select(id => id.Value));
@@ -118,6 +106,6 @@
     {
         public string? Name { get; set; }
         public string? ApiUrl { get; set; }
-        public string? ApiToken { get; set; }
+        public SecretOptionsId? ApiTokenSecretId { get; set; }
     }
 }
