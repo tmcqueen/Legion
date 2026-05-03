@@ -16,10 +16,12 @@ public class YamlSeedIntegrationTests
         Directory.CreateDirectory(dir);
 
         File.WriteAllText(Path.Combine(dir, "agents.yml"), """
-            agents:
-              - name: Default Agent
+            entities:
+              - seedType: agent
+                name: Default Agent
                 description: The default Legion agent
-              - name: Second Agent
+              - seedType: agent
+                name: Second Agent
                 description: Another agent
             """);
 

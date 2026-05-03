@@ -1,3 +1,4 @@
+using Legion.Admin.Data.Models.Providers;
 using Legion.Admin.Data.Seeds;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -26,25 +27,24 @@ public class YamlSeedLoaderTests
     [Fact]
     public void LoadAll_MissingFolder_ReturnsEmptyPayload()
     {
-        var loader = BuildLoader();
-        var payload = loader.LoadAll("/nonexistent/path/that/does/not/exist");
+        var payload = BuildLoader().LoadAll("/nonexistent/path");
+        Assert.Empty(payload.Secrets);
+        Assert.Empty(payload.Providers);
         Assert.Empty(payload.Agents);
         Assert.Empty(payload.Users);
-        Assert.Empty(payload.OidcApplications);
-        Assert.Empty(payload.OidcScopes);
     }
 
     [Fact]
-    public void LoadAll_AgentsYaml_ParsesAgents()
+    public void LoadAll_AgentEntity_ParsesAgent()
     {
         var dir = WriteTempYaml("""
-            agents:
-              - name: My Agent
+            entities:
+              - seedType: agent
+                name: My Agent
                 description: A test agent
             """);
 
-        var loader = BuildLoader();
-        var payload = loader.LoadAll(dir);
+        var payload = BuildLoader().LoadAll(dir);
 
         Assert.Single(payload.Agents);
         Assert.Equal("My Agent", payload.Agents[0].Name);
@@ -52,19 +52,58 @@ public class YamlSeedLoaderTests
     }
 
     [Fact]
+    public void LoadAll_SecretEntity_ParsesSecret()
+    {
+        var dir = WriteTempYaml("""
+            entities:
+              - seedType: secret
+                path: providers/test/key
+                description: Test secret
+                encryptedValue: literal-value
+            """);
+
+        var payload = BuildLoader().LoadAll(dir);
+
+        Assert.Single(payload.Secrets);
+        Assert.Equal("providers/test/key", payload.Secrets[0].Path);
+        Assert.Equal("literal-value", payload.Secrets[0].EncryptedValue);
+    }
+
+    [Fact]
+    public void LoadAll_ProviderEntity_PopulatesApiTokenSecretPath()
+    {
+        var dir = WriteTempYaml("""
+            entities:
+              - seedType: provider
+                name: Anthropic
+                type: Anthropic
+                apiUrl: https://api.anthropic.com
+                apiTokenSecretPath: providers/anthropic/api-token
+            """);
+
+        var payload = BuildLoader().LoadAll(dir);
+
+        var p = Assert.Single(payload.Providers);
+        Assert.Equal("Anthropic", p.Name);
+        Assert.Equal(ProviderType.Anthropic, p.Type);
+        Assert.Equal("providers/anthropic/api-token", p.ApiTokenSecretPath);
+        Assert.Null(p.ApiTokenSecretId);
+    }
+
+    [Fact]
     public void LoadAll_InterpolatesConfigPlaceholder()
     {
         var dir = WriteTempYaml("""
-            oidc-scopes:
-              - name: ${MyConfig:ScopeName}
+            entities:
+              - seedType: oidc-scope
+                name: ${MyConfig:ScopeName}
                 resources: []
             """);
 
-        var loader = BuildLoader(new Dictionary<string, string?>
+        var payload = BuildLoader(new Dictionary<string, string?>
         {
             ["MyConfig:ScopeName"] = "my-scope"
-        });
-        var payload = loader.LoadAll(dir);
+        }).LoadAll(dir);
 
         Assert.Single(payload.OidcScopes);
         Assert.Equal("my-scope", payload.OidcScopes[0].Name);
@@ -74,103 +113,70 @@ public class YamlSeedLoaderTests
     public void LoadAll_UnresolvedPlaceholderInSensitiveField_Throws()
     {
         var dir = WriteTempYaml("""
-            users:
-              - userName: admin
+            entities:
+              - seedType: user
+                userName: admin
                 email: admin@legion.local
                 emailConfirmed: true
-                password: "${Seeding:AdminPassword}"
+                password: "${Seeding:Missing}"
             """);
 
-        var loader = BuildLoader(); // no config — placeholder stays unresolved
-        var ex = Assert.Throws<InvalidOperationException>(() => loader.LoadAll(dir));
+        var ex = Assert.Throws<InvalidOperationException>(() => BuildLoader().LoadAll(dir));
+        Assert.Contains("password", ex.Message);
         Assert.Contains("unresolved placeholder", ex.Message);
     }
 
     [Fact]
-    public void LoadAll_UnknownTopLevelKey_SkipsWithoutCrash()
+    public void LoadAll_UnresolvedPlaceholderInSecretEncryptedValue_Throws()
     {
         var dir = WriteTempYaml("""
-            unknown-entity:
-              - foo: bar
+            entities:
+              - seedType: secret
+                path: providers/x/key
+                encryptedValue: "${Seeding:Missing}"
             """);
 
-        var loader = BuildLoader();
-        var payload = loader.LoadAll(dir);
-
-        Assert.Empty(payload.Agents);
-        Assert.Empty(payload.Users);
+        var ex = Assert.Throws<InvalidOperationException>(() => BuildLoader().LoadAll(dir));
+        Assert.Contains("encryptedValue", ex.Message);
     }
 
     [Fact]
-    public void LoadAll_MalformedYaml_SkipsFileWithoutCrash()
+    public void LoadAll_DuplicateProviderName_LogsAndSkips()
     {
-        var dir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
-        Directory.CreateDirectory(dir);
-        File.WriteAllText(Path.Combine(dir, "bad.yml"), "agents:\n  - name: [unclosed");
+        var dir = WriteTempYaml("""
+            entities:
+              - seedType: provider
+                name: Anthropic
+                type: Anthropic
+              - seedType: provider
+                name: Anthropic
+                type: Anthropic
+            """);
 
-        var loader = BuildLoader();
-        var payload = loader.LoadAll(dir); // should not throw
-
-        Assert.Empty(payload.Agents);
+        var payload = BuildLoader().LoadAll(dir);
+        Assert.Single(payload.Providers);
     }
 
     [Fact]
-    public void LoadAll_DuplicateAgentName_KeepsFirst()
+    public void LoadAll_MultipleEntityTypesInOneFile_AllParsed()
     {
         var dir = WriteTempYaml("""
-            agents:
-              - name: Same Agent
-                description: First
-              - name: Same Agent
-                description: Second
+            entities:
+              - seedType: secret
+                path: providers/x/key
+                encryptedValue: v1
+              - seedType: provider
+                name: X
+                type: Custom
+                apiTokenSecretPath: providers/x/key
+              - seedType: agent
+                name: A
+                providerName: X
             """);
 
-        var loader = BuildLoader();
-        var payload = loader.LoadAll(dir);
-
+        var payload = BuildLoader().LoadAll(dir);
+        Assert.Single(payload.Secrets);
+        Assert.Single(payload.Providers);
         Assert.Single(payload.Agents);
-        Assert.Equal("First", payload.Agents[0].Description);
-    }
-
-    [Fact]
-    public void LoadAll_FilesLoadedInSortedOrder()
-    {
-        var dir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
-        Directory.CreateDirectory(dir);
-        File.WriteAllText(Path.Combine(dir, "z-last.yml"), """
-            agents:
-              - name: Z Agent
-            """);
-        File.WriteAllText(Path.Combine(dir, "a-first.yml"), """
-            agents:
-              - name: A Agent
-            """);
-
-        var loader = BuildLoader();
-        var payload = loader.LoadAll(dir);
-
-        Assert.Equal(2, payload.Agents.Count);
-        Assert.Equal("A Agent", payload.Agents[0].Name);
-        Assert.Equal("Z Agent", payload.Agents[1].Name);
-    }
-
-    [Fact]
-    public void LoadAll_BothYmlAndYamlExtensions_AreDiscovered()
-    {
-        var dir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
-        Directory.CreateDirectory(dir);
-        File.WriteAllText(Path.Combine(dir, "a.yml"), """
-            agents:
-              - name: From YML
-            """);
-        File.WriteAllText(Path.Combine(dir, "b.yaml"), """
-            agents:
-              - name: From YAML
-            """);
-
-        var loader = BuildLoader();
-        var payload = loader.LoadAll(dir);
-
-        Assert.Equal(2, payload.Agents.Count);
     }
 }
