@@ -510,8 +510,8 @@ namespace Legion.Admin.Data.PostgreSQL.Migrations.App
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid");
 
-                    b.Property<string>("ApiToken")
-                        .HasColumnType("text");
+                    b.Property<Guid?>("ApiTokenSecretId")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("ApiUrl")
                         .HasColumnType("text");
@@ -523,6 +523,8 @@ namespace Legion.Admin.Data.PostgreSQL.Migrations.App
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ApiTokenSecretId");
 
                     b.ToTable("Providers", "agents");
                 });
@@ -720,6 +722,16 @@ namespace Legion.Admin.Data.PostgreSQL.Migrations.App
                         .IsRequired();
 
                     b.Navigation("Definition");
+                });
+
+            modelBuilder.Entity("Legion.Admin.Data.Models.Providers.ProviderOptions", b =>
+                {
+                    b.HasOne("Legion.Admin.Data.Models.SecretOptions", "ApiTokenSecret")
+                        .WithMany()
+                        .HasForeignKey("ApiTokenSecretId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("ApiTokenSecret");
                 });
 
             modelBuilder.Entity("ModelOptionsProviderOptions", b =>
